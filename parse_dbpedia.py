@@ -7,29 +7,35 @@ import sqlite3
 
 DBFILE = "my_database.db"
 
-
-def create_dbpedia_table(tname):
-    # Connect to the SQLite database or create it if it doesn't exist
-    conn = sqlite3.connect(DBFILE)
-    # Create a cursor object to execute SQL commands
-    cursor = conn.cursor()
-    # Create a table with the specified schema
-    cursor.execute(
-        f"""
-        CREATE TABLE IF NOT EXISTS {tname} (
+create_dbpediadb_table_stmt = """
+        CREATE TABLE IF NOT EXISTS {} (
             id INTEGER PRIMARY KEY,
             uri TEXT,
             kv JSON
         )
         """
-    )
+
+create_match_table_stmt = """
+        CREATE TABLE IF NOT EXISTS {} (
+            id0 INTEGER,
+            id1 INTEGER
+        )
+        """
+
+
+def db_execute(stmt):
+    # Connect to the SQLite database or create it if it doesn't exist
+    conn = sqlite3.connect(DBFILE)
+    # Create a cursor object to execute SQL commands
+    cursor = conn.cursor()
+    # Create a table with the specified schema
+    cursor.execute(stmt)
     # Commit the changes and close the connection
     conn.commit()
     conn.close()
 
 
-def parse_dbpedia(fname: Path, tname: str):
-    # Connect to the SQLite database
+def load_dbpedia_db(fname: Path, tname: str):
     conn = sqlite3.connect(DBFILE)
     cursor = conn.cursor()
     # Define the SQL query with placeholders
@@ -52,10 +58,36 @@ def parse_dbpedia(fname: Path, tname: str):
     conn.close()
 
 
+def load_dbpedia_matches(fname: Path, tname: str):
+    conn = sqlite3.connect(DBFILE)
+    cursor = conn.cursor()
+    # Define the SQL query with placeholders
+    insert_query = f"INSERT INTO {tname} (id0, id1) VALUES (?, ?)"
+    # Execute the query with the data tuple
+    with open(fname, "r") as f:
+        for l in tqdm(f):
+            values = tuple(item.strip() for item in l.split(" , "))
+            assert len(values) == 2
+            cursor.execute(insert_query, values)
+    conn.commit()
+    conn.close()
+
+
+def load_dbpedia(dbpaths, dbtnames, matchpath=None, matchtname=None):
+    for (f, tname) in zip(dbpaths, dbtnames):
+        db_execute(create_dbpediadb_table_stmt.format(tname))
+        print(f"Load table {tname}")
+        load_dbpedia_db(f, tname)
+    if not matchpath:
+        return
+    db_execute(create_match_table_stmt.format(matchtname))
+    print(f"Load table {matchtname}")
+    load_dbpedia_matches(matchpath, matchtname)
+
+
 if __name__ == "__main__":
-    tname = "dbpedia1"
-    create_dbpedia_table(tname)
     current_dir = Path(__file__).resolve().parent
-    # Create a Path object to the file in the same directory
-    file_path = current_dir / "cleanDBPedia1out"
-    parse_dbpedia(file_path, tname)
+    dbpaths = [current_dir / "cleanDBPedia1out", current_dir / "cleanDBPedia2out"]
+    tnames = ["dbpedia0", "dbpedia1"]
+    matchpath = current_dir / "newDBPediaMatchesout"
+    load_dbpedia(dbpaths, tnames, matchpath, "dbpedia_matches")
