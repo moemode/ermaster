@@ -1,7 +1,6 @@
 from pathlib import Path
 from itertools import pairwise
 import json
-import tqdm
 from tqdm import tqdm
 import sqlite3
 
