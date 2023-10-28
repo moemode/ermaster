@@ -75,9 +75,41 @@ def batch_get_completions(prompts, targets, model, model_params):
             }
 
 
+def fitting_prefix(start, prompts, max_completion_token):
+    batch_tokens = 0
+    end = start
+    while True:
+        if end >= len(prompts):
+            return end
+        new_tokens = num_tokens_from_string(prompts[end], model)
+        if batch_tokens + (end - start + 1) * max_completion_token + new_tokens >= 3800:
+            return end
+        end += 1
+        batch_tokens += new_tokens
+
+
+def batch_get_completions(prompts, truths, model, model_params):
+    batch_prompts = []
+    batch_truths = []
+    start = 0
+    end = fitting_prefix(start, prompts, model_params["max_tokens"])
+    while start < end:
+        batch_prompts = prompts[start:end]
+        batch_truths = truths[start:end]
+        r = completions_with_backoff(prompt=batch_prompts, **model_params)
+        for choice in r.choices:
+            yield {
+                "p": batch_prompts[choice.index],
+                "t": batch_truths[choice.index],
+                "c": choice,
+            }
+        start = end
+        end = fitting_prefix(start, prompts, model_params["max_tokens"])
+
+
 dataset = "0_beer"
 model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
-prompts, targets = prompts_targets(Path(f"data/{dataset}"))
+prompts, targets = prompts_targets(Path(f"data/{dataset}.json"))
 task = dataset
 completions = []
 run_path = Path(f"runs/{task}_{model}.json")
