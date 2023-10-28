@@ -53,7 +53,7 @@ matches = pd.concat(dfs, ignore_index=True)
 print(ta, tb, matches)
 
 
-matches20 = matches.sample(20, random_state=0)
+matches20 = matches
 data = []
 for i, row in matches20.iterrows():  # merged_df.iterrows():
     truth = bool(row["label"])
@@ -63,4 +63,4 @@ for i, row in matches20.iterrows():  # merged_df.iterrows():
     sel = serialize(el, serialize_attributes)
     ser = serialize(er, serialize_attributes)
     data.append({"t": truth, "e0": sel, "e1": ser})
-write_to_file(data, "beer20")
+write_to_file(data, "beer")

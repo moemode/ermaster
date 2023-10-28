@@ -50,7 +50,7 @@ def batch_get_completions(prompts, targets, model, model_params):
     batch_tokens = 0
     for p, t in zip(prompts, targets):
         pt = num_tokens_from_string(p, model)
-        if batch_tokens + pt + len(batch_prompts) * model_params["max_tokens"] < 3500:
+        if batch_tokens + pt + len(batch_prompts) * model_params["max_tokens"] < 3800:
             batch_prompts.append(p)
             batch_truths.append(t)
             batch_tokens += pt
@@ -75,7 +75,7 @@ def batch_get_completions(prompts, targets, model, model_params):
             }
 
 
-dataset = "0_beer20.json"
+dataset = "0_beer"
 model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
 prompts, targets = prompts_targets(Path(f"data/{dataset}"))
 task = dataset
@@ -90,4 +90,4 @@ with open(f"runs/{task}_{model}.json", "w+") as f:
     write_json_iter(
         batch_get_completions(prompts, targets, model, model_params), len(prompts), f
     )
-    # write_json_iter(get_completions(prompts[:6], targets[:6], model_params), 6, f)
+    # write_json_iter(get_completions(prompts[:2], targets[:2], model_params), 2, f)
