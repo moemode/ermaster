@@ -1,0 +1,86 @@
+[
+    {
+        "p": "Do the two entity descriptions match?\nEntity 1: 'Kuhnhenn Extraneous Ale Kuhnhenn Brewing Company American Barleywine 17.00 %'\nEntity 2: 'Kuhnhenn Extraneous Ale Kuhnhenn Brewing Barley Wine 17.50 %'\nAnswer with 'Yes' if they do and 'No' if they do not.\n",
+        "t": true,
+        "c": {
+            "id": "cmpl-8EeKssDHWwMWcuMqBYANU8Wc4wLQ5",
+            "object": "text_completion",
+            "created": 1698502334,
+            "model": "gpt-3.5-turbo-instruct",
+            "choices": [
+                {
+                    "text": "\n",
+                    "index": 0,
+                    "logprobs": {
+                        "tokens": [
+                            "\n"
+                        ],
+                        "token_logprobs": [
+                            -0.121813536
+                        ],
+                        "top_logprobs": [
+                            {
+                                "\n": -0.121813536,
+                                "Yes": -2.8627079,
+                                "No": -3.0012367,
+                                " \n": -5.6151094,
+                                " Yes": -6.4070673
+                            }
+                        ],
+                        "text_offset": [
+                            254
+                        ]
+                    },
+                    "finish_reason": "length"
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 78,
+                "completion_tokens": 1,
+                "total_tokens": 79
+            }
+        }
+    },
+    {
+        "p": "Do the two entity descriptions match?\nEntity 1: 'Starlord 's Mixtape / Groot Drank Imperial Red Ale Charging Hippo Brewing Co. . American Amber / Red Ale 8.20 %'\nEntity 2: '406 Imperial Red Ale 406 Brewing Company American Strong Ale 9.20 %'\nAnswer with 'Yes' if they do and 'No' if they do not.\n",
+        "t": false,
+        "c": {
+            "id": "cmpl-8EeKseOoZs4gIwC3RuguwWIiWqz2i",
+            "object": "text_completion",
+            "created": 1698502334,
+            "model": "gpt-3.5-turbo-instruct",
+            "choices": [
+                {
+                    "text": "\n",
+                    "index": 0,
+                    "logprobs": {
+                        "tokens": [
+                            "\n"
+                        ],
+                        "token_logprobs": [
+                            -0.14531599
+                        ],
+                        "top_logprobs": [
+                            {
+                                "\n": -0.14531599,
+                                "No": -2.1262233,
+                                "Yes": -5.257228,
+                                " No": -5.477603,
+                                " \n": -5.59039
+                            }
+                        ],
+                        "text_offset": [
+                            296
+                        ]
+                    },
+                    "finish_reason": "length"
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 83,
+                "completion_tokens": 1,
+                "total_tokens": 84
+            }
+        }
+    }
+]
