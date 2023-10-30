@@ -5,8 +5,8 @@ import tiktoken
 import json
 from tqdm import tqdm
 from prompt_creation import prompts_targets
-
-from utils import retry_with_exponential_backoff
+from typing import Dict, Optional
+from utils import retry_with_exponential_backoff, numbered_path
 
 model = "gpt-3.5-turbo-instruct"
 PRICE_PER_1K_TOKENS_PROMPT = 0.002
@@ -18,7 +18,11 @@ def completions_with_backoff(**kwargs):
 
 
 completions_with_backoff = retry_with_exponential_backoff(
-    completions_with_backoff, initial_delay=60, exponential_base=1.1, max_retries=3
+    completions_with_backoff,
+    initial_delay=60,
+    exponential_base=1.1,
+    max_retries=3,
+    jitter=False,
 )
 
 
@@ -107,6 +111,7 @@ def batch_get_completions(prompts, truths, model, model_params):
         end = fitting_prefix(start, prompts, model_params["max_tokens"])
 
 
+"""
 dataset = "0_beer"
 model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
 prompts, targets = prompts_targets(Path(f"data/{dataset}.json"))
@@ -123,3 +128,25 @@ with open(f"runs/{task}_{model}.json", "w+") as f:
         batch_get_completions(prompts, targets, model, model_params), len(prompts), f
     )
     # write_json_iter(get_completions(prompts[:2], targets[:2], model_params), 2, f)
+"""
+
+
+def run_test(dataset: Path, model_params: Dict, description: Optional[str] = None):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    dataset_name = dataset.stem
+    prompts, targets = prompts_targets(dataset)
+    model = model_params["model"]
+    run_path = numbered_path(Path(f"runs/{dataset_name}_{model}_{description}.json"))
+    with open(run_path, "w+") as f:
+        write_json_iter(
+            batch_get_completions(prompts, targets, model, model_params),
+            len(prompts),
+            f,
+        )
+
+
+if __name__ == "__main__":
+    model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
+    run_test(
+        Path("/home/v/coding/ermaster/data/0_beer.json"), model_params, "1max_token"
+    )

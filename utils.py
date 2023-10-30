@@ -1,6 +1,19 @@
 import random
 import time
+import os
+
 import openai
+from pathlib import Path
+
+
+def numbered_path(p: Path):
+    p.mkdir(parents=True, exist_ok=True)
+    # Find the lowest untaken number for the filename
+    base_path, file_name = p.parent, p.name
+    number = 0
+    while (base_path / Path(f"{number}_{file_name}")).exists():
+        number += 1
+    return base_path / Path(f"{number}_{file_name}")
 
 
 def retry_with_exponential_backoff(
