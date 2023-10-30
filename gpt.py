@@ -2,7 +2,7 @@ import os
 import openai
 from pathlib import Path
 import tiktoken
-from prompt_creation import prompts_targets
+from prompt_creation import get_targets, simple_prompt
 from typing import Dict, Optional
 from utils import retry_with_exponential_backoff, numbered_path, write_json_iter
 
@@ -76,7 +76,8 @@ def get_completions_batch(prompts, truths, model_params):
 def run_test(dataset: Path, model_params: Dict, description: Optional[str] = None):
     openai.api_key = os.getenv("OPENAI_API_KEY")
     dataset_name = dataset.stem
-    prompts, targets = prompts_targets(dataset)
+    prompts = simple_prompt(dataset)
+    targets = get_targets(dataset)
     model = model_params["model"]
     run_path = numbered_path(Path(f"runs/{dataset_name}_{model}_{description}.json"))
     with open(run_path, "w+") as f:
@@ -89,7 +90,7 @@ def run_test(dataset: Path, model_params: Dict, description: Optional[str] = Non
 
 if __name__ == "__main__":
     model = "gpt-3.5-turbo-instruct"
-    model_params = dict(model=model, max_tokens=3, logprobs=5, temperature=0)
+    model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
     run_test(
-        Path("/home/v/coding/ermaster/data/0_beer.json"), model_params, "3max_token"
+        Path("/home/v/coding/ermaster/data/0_beer.json"), model_params, "1max_token"
     )

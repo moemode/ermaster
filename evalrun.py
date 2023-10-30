@@ -4,6 +4,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 
 
 def eval(run: Path):
+    Path("eval").mkdir(parents=True, exist_ok=True)
     truths = []
     predictions = []
     with open(run, "r") as file:
@@ -27,8 +28,14 @@ def eval(run: Path):
         "Recall": recall,
         "F1": f1,
     }
+    with open(Path("eval") / run.name, "w") as f:
+        json.dump(results, f, indent=2)
     print(results)
 
 
 if __name__ == "__main__":
-    eval("/home/v/coding/ermaster/runs/1_0_beer_gpt-3.5-turbo-instruct_3max_token.json")
+    eval(
+        Path(
+            "/home/v/coding/ermaster/runs/1_0_beer_gpt-3.5-turbo-instruct_3max_token.json"
+        )
+    )
