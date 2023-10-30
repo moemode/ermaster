@@ -1,9 +1,18 @@
 import random
 import time
-import os
-
+import json
 import openai
+from tqdm import tqdm
 from pathlib import Path
+
+
+def write_json_iter(it, N, fh):
+    print("[", file=fh)
+    for n, rec in tqdm(enumerate(it), total=N):
+        if n > 0:
+            print(",", file=fh)
+        json.dump(rec, fh)
+    print("\n]", file=fh)
 
 
 def numbered_path(p: Path):

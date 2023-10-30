@@ -2,3 +2,4 @@ cleanDBPedia1out
 cleanDBPedia2out
 newDBPediaMatchesout
 my_database.db*
+__pycache__
