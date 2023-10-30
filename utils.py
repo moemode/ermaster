@@ -12,6 +12,7 @@ def write_json_iter(it, N, fh):
         if n > 0:
             print(",", file=fh)
         json.dump(rec, fh)
+        fh.flush()
     print("\n]", file=fh)
 
 

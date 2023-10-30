@@ -48,6 +48,8 @@ def fitting_prefix(start, prompts, model_params):
             >= 3800
         ):
             return end
+        if model_params["max_tokens"] > 1 and (end - start + 1) > 20:
+            return end
         end += 1
         batch_tokens += new_tokens
 
@@ -87,7 +89,7 @@ def run_test(dataset: Path, model_params: Dict, description: Optional[str] = Non
 
 if __name__ == "__main__":
     model = "gpt-3.5-turbo-instruct"
-    model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
+    model_params = dict(model=model, max_tokens=3, logprobs=5, temperature=0)
     run_test(
-        Path("/home/v/coding/ermaster/data/0_beer.json"), model_params, "1max_token"
+        Path("/home/v/coding/ermaster/data/0_beer.json"), model_params, "3max_token"
     )
