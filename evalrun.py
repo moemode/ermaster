@@ -36,6 +36,6 @@ def eval(run: Path):
 if __name__ == "__main__":
     eval(
         Path(
-            "/home/v/coding/ermaster/runs/1_0_beer_gpt-3.5-turbo-instruct_3max_token.json"
+            "/home/v/coding/ermaster/runs/beer_simple_gpt-3.5-turbo-instruct_1max_token_0.json"
         )
     )

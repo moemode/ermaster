@@ -1,26 +1,7 @@
 from typing import List, Dict
 import pandas as pd
-from pandas import Series
 import json
-import os
-
-
-def write_to_file(data, name):
-    # Subfolder name
-    subfolder_name = "data"
-    # Ensure the subfolder exists
-    if not os.path.exists(subfolder_name):
-        os.mkdir(subfolder_name)
-    # Find the lowest untaken number for the filename
-    number = 0
-    while os.path.exists(os.path.join(subfolder_name, f"{number}_{name}.json")):
-        number += 1
-    # Create the full file path
-    file_path = os.path.join(subfolder_name, f"{number}_{name}.json")
-    # Write the JSON data to the file
-    with open(file_path, "w") as json_file:
-        json.dump(data, json_file, indent=2)
-    print(f"Data written to {file_path}")
+from pathlib import Path
 
 
 def serialize(beer_entity: Dict, attributes: List) -> str:
@@ -52,10 +33,8 @@ for file_path in truth_paths:
 matches = pd.concat(dfs, ignore_index=True)
 print(ta, tb, matches)
 
-
-matches20 = matches
 data = []
-for i, row in matches20.iterrows():  # merged_df.iterrows():
+for i, row in matches.iterrows():  # merged_df.iterrows():
     truth = bool(row["label"])
     el = ta[ta["id"] == row.ltable_id].iloc[0].to_dict()
     er = tb[tb["id"] == row.rtable_id].iloc[0].to_dict()
@@ -63,4 +42,6 @@ for i, row in matches20.iterrows():  # merged_df.iterrows():
     sel = serialize(el, serialize_attributes)
     ser = serialize(er, serialize_attributes)
     data.append({"t": truth, "e0": sel, "e1": ser})
-write_to_file(data, "beer")
+
+with open(Path("data") / "beer.json", "w") as json_file:
+    json.dump(data, json_file, indent=2)

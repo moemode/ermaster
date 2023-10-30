@@ -102,7 +102,7 @@ if __name__ == "__main__":
     model = "gpt-3.5-turbo-instruct"
     model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
     run_test(
-        Path("/home/v/coding/ermaster/data/0_beer.json"),
+        Path("/home/v/coding/ermaster/data/beer.json"),
         model_params,
         simple,
         "1max_token",
