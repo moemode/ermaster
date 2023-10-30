@@ -17,13 +17,13 @@ def write_json_iter(it, N, fh):
 
 
 def numbered_path(p: Path):
-    p.mkdir(parents=True, exist_ok=True)
+    p.parent.mkdir(parents=True, exist_ok=True)
     # Find the lowest untaken number for the filename
-    base_path, file_name = p.parent, p.name
+    base_path, file_stem = p.parent, p.stem
     number = 0
-    while (base_path / Path(f"{number}_{file_name}")).exists():
+    while (base_path / Path(f"{file_stem}_{number}{p.suffix}")).exists():
         number += 1
-    return base_path / Path(f"{number}_{file_name}")
+    return base_path / Path(f"{file_stem}_{number}{p.suffix}")
 
 
 def retry_with_exponential_backoff(

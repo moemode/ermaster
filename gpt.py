@@ -2,8 +2,8 @@ import os
 import openai
 from pathlib import Path
 import tiktoken
-from prompt_creation import get_targets, simple_prompt
-from typing import Dict, Optional
+from prompt_creation import get_targets, create_prompts, save_prompts, simple
+from typing import Callable, Dict, Optional
 from utils import retry_with_exponential_backoff, numbered_path, write_json_iter
 
 PRICE_PER_1K_TOKENS_PROMPT = 0.002
@@ -73,13 +73,23 @@ def get_completions_batch(prompts, truths, model_params):
         end = fitting_prefix(start, prompts, model_params)
 
 
-def run_test(dataset: Path, model_params: Dict, description: Optional[str] = None):
+def run_test(
+    dataset: Path,
+    model_params: Dict,
+    prompt_function: Optional[Callable] = simple,
+    description: Optional[str] = None,
+):
     openai.api_key = os.getenv("OPENAI_API_KEY")
     dataset_name = dataset.stem
-    prompts = simple_prompt(dataset)
+    prompts = create_prompts(dataset, simple)
     targets = get_targets(dataset)
+    save_prompts(dataset)
     model = model_params["model"]
-    run_path = numbered_path(Path(f"runs/{dataset_name}_{model}_{description}.json"))
+    run_path = numbered_path(
+        Path(
+            f"runs/{dataset_name}_{prompt_function.__name__}_{model}_{description}.json"
+        )
+    )
     with open(run_path, "w+") as f:
         write_json_iter(
             get_completions_batch(prompts, targets, model_params),
@@ -92,5 +102,8 @@ if __name__ == "__main__":
     model = "gpt-3.5-turbo-instruct"
     model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
     run_test(
-        Path("/home/v/coding/ermaster/data/0_beer.json"), model_params, "1max_token"
+        Path("/home/v/coding/ermaster/data/0_beer.json"),
+        model_params,
+        simple,
+        "1max_token",
     )
