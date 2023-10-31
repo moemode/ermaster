@@ -2,7 +2,13 @@ import os
 import openai
 from pathlib import Path
 import tiktoken
-from prompt_creation import get_targets, create_prompts, save_prompts, simple
+from prompt_creation import (
+    get_targets,
+    create_prompts,
+    save_prompts,
+    simple_postfix,
+    simple,
+)
 from typing import Callable, Dict, Optional
 from utils import retry_with_exponential_backoff, numbered_path, write_json_iter
 
@@ -76,14 +82,14 @@ def get_completions_batch(prompts, truths, model_params):
 def run_test(
     dataset: Path,
     model_params: Dict,
-    prompt_function: Optional[Callable] = simple,
+    prompt_function: Optional[Callable] = simple_postfix,
     description: Optional[str] = None,
 ):
     openai.api_key = os.getenv("OPENAI_API_KEY")
     dataset_name = dataset.stem
-    prompts = create_prompts(dataset, simple)
+    prompts = create_prompts(dataset, simple_postfix)
     targets = get_targets(dataset)
-    save_prompts(dataset)
+    save_prompts(dataset, prompt_function)
     model = model_params["model"]
     run_path = numbered_path(
         Path(
