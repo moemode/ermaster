@@ -2,6 +2,7 @@ import random
 import time
 import json
 import openai
+import math
 from tqdm import tqdm
 from pathlib import Path
 
@@ -62,3 +63,11 @@ def retry_with_exponential_backoff(
                 raise e
 
     return wrapper
+
+
+def bernoulli_entropy(p):
+    # Calculate entropy
+    if p == 0 or p == 1:
+        return 0  # Entropy is 0 if p is 0 or 1
+    else:
+        return -p * math.log2(p) - (1 - p) * math.log2(1 - p)
