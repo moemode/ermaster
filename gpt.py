@@ -65,10 +65,12 @@ def get_completions_batch(prompts, truths, model_params):
     batch_truths = []
     start = 0
     end = fitting_prefix(start, prompts, model_params)
+    total_tokens = 0
     while start < end:
         batch_prompts = prompts[start:end]
         batch_truths = truths[start:end]
         r = completions_with_backoff(prompt=batch_prompts, **model_params)
+        total_tokens += r["usage"]["total_tokens"] 
         for choice in r.choices:
             yield {
                 "p": batch_prompts[choice.index],
@@ -77,6 +79,7 @@ def get_completions_batch(prompts, truths, model_params):
             }
         start = end
         end = fitting_prefix(start, prompts, model_params)
+    print(total_tokens)
 
 
 def run_test(
