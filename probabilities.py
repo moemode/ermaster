@@ -99,7 +99,15 @@ def my_probs(scores):
 
 def top_k(probabilities, k, tokenizer):
     topk_values, topk_indices = torch.topk(probabilities, k=k, dim=2, largest=True)
-    print(topk_values)
+    top_k = []
+    for completion in range(topk_indices.size(0)):
+        top_k.append([])
+        for token_pos in range(topk_indices.size(1)):
+            indices = topk_indices[completion, token_pos, :]
+            values = topk_values[completion, token_pos, :]
+            tokens = map(lambda t: tokenizer.decode(t), indices.tolist())
+            top_k[-1].append(dict(zip(tokens, values.tolist())))
+    return top_k
 
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 model = AutoModelForCausalLM.from_pretrained("gpt2")
