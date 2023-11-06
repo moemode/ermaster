@@ -1,5 +1,7 @@
 import sqlite3
 import json
+import re
+from itertools import chain
 
 DBFILE = "my_database.db"
 N = 10  # Replace 10 with the number of random entries you want
@@ -9,6 +11,11 @@ class Entity(dict):
         super().__init__(kv)
         self.id = id
         self.uri = uri
+
+def tokens(e: Entity, values_only=True):
+    it = chain(e.values() if values_only else e.values(), e.keys())
+    vals = " ".join(it).lower()
+    return set(filter(None, re.split('[\\W_]',vals)))
 
 
 def get_matches(N):
@@ -46,6 +53,9 @@ def get_random_matches(n):
     random_matches = cursor.fetchall()
     conn.close()
     return random_matches
+
+def token_blocking():
+    pass
 
 
 if __name__ == "__main__":
