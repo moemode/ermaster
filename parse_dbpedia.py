@@ -84,19 +84,6 @@ def load_dbpedia(dbpaths, dbtnames, matchpath=None, matchtname=None):
     load_dbpedia_matches(matchpath, matchtname)
 
 
-def get_matches(N):
-    match_query = f"""
-    SELECT e0.uri, e0.kv, e1.uri, e1.kv from dbpedia0 AS e0, dbpedia1 AS e1, dbpedia_matches AS matches
-    WHERE e0.id = matches.id0
-    AND e1.id = matches.id1
-    LIMIT {N};
-    """
-    conn = sqlite3.connect(DBFILE)
-    cursor = conn.cursor()
-    cursor.execute(match_query)
-    res = cursor.fetchall()
-    conn.close()
-    return res
 
 
 if __name__ == "__main__":
