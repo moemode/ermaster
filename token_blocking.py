@@ -1,6 +1,8 @@
 from typing import Dict, Set, Iterable
 from access_dbpedia import Entity, get_entity_by_id, get_random_matches, tokens
 import itertools
+from py_stringmatching.tokenizer.whitespace_tokenizer import WhitespaceTokenizer
+import pandas as pd
 
 
 def token_blocking(entities: Set[Entity]) -> Dict[str, Set[int]]:
@@ -10,7 +12,6 @@ def token_blocking(entities: Set[Entity]) -> Dict[str, Set[int]]:
             if t not in blocks:
                 blocks[t] = set()
             blocks[t].add(e.id)
-    # remove all blocks with only one entity
     for k in list(blocks.keys()):
         if len(blocks[k]) < 2:
             del blocks[k]
@@ -64,9 +65,17 @@ def clean_block_statistics(blocks: Dict[str, tuple[Set[int], Set[int]]]):
     print(f"Maximum block size: {max(sizes)}")
 
 
+def overlap_coefficient(s1: Set, s2: Set):
+    if len(s1) == 0 or len(s2) == 0:
+        if len(s1) == len(s2):
+            return 1
+        return 0
+    return len(s1.intersection(s2)) / min(len(s1), len(s2))
+
+
 if __name__ == "__main__":
-    N = 10
-    random_matches = get_random_matches(N)
+    N = 100
+    random_matches = set(get_random_matches(N))
     ids_0 = set()
     ids_1 = set()
     entities0 = set()
@@ -78,5 +87,25 @@ if __name__ == "__main__":
         entities1.add(get_entity_by_id(m[1], "dbpedia1"))
     print(f"Token blocking on {2*N} entities with {N} matches")
     token_blocks = clean_token_blocking(entities0, entities1)
-    print(f"Number of comparisons: {len(set(clean_comparisons(token_blocks)))}")
+    cmps = set(clean_comparisons(token_blocks))
+    print(f"Number of comparisons: ", len(cmps))
+    # intersection of cmps with random_matches
+    print(cmps.update(random_matches))
+    print(f"Number of comparisons with all matches: ", len(cmps))
     clean_block_statistics(token_blocks)
+    wstok = WhitespaceTokenizer(return_set=True)
+    oc_nonmatch = []
+    oc_match = []
+    for e0, e1 in cmps:
+        t0 = tokens(get_entity_by_id(e0, "dbpedia0"))
+        t1 = tokens(get_entity_by_id(e1, "dbpedia1"))
+        oc = overlap_coefficient(t0, t1)
+        if (e0, e1) in random_matches:
+            oc_match.append(oc)
+        else:
+            oc_nonmatch.append(oc)
+    print(oc_match, oc_nonmatch)
+    m = pd.DataFrame(oc_match)
+    nm = pd.DataFrame(oc_nonmatch)
+    print(m.describe())
+    print(nm.describe())
