@@ -1,5 +1,7 @@
 from pathlib import Path
 import pandas as pd
+from typing import List, Tuple
+
 
 fpath = Path(
     "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/structured_itunes_amazon"
@@ -15,10 +17,12 @@ print(df.columns)
 # Iterate over the rows of the DataFrame
 table1_columns = [col for col in df.columns if col.startswith("table1")]
 field_names = [col.split(".")[1] for col in table1_columns]
+no_id_field_names = [name for name in field_names if name != "id"]
 table2_columns = [col for col in df.columns if col.startswith("table2")]
 assert list(map(lambda n: "table2." + n, field_names)) == table2_columns
 table1_entities = []
 table2_entities = []
+pairs: List[Tuple[bool, Entity, Entity]] = []
 for _, row in df.iterrows():
     # Filter columns that start with "table1"
     table1_columns = [col for col in row.index if col.startswith("table1")]
@@ -27,4 +31,5 @@ for _, row in df.iterrows():
     # Append the tuple to the list
     row["label"] = 1
     table1_entities.append(table1_tuple)
+    Entity(row["table1.id"], None, row["table1.kv"], order=no_id_field_names)
 print(table1_entities[:5])
