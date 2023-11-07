@@ -1,7 +1,6 @@
 import sqlite3
 import json
 import re
-from itertools import chain
 from typing import Any, List, Optional, Set
 
 
@@ -9,10 +8,13 @@ DBFILE = "my_database.db"
 
 
 class Entity(dict):
-    def __init__(self, id, uri, kv):
+    def __init__(self, id, uri, kv, order=None):
         super().__init__(kv)
         self.id = id
         self.uri = uri
+        self.order = order
+        if order and len(order) != len(self.keys()):
+            raise ValueError("order must contain all keys")
 
     # make hashable
     def __hash__(self):
@@ -20,7 +22,13 @@ class Entity(dict):
 
 
 def tokens(e: Entity, values_only=True) -> Set[str]:
-    it = chain(e.values() if values_only else e.values(), e.keys())
+    order = e.order
+    if order is None:
+        order = sorted(e.keys())
+    if values_only:
+        it = (e[key] for key in order)
+    else:
+        it = (f"{key} {e[key]}" for key in order)
     vals = " ".join(it).lower()
     return set(filter(None, re.split("[\\W_]", vals)))
 
