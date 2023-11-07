@@ -21,16 +21,21 @@ class Entity(dict):
         return hash(self.id)
 
 
-def tokens(e: Entity, values_only=True) -> Set[str]:
+def tokens(
+    e: Entity,
+    include_keys=False,
+    return_set=True,
+) -> Set[str] | List[str]:
     order = e.order
     if order is None:
         order = sorted(e.keys())
-    if values_only:
-        it = (e[key] for key in order)
-    else:
+    if include_keys:
         it = (f"{key} {e[key]}" for key in order)
+    else:
+        it = (e[key] for key in order)
     vals = " ".join(it).lower()
-    return set(filter(None, re.split("[\\W_]", vals)))
+    toks = filter(None, re.split("[\\W_]", vals))
+    return set(toks) if return_set else list(toks)
 
 
 def get_matches(N: int) -> List[Any]:
