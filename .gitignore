@@ -5,3 +5,4 @@ my_database.db*
 __pycache__
 data/benchmark_datasets
 eval/structured*
+eval/textual*

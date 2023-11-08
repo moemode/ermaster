@@ -1,6 +1,18 @@
 import pandas as pd
 from matplotlib import pyplot as plt
-from preclassify import count_miss_classifications
+
+
+def count_miss_classifications(similarities: pd.DataFrame, name: str):
+    # Sort the DataFrame by the specified column in ascending order
+    similarities.sort_values(by=name, ascending=True, inplace=True)
+    match_count = 0
+    miss_classifiation_function = []
+    for i, (_, row) in enumerate(similarities.iterrows()):
+        if row["label"] == 1:
+            match_count += 1
+        miss_classifiation_function.append((i + 1, match_count))
+    return miss_classifiation_function
+
 
 if __name__ == "__main__":
     # Specify the path to the CSV file

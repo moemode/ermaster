@@ -1,6 +1,5 @@
 from pathlib import Path
 from access_dbpedia import OrderedEntity
-from load_benchmark import load_benchmark
 from py_stringmatching import (
     Jaccard,
     OverlapCoefficient,
@@ -8,10 +7,29 @@ from py_stringmatching import (
     GeneralizedJaccard,
 )
 import pandas as pd
+from load_benchmark import load_benchmark
+from tqdm import tqdm
+
+
+DATASET_NAMES = [
+    # "dirty_dblp_acm",
+    # "dirty_walmart_amazon",
+    # "dirty_itunes_amazon",
+    # "dirty_dblp_scholar",
+    "structured_dblp_acm",
+    "structured_itunes_amazon",
+    "textual_company",
+    "structured_amazon_google",
+    "structured_dblp_scholar",
+    "structured_walmart_amazon",
+    "structured_beer",
+    "structured_fodors_zagats",
+    "textual_abt_buy",
+]
 
 
 def similarities(
-    pairs: list[tuple[bool, OrderedEntity, OrderedEntity]]
+    pairs: list[tuple[bool, OrderedEntity, OrderedEntity]], use_tqdm: bool = False
 ) -> pd.DataFrame:
     """
     Calculate the similarity between pairs of entities and return the results as a pandas DataFrame.
@@ -39,7 +57,12 @@ def similarities(
     me = MongeElkan()
     gj = GeneralizedJaccard()
     similarity_scores = []
-    for label, e0, e1 in pairs:
+    # Use tqdm for progress tracking
+    if use_tqdm:
+        pairs_iterator = tqdm(pairs, total=len(pairs))
+    else:
+        pairs_iterator = pairs
+    for label, e0, e1 in pairs_iterator:
         t0 = e0.tokens()
         t1 = e1.tokens()
         # Calculate similarity scores using different similarity functions
@@ -64,27 +87,27 @@ def similarities(
     return df
 
 
-def count_miss_classifications(similarities: pd.DataFrame, name: str):
-    # Sort the DataFrame by the specified column in ascending order
-    similarities.sort_values(by=name, ascending=True, inplace=True)
-    match_count = 0
-    miss_classifiation_function = []
-    for i, (_, row) in enumerate(similarities.iterrows()):
-        if row["label"] == 1:
-            match_count += 1
-        miss_classifiation_function.append((i + 1, match_count))
-    return miss_classifiation_function
+def run_all(datasets=DATASET_NAMES):
+    fnames = ["test.csv", "train.csv", "valid.csv"]
+    root_folder = Path(
+        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
+    )
+    save_to = Path("eval")
+    save_to.mkdir(parents=True, exist_ok=True)
+    for folder in [root_folder / dataset for dataset in datasets]:
+        dataset = folder.parts[-1]
+        result_path = save_to / f"{dataset}-sim.csv"
+        if result_path.exists():
+            continue
+        print("Load Dataset:", dataset)
+        pairs = load_benchmark([folder / fname for fname in fnames], use_tqdm=True)
+        print("Similiarities on Dataset:", dataset)
+        s = similarities(pairs, use_tqdm=True)
+        s.to_csv(result_path, index=False)
 
 
 if __name__ == "__main__":
-    fnames = ["test.csv", "train.csv", "valid.csv"]
-    folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/structured_itunes_amazon"
-    )
-    # print(get_folders_in_directory(BENCHMARKS_PATH))
-    pairs = load_benchmark([folder / fname for fname in fnames])
-    s = similarities(pairs)
-    last_folder_name = folder.parts[-1]
-    save_to = Path("eval")
-    save_to.mkdir(parents=True, exist_ok=True)
-    s.to_csv(save_to / f"{last_folder_name}-sim.csv", index=False)
+    ds = DATASET_NAMES
+    # takes too long
+    ds.remove("textual_company")
+    run_all(ds)

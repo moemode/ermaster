@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
 from typing import List, Tuple
-
+from tqdm import tqdm
 from access_dbpedia import OrderedEntity
 
 
@@ -43,7 +43,7 @@ def load_into_df(fpaths: List[Path]) -> pd.DataFrame:
 
 
 def load_benchmark(
-    fpaths: List[Path],
+    fpaths: List[Path], use_tqdm=False
 ) -> List[Tuple[bool, OrderedEntity, OrderedEntity]]:
     """
     Load benchmark data from CSV files and return a list of tuples representing entity pairs.
@@ -73,9 +73,6 @@ def load_benchmark(
     """
     # Read the CSV file into a Pandas DataFrame
     df = load_into_df(fpaths)
-    # Display the first few rows of the DataFrame
-    print(df.head())
-    print(df.columns)
     # Iterate over the rows of the DataFrame
     table1_columns = [col for col in df.columns if col.startswith("table1")]
     column_names = [col.split(".")[1] for col in table1_columns]
@@ -87,7 +84,11 @@ def load_benchmark(
     table1_entities = []
     table2_entities = []
     pairs: List[Tuple[bool, OrderedEntity, OrderedEntity]] = []
-    for _, row in df.iterrows():
+    if use_tqdm:
+        rows_iterator = tqdm(df.iterrows(), total=len(df))
+    else:
+        rows_iterator = df.iterrows()
+    for _, row in rows_iterator:
         attributes1 = zip(columns_no_id, map(str, row[table1_columns_no_id].values))
         attributes2 = zip(columns_no_id, map(str, row[table2_columns_no_id].values))
         e1 = OrderedEntity(row["table1.id"], None, attributes1)
