@@ -35,7 +35,7 @@ if __name__ == "__main__":
         plt.figure(figsize=(10, 6))
         for name, data in data_dict.items():
             x_values, y_values = zip(*data)
-            plt.plot(x_values, y_values, label=f"Miss Classifications - {name}")
+            plt.plot(x_values, y_values, label=f"{name}")
         plt.xlabel("# Discarded")
         plt.ylabel("# False Negatives")
         plt.title(f"Discarding in order of similarity on {ds}")
