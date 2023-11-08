@@ -7,7 +7,6 @@ from py_stringmatching import (
     MongeElkan,
     GeneralizedJaccard,
 )
-import matplotlib.pyplot as plt
 import pandas as pd
 
 
@@ -84,47 +83,8 @@ if __name__ == "__main__":
     )
     # print(get_folders_in_directory(BENCHMARKS_PATH))
     pairs = load_benchmark([folder / fname for fname in fnames])
-    # List of similarity columns to process
-    similarity_columns = ["jaccard", "overlap", "mongeelkan", "genjaccard"]
-
-    # Create a dictionary to store the data for each similarity column
-    data_dict = {}
-
-    for name in similarity_columns:
-        # Calculate miss classifications for each similarity column
-        s = similarities(pairs)
-        data = count_miss_classifications(s, name)
-        data_dict[name] = data
-
-    # Create a graph using Matplotlib with different lines for each dataset
-    plt.figure(figsize=(10, 6))
-    for name, data in data_dict.items():
-        x_values, y_values = zip(*data)
-        plt.plot(x_values, y_values, label=f"Miss Classifications - {name}")
-
-    plt.xlabel("Row Index")
-    plt.ylabel("Count of Miss Classifications")
-    plt.title("Miss Classifications vs. Row Index")
-    plt.legend()
-    plt.grid(True)
-
-    # Display the graph
-    plt.show()
-    """
     s = similarities(pairs)
-    data = count_miss_classifications(s, "jaccard")
-
-    # Extract the x and y values from the data for plotting
-    x_values, y_values = zip(*data)
-
-    # Create a graph using Matplotlib
-    plt.plot(x_values, y_values, label="Miss Classifications")
-    plt.xlabel("Row Index")
-    plt.ylabel("Count of Miss Classifications")
-    plt.title("Miss Classifications vs. Row Index")
-    plt.legend()
-    plt.grid(True)
-
-    # Display the graph
-    plt.show()
-    """
+    last_folder_name = folder.parts[-1]
+    save_to = Path("eval")
+    save_to.mkdir(parents=True, exist_ok=True)
+    s.to_csv(save_to / f"{last_folder_name}-sim.csv", index=False)
