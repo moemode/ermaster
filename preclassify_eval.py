@@ -38,7 +38,7 @@ if __name__ == "__main__":
             plt.plot(x_values, y_values, label=f"Miss Classifications - {name}")
         plt.xlabel("# Discarded")
         plt.ylabel("# False Negatives")
-        plt.title("Discarding in order of similarity")
+        plt.title(f"Discarding in order of similarity on {ds}")
         plt.legend()
         plt.grid(True)
         plt.savefig(f"figures/{ds}-miss-classifications.png")
