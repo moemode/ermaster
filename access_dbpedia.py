@@ -1,7 +1,8 @@
+from collections import OrderedDict
 import sqlite3
 import json
 import re
-from typing import Any, List, Optional, Set
+from typing import Any, Iterable, List, Optional, Set, Tuple
 
 
 DBFILE = "my_database.db"
@@ -19,6 +20,28 @@ class Entity(dict):
     # make hashable
     def __hash__(self):
         return hash(self.id)
+
+
+class OrderedEntity(OrderedDict):
+    def __init__(
+        self, id: int, uri: Optional[str], attributes: Iterable[Tuple[str, str]]
+    ):
+        super().__init__(attributes)
+        self.id = id
+        self.uri = uri
+
+    # make hashable
+    def __hash__(self):
+        return hash(self.id)
+
+    def tokens(self, include_keys=False, return_set=True):
+        if include_keys:
+            it = (f"{k} {v}" for (k, v) in self.items())
+        else:
+            it = self.values()
+        vals = " ".join(it).lower()
+        toks = filter(None, re.split("[\\W_]", vals))
+        return set(toks) if return_set else list(toks)
 
 
 def tokens(
