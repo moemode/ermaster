@@ -1,4 +1,5 @@
 from pathlib import Path
+import pickle
 from access_dbpedia import OrderedEntity
 from py_stringmatching import (
     Jaccard,
@@ -9,6 +10,7 @@ from py_stringmatching import (
 import pandas as pd
 from load_benchmark import load_benchmark
 from tqdm import tqdm
+from sentence_transformers import SentenceTransformer
 
 
 DATASET_NAMES = [
@@ -87,7 +89,35 @@ def similarities(
     return df
 
 
-def run_all(datasets=DATASET_NAMES):
+def compute_embeddings(
+    pairs: list[tuple[bool, OrderedEntity, OrderedEntity]],
+    save_to: Path,
+    use_tqdm: bool = False,
+):
+    model = SentenceTransformer(
+        "sentence-transformers/average_word_embeddings_glove.6B.300d"
+    )
+    # Create a dictionary to store embeddings for each entity
+    entity_embeddings = {}
+    # Use tqdm for progress tracking
+    if use_tqdm:
+        pairs_iterator = tqdm(pairs, total=len(pairs))
+    else:
+        pairs_iterator = pairs
+
+    for label, e0, e1 in pairs_iterator:
+        embedding_e0 = model.encode(e0.value_string())
+        embedding_e1 = model.encode(e1.value_string())
+        # Store embeddings in the dictionary
+        entity_embeddings[e0.id] = embedding_e0
+        entity_embeddings[e1.id] = embedding_e1
+
+    # Serialize embeddings to disk using pickle
+    with open(save_to, "wb") as f:
+        pickle.dump(entity_embeddings, f)
+
+
+def run_all(datasets=DATASET_NAMES, compute_sim=True, compute_emb=True):
     fnames = ["test.csv", "train.csv", "valid.csv"]
     root_folder = Path(
         "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
@@ -96,18 +126,23 @@ def run_all(datasets=DATASET_NAMES):
     save_to.mkdir(parents=True, exist_ok=True)
     for folder in [root_folder / dataset for dataset in datasets]:
         dataset = folder.parts[-1]
-        result_path = save_to / f"{dataset}-sim.csv"
-        if result_path.exists():
-            continue
         print("Load Dataset:", dataset)
         pairs = load_benchmark([folder / fname for fname in fnames], use_tqdm=True)
-        print("Similiarities on Dataset:", dataset)
-        s = similarities(pairs, use_tqdm=True)
-        s.to_csv(result_path, index=False)
+        if compute_sim:
+            result_path = save_to / f"{dataset}-sim.csv"
+            print("Similiarities on Dataset:", dataset)
+            s = similarities(pairs, use_tqdm=True)
+            s.to_csv(result_path, index=False)
+        if compute_emb:
+            print("Embeddings on Dataset:", dataset)
+            result_path = folder / "embeddings.pkl"
+            if result_path.exists():
+                continue
+            compute_embeddings(pairs, result_path, True)
 
 
 if __name__ == "__main__":
     ds = DATASET_NAMES
     # takes too long
     ds.remove("textual_company")
-    run_all(ds)
+    run_all(ds, compute_sim=False)

@@ -31,7 +31,7 @@ class OrderedEntity(OrderedDict):
         self.uri = uri
 
     # make hashable
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.id)
 
     def tokens(self, include_keys=False, return_set=True):
@@ -42,6 +42,9 @@ class OrderedEntity(OrderedDict):
         vals = " ".join(it).lower()
         toks = filter(None, re.split("[\\W_]", vals))
         return set(toks) if return_set else list(toks)
+
+    def value_string(self) -> str:
+        return " ".join(str(value) for value in self.values())
 
 
 def tokens(
