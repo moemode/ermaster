@@ -18,7 +18,7 @@ def count_miss_classifications(similarities: pd.DataFrame, name: str):
 
 if __name__ == "__main__":
     # Specify the path to the CSV file
-    file_paths = Path("/home/v/coding/ermaster/eval").glob("*-sim.csv")
+    file_paths = Path("/home/v/coding/ermaster/eval").glob("*-allsim.csv")
     datasets = dict()
     # Define a list to store the data
     data_list = []
@@ -26,7 +26,14 @@ if __name__ == "__main__":
         # Read the CSV file into a DataFrame
         ds = f.stem.split("-")[0]
         s = pd.read_csv(f)
-        similarity_columns = ["jaccard", "overlap", "mongeelkan", "genjaccard"]
+        similarity_columns = [
+            "jaccard",
+            "overlap",
+            "mongeelkan",
+            "genjaccard",
+            "cosine_similarity",
+            "euclidean_sim",
+        ]
         # Create a dictionary to store the data for each similarity column
         data_dict = {}
         for name in similarity_columns:
