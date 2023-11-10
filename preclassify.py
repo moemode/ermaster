@@ -40,22 +40,33 @@ def euclidean_sim(vector1, vector2):
 
 
 def cosine_sim(vector1, vector2):
-    return np.dot(vector1, vector2) / (
-        np.linalg.norm(vector1) * np.linalg.norm(vector2)
-    )
+    norm1 = np.linalg.norm(vector1)
+    norm2 = np.linalg.norm(vector2)
+    if norm1 == 0 and norm2 == 0:
+        # Handle the case where both vectors have zero norm
+        return np.nan
+    if norm1 == 0 or norm2 == 0:
+        # Handle the case where one of the vectors has zero norm
+        return 0.0
+    return np.dot(vector1, vector2) / (norm1 * norm2)
 
 
-similarity_functions = (
+set_sim_functions = (
     ("jaccard", Jaccard().get_raw_score),
     ("overlap", OverlapCoefficient().get_raw_score),
-    ("moneelkan", MongeElkan().get_raw_score),
+    ("mongeelkan", MongeElkan().get_raw_score),
     ("genjaccard", GeneralizedJaccard().get_raw_score),
+)
+
+fast_set_sim_functions = (
+    ("jaccard", Jaccard().get_raw_score),
+    ("overlap", OverlapCoefficient().get_raw_score),
 )
 
 
 def similarities(
     pairs: list[tuple[bool, OrderedEntity, OrderedEntity]],
-    similarity_functions=similarity_functions,
+    similarity_functions=set_sim_functions,
     use_tqdm: bool = False,
 ) -> pd.DataFrame:
     """
@@ -157,61 +168,53 @@ def compute_embeddings(
         pickle.dump(entity_embeddings, f)
 
 
-def run_all(
-    datasets=DATASET_NAMES,
-    set_sim=similarity_functions,
+def dataset_similarities(
+    dataset,
+    folder,
+    set_sim=set_sim_functions,
     compute_emb=True,
     emb_sim=(cosine_sim, euclidean_sim),
 ):
     fnames = ["test.csv", "train.csv", "valid.csv"]
-    root_folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
-    )
     save_to = Path("eval")
     save_to.mkdir(parents=True, exist_ok=True)
-    for folder in [root_folder / dataset for dataset in datasets]:
-        dataset = folder.parts[-1]
-        print("Load Dataset:", dataset)
-        pairs = load_benchmark([folder / fname for fname in fnames], use_tqdm=True)
-        result_path_set_sim = save_to / f"{dataset}-sim.csv"
-        if set_sim and not result_path_set_sim.exists():
-            print("Similiarities on Dataset:", dataset)
-            sims = similarities(pairs, set_sim, use_tqdm=True)
-            sims.to_csv(result_path_set_sim, index=False)
-        embedding_path = folder / "embeddings.pkl"
-        if compute_emb and not embedding_path.exists():
-            print("Embeddings on Dataset:", dataset)
-            compute_embeddings(pairs, embedding_path, True)
-        result_path_emb_sim = save_to / f"{dataset}-embsim.csv"
-        if emb_sim:  # and not result_path_emb_sim.exists():
-            s = embedding_similarities(pairs, embedding_path, emb_sim, True)
-            s.to_csv(result_path_emb_sim, index=False)
-        # Combine set similarities and embedding similarities if both are computed
-        if set_sim and emb_sim:
-            sims = pd.read_csv(result_path_set_sim)
-            emb_sims = pd.read_csv(result_path_emb_sim)
-            result_path_all_sim = save_to / f"{dataset}-allsim.csv"
-            if sims is not None and emb_sims is not None:
-                all_sims = pd.merge(
-                    sims, emb_sims, on=["table1.id", "table2.id", "label"]
-                )
-                all_sims.to_csv(result_path_all_sim, index=False)
-            else:
-                print(
-                    f"Missing set similarities or embedding similarities for {dataset}"
-                )
+    dataset = folder.parts[-1]
+    print("Load Dataset:", dataset)
+    pairs = load_benchmark([folder / fname for fname in fnames], use_tqdm=True)
+    result_path_set_sim = save_to / f"{dataset}-sim.csv"
+    if set_sim and not result_path_set_sim.exists():
+        print("Similiarities on Dataset:", dataset)
+        sims = similarities(pairs, set_sim, use_tqdm=True)
+        sims.to_csv(result_path_set_sim, index=False)
+    embedding_path = folder / "embeddings.pkl"
+    if compute_emb and not embedding_path.exists():
+        print("Embeddings on Dataset:", dataset)
+        compute_embeddings(pairs, embedding_path, True)
+    result_path_emb_sim = save_to / f"{dataset}-embsim.csv"
+    if emb_sim:  # and not result_path_emb_sim.exists():
+        print("Embedding similarities on Dataset:", dataset)
+        s = embedding_similarities(pairs, embedding_path, emb_sim, True)
+        s.to_csv(result_path_emb_sim, index=False)
+    # Combine set similarities and embedding similarities if both are computed
+    if set_sim and emb_sim:
+        sims = pd.read_csv(result_path_set_sim)
+        emb_sims = pd.read_csv(result_path_emb_sim)
+        result_path_all_sim = save_to / f"{dataset}-allsim.csv"
+        if sims is not None and emb_sims is not None:
+            all_sims = pd.merge(sims, emb_sims, on=["table1.id", "table2.id", "label"])
+            all_sims.to_csv(result_path_all_sim, index=False)
+        else:
+            print(f"Missing set similarities or embedding similarities for {dataset}")
 
 
 if __name__ == "__main__":
-    # ds = DATASET_NAMES
-    # takes too long
-    # ds.remove("textual_company")
-    ds = ["textual_company"]
-    run_all(
-        ds,
-        (
-            ("jaccard", Jaccard().get_raw_score),
-            ("overlap", OverlapCoefficient().get_raw_score),
-        ),
-        True,
+    root_folder = Path(
+        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
     )
+    for dataset, folder in [
+        (dataset, root_folder / dataset) for dataset in DATASET_NAMES
+    ]:
+        set_sim = set_sim_functions
+        if dataset == "textual_company":
+            set_sim = fast_set_sim_functions
+        dataset_similarities(dataset, folder, set_sim)
