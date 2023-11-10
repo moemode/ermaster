@@ -79,7 +79,7 @@ def get_matches(N: int) -> List[Any]:
     return res
 
 
-def get_entity_by_id(id: int, table: str) -> Optional[Entity]:
+def get_entity_by_id(id: int, table: str) -> Entity:
     conn = sqlite3.connect(DBFILE)
     cursor = conn.cursor()
     # Define the SQL query to retrieve an entry by its id
@@ -91,7 +91,7 @@ def get_entity_by_id(id: int, table: str) -> Optional[Entity]:
         kv = json.loads(kv_json)
         return Entity(id, uri, kv)
     else:
-        return None
+        raise ValueError(f"Entity with id {id} not found in table {table}")
 
 
 def get_random_matches(n: int):
@@ -101,3 +101,24 @@ def get_random_matches(n: int):
     random_matches = cursor.fetchall()
     conn.close()
     return random_matches
+
+
+def is_match(id0: int, id1: int) -> bool:
+    conn = sqlite3.connect(DBFILE)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT COUNT(*) FROM dbpedia_matches WHERE id0 = ? AND id1 = ?", (id0, id1)
+    )
+    match_count = cursor.fetchone()[0]
+    conn.close()
+
+    return match_count > 0
+
+
+def get_number_of_entries(table: str) -> int:
+    conn = sqlite3.connect(DBFILE)
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT COUNT(*) FROM {table}")
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count
