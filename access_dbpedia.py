@@ -47,11 +47,7 @@ class OrderedEntity(OrderedDict):
         return " ".join(str(value) for value in self.values())
 
 
-def tokens(
-    e: Entity,
-    include_keys=False,
-    return_set=True,
-) -> Set[str] | List[str]:
+def to_str(e: Entity, include_keys=False) -> str:
     order = e.order
     if order is None:
         order = sorted(e.keys())
@@ -59,7 +55,15 @@ def tokens(
         it = (f"{key} {e[key]}" for key in order)
     else:
         it = (e[key] for key in order)
-    vals = " ".join(it).lower()
+    return " ".join(it).lower()
+
+
+def tokens(
+    e: Entity,
+    include_keys=False,
+    return_set=True,
+) -> Set[str] | List[str]:
+    vals = to_str(e, include_keys)
     toks = filter(None, re.split("[\\W_]", vals))
     return set(toks) if return_set else list(toks)
 

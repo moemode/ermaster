@@ -32,12 +32,12 @@ def block_statistics(blocks: Dict[str, Set[int]]):
 
 
 def clean_token_blocking(
-    entities0: Set[Entity], entities1: Set[Entity]
+    entities0: Set[Entity], entities1: Set[Entity], include_keys=False
 ) -> Dict[str, tuple[Set[int], Set[int]]]:
     blocks: Dict[str, tuple[Set[int], Set[int]]] = {}
     for dataset_id, entities in [(0, entities0), (1, entities1)]:
         for e in entities:
-            for t in tokens(e):
+            for t in tokens(e, include_keys):
                 blocks.setdefault(t, (set(), set()))
                 blocks[t][dataset_id].add(e.id)
     for t in list(blocks.keys()):
