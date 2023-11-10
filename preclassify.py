@@ -39,21 +39,23 @@ def euclidean_sim(vector1, vector2):
     return 1 / (1 + euclidean(vector1, vector2))
 
 
-def cosine(vector1, vector2):
+def cosine_sim(vector1, vector2):
     return np.dot(vector1, vector2) / (
         np.linalg.norm(vector1) * np.linalg.norm(vector2)
     )
 
 
+similarity_functions = (
+    ("jaccard", Jaccard().get_raw_score),
+    ("overlap", OverlapCoefficient().get_raw_score),
+    ("moneelkan", MongeElkan().get_raw_score),
+    ("genjaccard", GeneralizedJaccard().get_raw_score),
+)
+
+
 def similarities(
     pairs: list[tuple[bool, OrderedEntity, OrderedEntity]],
-    sim_function=[
-        Jaccard().get_raw_score,
-        OverlapCoefficient().get_raw_score,
-        MongeElkan().get_raw_score,
-        GeneralizedJaccard().get_raw_score,
-    ],
-    sim_names=["jaccard", "overlap", "mongeelkan", "genjaccard"],
+    similarity_functions=similarity_functions,
     use_tqdm: bool = False,
 ) -> pd.DataFrame:
     """
@@ -77,6 +79,7 @@ def similarities(
     The function calculates the similarity between pairs of entities. It assumes that the first entity in each pair
     is the entity from the first dataset, and the second entity in each pair is the entity from the second dataset.
     """
+    sim_names, sim_function = zip(*similarity_functions)
     similarity_scores = []
     # Use tqdm for progress tracking
     if use_tqdm:
@@ -98,6 +101,7 @@ def similarities(
 def embedding_similarities(
     pairs: list[tuple[bool, OrderedEntity, OrderedEntity]],
     embeddings_path: Path,
+    sim_functions=[cosine_sim, euclidean_sim],
     use_tqdm: bool = False,
 ) -> pd.DataFrame:
     # Load embeddings from disk
@@ -115,19 +119,13 @@ def embedding_similarities(
         embedding_e1 = entity_embeddings.get(e1.id)
         if embedding_e0 is None or embedding_e1 is None:
             raise ValueError("Missing embedding")
-        cosine_similarity = cosine(embedding_e0, embedding_e1)
-        # Compute Euclidean distance
-        euclidean_distance = euclidean_sim(embedding_e0, embedding_e1)
-        # Append the similarity scores to the result list
-        similarity_scores.append(
-            (e0.id, e1.id, label, cosine_similarity, euclidean_distance)
-        )
+        sims = (f(embedding_e0, embedding_e1) for f in sim_functions)
+        similarity_scores.append((e0.id, e1.id, label, *sims))
     columns = [
         "table1.id",
         "table2.id",
         "label",
-        "cosine_similarity",
-        "euclidean_sim",
+        *(f.__name__ for f in sim_functions),
     ]
     df = pd.DataFrame(similarity_scores, columns=columns)
     return df
@@ -161,9 +159,9 @@ def compute_embeddings(
 
 def run_all(
     datasets=DATASET_NAMES,
-    compute_set_similarities=True,
+    set_sim=similarity_functions,
     compute_emb=True,
-    compute_emb_similarities=True,
+    emb_sim=(cosine_sim, euclidean_sim),
 ):
     fnames = ["test.csv", "train.csv", "valid.csv"]
     root_folder = Path(
@@ -176,20 +174,20 @@ def run_all(
         print("Load Dataset:", dataset)
         pairs = load_benchmark([folder / fname for fname in fnames], use_tqdm=True)
         result_path_set_sim = save_to / f"{dataset}-sim.csv"
-        if compute_set_similarities and not result_path_set_sim.exists():
+        if set_sim and not result_path_set_sim.exists():
             print("Similiarities on Dataset:", dataset)
-            sims = similarities(pairs, use_tqdm=True)
+            sims = similarities(pairs, set_sim, use_tqdm=True)
             sims.to_csv(result_path_set_sim, index=False)
         embedding_path = folder / "embeddings.pkl"
         if compute_emb and not embedding_path.exists():
             print("Embeddings on Dataset:", dataset)
             compute_embeddings(pairs, embedding_path, True)
         result_path_emb_sim = save_to / f"{dataset}-embsim.csv"
-        if compute_emb_similarities:  # and not result_path_emb_sim.exists():
-            s = embedding_similarities(pairs, embedding_path, True)
+        if emb_sim:  # and not result_path_emb_sim.exists():
+            s = embedding_similarities(pairs, embedding_path, emb_sim, True)
             s.to_csv(result_path_emb_sim, index=False)
         # Combine set similarities and embedding similarities if both are computed
-        if compute_set_similarities and compute_emb_similarities:
+        if set_sim and emb_sim:
             sims = pd.read_csv(result_path_set_sim)
             emb_sims = pd.read_csv(result_path_emb_sim)
             result_path_all_sim = save_to / f"{dataset}-allsim.csv"
@@ -205,7 +203,15 @@ def run_all(
 
 
 if __name__ == "__main__":
-    ds = DATASET_NAMES
+    # ds = DATASET_NAMES
     # takes too long
-    ds.remove("textual_company")
-    run_all(ds)
+    # ds.remove("textual_company")
+    ds = ["textual_company"]
+    run_all(
+        ds,
+        (
+            ("jaccard", Jaccard().get_raw_score),
+            ("overlap", OverlapCoefficient().get_raw_score),
+        ),
+        True,
+    )

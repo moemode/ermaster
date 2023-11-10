@@ -31,13 +31,16 @@ if __name__ == "__main__":
             "overlap",
             "mongeelkan",
             "genjaccard",
-            "cosine_similarity",
+            "cosine_sim",
             "euclidean_sim",
         ]
         # Create a dictionary to store the data for each similarity column
         data_dict = {}
         for name in similarity_columns:
             # Calculate miss classifications for each similarity column
+            # check if name exists in dataframe
+            if name not in s.columns:
+                continue
             data = count_miss_classifications(s, name)
             for x, y in data:
                 data_list.append([ds, name, x, y])
