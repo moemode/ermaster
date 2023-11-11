@@ -47,7 +47,7 @@ if __name__ == "__main__":
             data_dict[name] = data
         datasets[ds] = data_dict
         # Create a graph using Matplotlib with different lines for each dataset
-        plt.figure(figsize=(10, 6))
+        fig = plt.figure(figsize=(10, 6))
         for name, data in data_dict.items():
             x_values, y_values = zip(*data)
             plt.plot(x_values, y_values, label=f"{name}")
@@ -56,6 +56,7 @@ if __name__ == "__main__":
         plt.title(f"Discarding in order of similarity on {ds}")
         plt.legend()
         plt.grid(True)
+        plt.close(fig)
         plt.savefig(f"figures/{ds}-miss-classifications.png")
     df = pd.DataFrame(
         data_list, columns=["dataset", "measure", "n_discarded", "n_false_negatives"]

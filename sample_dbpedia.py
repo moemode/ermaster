@@ -100,14 +100,14 @@ def to_benchmark_csv(
     # Create a Pandas DataFrame
     df = pd.DataFrame(data, columns=columns)
     # Write the DataFrame to a CSV file
-    df.to_csv(path, index=False)
+    df.to_csv(path, index=True, index_label="_id")
 
 
 if __name__ == "__main__":
     pairs = sample_dbpedia(10000, 0.05, include_keys=True)
     print(len(pairs))
     dbpedia_folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/dbpedia10k"
+        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/dbpedia10k-2"
     )
     dbpedia_folder.mkdir(parents=True, exist_ok=True)
     to_benchmark_csv(dbpedia_folder / "train.csv", pairs, include_keys=True)

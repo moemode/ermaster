@@ -28,6 +28,7 @@ DATASET_NAMES = [
     "structured_beer",
     "structured_fodors_zagats",
     "textual_abt_buy",
+    "dbpedia10k-2",
 ]
 
 
@@ -180,7 +181,9 @@ def dataset_similarities(
     save_to.mkdir(parents=True, exist_ok=True)
     dataset = folder.parts[-1]
     print("Load Dataset:", dataset)
-    pairs = load_benchmark([folder / fname for fname in fnames], use_tqdm=True)
+    pairs = load_benchmark(
+        [folder / fname for fname in fnames if (folder / fname).exists()], use_tqdm=True
+    )
     result_path_set_sim = save_to / f"{dataset}-sim.csv"
     if set_sim and not result_path_set_sim.exists():
         print("Similiarities on Dataset:", dataset)
@@ -191,15 +194,15 @@ def dataset_similarities(
         print("Embeddings on Dataset:", dataset)
         compute_embeddings(pairs, embedding_path, True)
     result_path_emb_sim = save_to / f"{dataset}-embsim.csv"
-    if emb_sim:  # and not result_path_emb_sim.exists():
+    if emb_sim and not result_path_emb_sim.exists():
         print("Embedding similarities on Dataset:", dataset)
         s = embedding_similarities(pairs, embedding_path, emb_sim, True)
         s.to_csv(result_path_emb_sim, index=False)
     # Combine set similarities and embedding similarities if both are computed
-    if set_sim and emb_sim:
+    result_path_all_sim = save_to / f"{dataset}-allsim.csv"
+    if set_sim and emb_sim and not result_path_all_sim.exists():
         sims = pd.read_csv(result_path_set_sim)
         emb_sims = pd.read_csv(result_path_emb_sim)
-        result_path_all_sim = save_to / f"{dataset}-allsim.csv"
         if sims is not None and emb_sims is not None:
             all_sims = pd.merge(sims, emb_sims, on=["table1.id", "table2.id", "label"])
             all_sims.to_csv(result_path_all_sim, index=False)
@@ -208,13 +211,12 @@ def dataset_similarities(
 
 
 if __name__ == "__main__":
+    datasets = DATASET_NAMES
     root_folder = Path(
         "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
     )
-    for dataset, folder in [
-        (dataset, root_folder / dataset) for dataset in DATASET_NAMES
-    ]:
+    for dataset, folder in [(dataset, root_folder / dataset) for dataset in datasets]:
         set_sim = set_sim_functions
-        if dataset == "textual_company":
+        if dataset in ["textual_company", "dbpedia10k-2"]:
             set_sim = fast_set_sim_functions
         dataset_similarities(dataset, folder, set_sim)
