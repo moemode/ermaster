@@ -176,14 +176,10 @@ def dataset_similarities(
     compute_emb=True,
     emb_sim=(cosine_sim, euclidean_sim),
 ):
-    fnames = ["test.csv", "train.csv", "valid.csv"]
     save_to = Path("eval")
     save_to.mkdir(parents=True, exist_ok=True)
     dataset = folder.parts[-1]
-    print("Load Dataset:", dataset)
-    pairs = load_benchmark(
-        [folder / fname for fname in fnames if (folder / fname).exists()], use_tqdm=True
-    )
+    pairs = load_benchmark(folder, use_tqdm=True)
     result_path_set_sim = save_to / f"{dataset}-sim.csv"
     if set_sim and not result_path_set_sim.exists():
         print("Similiarities on Dataset:", dataset)

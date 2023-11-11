@@ -43,7 +43,7 @@ def load_into_df(fpaths: List[Path]) -> pd.DataFrame:
 
 
 def load_benchmark(
-    fpaths: List[Path], use_tqdm=False
+    folder: Path, use_tqdm=False
 ) -> List[Tuple[bool, OrderedEntity, OrderedEntity]]:
     """
     Load benchmark data from CSV files and return a list of tuples representing entity pairs.
@@ -71,6 +71,8 @@ def load_benchmark(
         # Process entity pairs and their labels
         ...
     """
+    fnames = ["test.csv", "train.csv", "valid.csv"]
+    fpaths = [folder / fname for fname in fnames if (folder / fname).exists()]
     # Read the CSV file into a Pandas DataFrame
     df = load_into_df(fpaths)
     # Iterate over the rows of the DataFrame
@@ -85,7 +87,9 @@ def load_benchmark(
     table2_entities = []
     pairs: List[Tuple[bool, OrderedEntity, OrderedEntity]] = []
     if use_tqdm:
-        rows_iterator = tqdm(df.iterrows(), total=len(df))
+        rows_iterator = tqdm(
+            df.iterrows(), total=len(df), desc=f"Load dataset in {folder}"
+        )
     else:
         rows_iterator = df.iterrows()
     for _, row in rows_iterator:
