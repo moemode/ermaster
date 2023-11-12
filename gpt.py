@@ -2,7 +2,7 @@ import os
 import openai
 from pathlib import Path
 import tiktoken
-from prompt_creation import (
+from prompts import (
     get_targets,
     create_prompts,
     save_prompts,
@@ -70,7 +70,7 @@ def get_completions_batch(prompts, truths, model_params):
         batch_prompts = prompts[start:end]
         batch_truths = truths[start:end]
         r = completions_with_backoff(prompt=batch_prompts, **model_params)
-        total_tokens += r["usage"]["total_tokens"] 
+        total_tokens += r["usage"]["total_tokens"]
         for choice in r.choices:
             yield {
                 "p": batch_prompts[choice.index],
@@ -83,21 +83,19 @@ def get_completions_batch(prompts, truths, model_params):
 
 
 def run_test(
-    dataset: Path,
+    prompt_data: Path,
     model_params: Dict,
     prompt_function: Optional[Callable] = simple_postfix,
     description: Optional[str] = None,
 ):
     openai.api_key = os.getenv("OPENAI_API_KEY")
-    dataset_name = dataset.stem
-    prompts = create_prompts(dataset, simple_postfix)
-    targets = get_targets(dataset)
-    save_prompts(dataset, prompt_function)
+    dataset = prompt_data.stem
+    prompts = create_prompts(prompt_data, simple_postfix)
+    targets = get_targets(prompt_data)
+    save_prompts(prompt_data, prompt_function)
     model = model_params["model"]
     run_path = numbered_path(
-        Path(
-            f"runs/{dataset_name}_{prompt_function.__name__}_{model}_{description}.json"
-        )
+        Path(f"runs/{dataset}_{prompt_function.__name__}_{model}_{description}.json")
     )
     with open(run_path, "w+") as f:
         write_json_iter(

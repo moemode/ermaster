@@ -1,6 +1,17 @@
 import json
 from pathlib import Path
 from typing import Dict, Iterable
+from dataclasses import dataclass
+
+from preclassify import SAMPLED_DATASET_NAMES
+
+
+@dataclass
+class Prompt:
+    prompt_string: str
+    id0: int
+    id1: int
+    truth: bool
 
 
 DOMAIN_SIMPLE = "Do the two {entity_type_plural} match?"
@@ -11,15 +22,15 @@ FORCE = "Answer with 'Yes' if they do and 'No' if they do not."
 DOMAIN_PAIR = "{entity_type} 1: '{e0}'\n{entity_type} 2: '{e1}'\n"
 GENERAL_PAIR = "Entity 1: '{e0}'\nEntity 2: '{e1}'\n"
 
-TASK_PREFIXES_PRODUCT = {
-    "domain-simple-free": f"{DOMAIN_SIMPLE}\n",
-    "domain-complex-free": f"{DOMAIN_COMPLEX}\n",
-    "domain-simple-force": f"{DOMAIN_SIMPLE} {FORCE}\n",
-    "domain-complex-force": f"{DOMAIN_COMPLEX} {FORCE}\n",
-    "general-simple-free": f"{GENERAL_SIMPLE}\n",
-    "general-complex-free": f"{GENERAL_COMPLEX}\n",
-    "general-simple-force": f"{GENERAL_SIMPLE} {FORCE}\n",
-    "general-complex-force": f"{GENERAL_COMPLEX} {FORCE}\n",
+TASK_PREFIXES = {
+    "domain_simple_free": f"{DOMAIN_SIMPLE}\n",
+    "domain_complex_free": f"{DOMAIN_COMPLEX}\n",
+    "domain_simple_force": f"{DOMAIN_SIMPLE} {FORCE}\n",
+    "domain_complex_force": f"{DOMAIN_COMPLEX} {FORCE}\n",
+    "general_simple_free": f"{GENERAL_SIMPLE}\n",
+    "general_complex_free": f"{GENERAL_COMPLEX}\n",
+    "general_simple_force": f"{GENERAL_SIMPLE} {FORCE}\n",
+    "general_complex_force": f"{GENERAL_COMPLEX} {FORCE}\n",
 }
 
 
@@ -30,14 +41,14 @@ Answer with 'Yes' if they do and 'No' if they do not.
 """
 
 
-def prompts(
+def prompt_dict(
     prompt_type: str,
     prompt_data: Iterable[Dict],
     entity_type: str = "",
     entity_type_plural: str = "",
 ) -> Dict:
     is_domain = prompt_type.startswith("domain")
-    prefix = TASK_PREFIXES_PRODUCT[prompt_type].format(
+    prefix = TASK_PREFIXES[prompt_type].format(
         entity_type_plural=entity_type_plural,
     )
     pair_str = DOMAIN_PAIR if is_domain else GENERAL_PAIR
@@ -54,12 +65,12 @@ def prompts(
     return {"prefix": prefix, "pairs": pairs}
 
 
-def prompt_data_to_prompts(
+def prompt_data_to_prompt_dict(
     prompt_data_fp: Path,
     prompt_type: str,
     entity_type: str = "",
     entity_type_plural: str = "",
-):
+) -> Path:
     if prompt_type.startswith("domain") and (
         entity_type == "" or entity_type_plural == ""
     ):
@@ -70,21 +81,31 @@ def prompt_data_to_prompts(
     promptFolder.mkdir(parents=True, exist_ok=True)
     with open(prompt_data_fp, "r") as f:
         data = json.load(f)
-        d = prompts(prompt_type, data, entity_type, entity_type_plural)
+        d = prompt_dict(prompt_type, data, entity_type, entity_type_plural)
+        d["dataset"] = prompt_data_fp.stem
         outpath = (
             promptFolder / f"{prompt_data_fp.stem}_{prompt_type}{prompt_data_fp.suffix}"
         )
-        with open(outpath, "w+") as f:
+        with open(outpath, "w") as f:
             json.dump(d, f, indent=2)
+    return outpath
+
+
+def prompt_file_to_prompts(prompt_file: Path) -> Iterable[Prompt]:
+    with open(prompt_file, "r") as f:
+        prompt_dict = json.load(f)
+        prefix = prompt_dict["prefix"]
+        for pair in prompt_dict["pairs"]:
+            yield Prompt(
+                prefix + pair["p"], int(pair["id0"]), int(pair["id1"]), pair["t"]
+            )
 
 
 if __name__ == "__main__":
-    prompt_data_to_prompts(
-        Path("prompt_data/structured_fodors_zagats_1250.json"),
-        "domain-simple-free",
-        "restaurant",
-        "restaurants",
-    )
+    for dataset in SAMPLED_DATASET_NAMES:
+        prompt_data_to_prompt_dict(
+            Path("prompt_data") / f"{dataset}.json", "general_complex_force"
+        )
 
 """
 def prompts_targets(file: Path, pattern=SIMPLE_PROMPT_POSTFIX) -> List[str]:

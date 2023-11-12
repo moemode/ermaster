@@ -14,7 +14,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 
 
-DATASET_NAMES = [
+ORIGINAL_DATASET_NAMES = [
     # "dirty_dblp_acm",
     # "dirty_walmart_amazon",
     # "dirty_itunes_amazon",
@@ -30,6 +30,9 @@ DATASET_NAMES = [
     "textual_abt_buy",
     "dbpedia10k-2",
 ]
+SAMPLED_DATASET_NAMES = [dataset + "_1250" for dataset in ORIGINAL_DATASET_NAMES]
+
+DATASET_NAMES = ORIGINAL_DATASET_NAMES + SAMPLED_DATASET_NAMES
 
 
 def euclidean(vector1, vector2):
