@@ -7,7 +7,7 @@ from tqdm import tqdm
 from pathlib import Path
 
 
-def write_json_iter(it, N, fh):
+def write_json_iter(it, fh, N=None):
     print("[", file=fh)
     for n, rec in tqdm(enumerate(it), total=N):
         if n > 0:

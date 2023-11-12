@@ -57,7 +57,7 @@ def prompt_dict(
         pairs.append(
             {
                 "id0": pair["id0"],
-                "id1:": pair["id1"],
+                "id1": pair["id1"],
                 "p": pair_str.format(**pair, entity_type=entity_type),
                 "t": pair["t"],
             }
@@ -91,14 +91,10 @@ def prompt_data_to_prompt_dict(
     return outpath
 
 
-def prompt_file_to_prompts(prompt_file: Path) -> Iterable[Prompt]:
-    with open(prompt_file, "r") as f:
-        prompt_dict = json.load(f)
-        prefix = prompt_dict["prefix"]
-        for pair in prompt_dict["pairs"]:
-            yield Prompt(
-                prefix + pair["p"], int(pair["id0"]), int(pair["id1"]), pair["t"]
-            )
+def prompt_dict_to_prompts(prompt_dict: Dict) -> Iterable[Prompt]:
+    prefix = prompt_dict["prefix"]
+    for pair in prompt_dict["pairs"]:
+        yield Prompt(prefix + pair["p"], int(pair["id0"]), int(pair["id1"]), pair["t"])
 
 
 if __name__ == "__main__":

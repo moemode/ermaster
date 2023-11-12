@@ -10,7 +10,8 @@ from py_stringmatching import (
 import pandas as pd
 from load_benchmark import load_benchmark
 from tqdm import tqdm
-from sentence_transformers import SentenceTransformer
+
+# from sentence_transformers import SentenceTransformer
 import numpy as np
 
 
