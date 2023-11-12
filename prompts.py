@@ -1,0 +1,124 @@
+import json
+from pathlib import Path
+from typing import Dict, Iterable
+
+
+DOMAIN_SIMPLE = "Do the two {entity_type_plural} match?"
+DOMAIN_COMPLEX = "Do the two {entity_type_plural} refer to the same real-world product?"
+GENERAL_SIMPLE = "Do the two entity descriptions match?"
+GENERAL_COMPLEX = "Do the two entity descriptions refer to the same real-world entity?"
+FORCE = "Answer with 'Yes' if they do and 'No' if they do not."
+DOMAIN_PAIR = "{entity_type} 1: '{e0}'\n{entity_type} 2: '{e1}'\n"
+GENERAL_PAIR = "Entity 1: '{e0}'\nEntity 2: '{e1}'\n"
+
+TASK_PREFIXES_PRODUCT = {
+    "domain-simple-free": f"{DOMAIN_SIMPLE}\n",
+    "domain-complex-free": f"{DOMAIN_COMPLEX}\n",
+    "domain-simple-force": f"{DOMAIN_SIMPLE} {FORCE}\n",
+    "domain-complex-force": f"{DOMAIN_COMPLEX} {FORCE}\n",
+    "general-simple-free": f"{GENERAL_SIMPLE}\n",
+    "general-complex-free": f"{GENERAL_COMPLEX}\n",
+    "general-simple-force": f"{GENERAL_SIMPLE} {FORCE}\n",
+    "general-complex-force": f"{GENERAL_COMPLEX} {FORCE}\n",
+}
+
+
+SIMPLE_PROMPT_POSTFIX = """Do the two entity descriptions match?
+Entity 1: '{e0}'
+Entity 2: '{e1}'
+Answer with 'Yes' if they do and 'No' if they do not.
+"""
+
+
+def prompts(
+    prompt_type: str,
+    prompt_data: Iterable[Dict],
+    entity_type: str = "",
+    entity_type_plural: str = "",
+) -> Dict:
+    is_domain = prompt_type.startswith("domain")
+    prefix = TASK_PREFIXES_PRODUCT[prompt_type].format(
+        entity_type_plural=entity_type_plural,
+    )
+    pair_str = DOMAIN_PAIR if is_domain else GENERAL_PAIR
+    pairs = []
+    for pair in prompt_data:
+        pairs.append(
+            {
+                "id0": pair["id0"],
+                "id1:": pair["id1"],
+                "p": pair_str.format(**pair, entity_type=entity_type),
+                "t": pair["t"],
+            }
+        )
+    return {"prefix": prefix, "pairs": pairs}
+
+
+def prompt_data_to_prompts(
+    prompt_data_fp: Path,
+    prompt_type: str,
+    entity_type: str = "",
+    entity_type_plural: str = "",
+):
+    if prompt_type.startswith("domain") and (
+        entity_type == "" or entity_type_plural == ""
+    ):
+        raise ValueError(
+            "Prompt type is domain but entity type or entity type plural is empty."
+        )
+    promptFolder = Path("prompts")
+    promptFolder.mkdir(parents=True, exist_ok=True)
+    with open(prompt_data_fp, "r") as f:
+        data = json.load(f)
+        d = prompts(prompt_type, data, entity_type, entity_type_plural)
+        outpath = (
+            promptFolder / f"{prompt_data_fp.stem}_{prompt_type}{prompt_data_fp.suffix}"
+        )
+        with open(outpath, "w+") as f:
+            json.dump(d, f, indent=2)
+
+
+if __name__ == "__main__":
+    prompt_data_to_prompts(
+        Path("prompt_data/structured_fodors_zagats_1250.json"),
+        "domain-simple-free",
+        "restaurant",
+        "restaurants",
+    )
+
+"""
+def prompts_targets(file: Path, pattern=SIMPLE_PROMPT_POSTFIX) -> List[str]:
+    p = []
+    t = []
+    try:
+        with open(file, "r") as json_file:
+            data = json.load(json_file)
+            for element in data:
+                formatted_prompt = pattern.format(**element)
+                print(formatted_prompt)
+                p.append(formatted_prompt)
+                t.append(element["t"])
+        return p, t
+    except FileNotFoundError:
+        print(f"File not found: {file}")
+    except json.JSONDecodeError:
+        print(f"Error decoding JSON from file: {file}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+
+def get_targets(file: Path) -> List[str]:
+    t = []
+    try:
+        with open(file, "r") as json_file:
+            data = json.load(json_file)
+            for element in data:
+                t.append(element["t"])
+        return t
+    except FileNotFoundError:
+        print(f"File not found: {file}")
+    except json.JSONDecodeError:
+        print(f"Error decoding JSON from file: {file}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+"""

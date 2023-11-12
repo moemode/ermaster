@@ -17,7 +17,9 @@ def dataset_to_prompt_data(
     pairs = load_benchmark(folder, use_tqdm=True)
     data = []
     for truth, e0, e1 in pairs:
-        data.append({"t": truth, "e0": to_str(e0), "e1": to_str(e1)})
+        data.append(
+            {"t": truth, "id0": e0.id, "id1": e1.id, "e0": to_str(e0), "e1": to_str(e1)}
+        )
     with open(Path("prompt_data") / f"{dataset}.json", "w") as json_file:
         json.dump(data, json_file, indent=2)
 
