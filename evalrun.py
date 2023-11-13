@@ -1,8 +1,19 @@
 import json
 from pathlib import Path
 import numpy as np
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from utils import bernoulli_entropy
+from sklearn.metrics import (
+    precision_score,
+    recall_score,
+    f1_score,
+    accuracy_score,
+    confusion_matrix,
+)
+from utils import (
+    NumpyEncoder,
+    bernoulli_entropy,
+    negative_predictive_value,
+    positive_predicitive_value,
+)
 
 
 def read_run(run: Path):
@@ -26,28 +37,57 @@ def read_run(run: Path):
 
 def eval(run: Path):
     truths, predictions, entropies = (np.array(l) for l in read_run(run))
-    precision = precision_score(truths, predictions)
-    recall = recall_score(truths, predictions)
+    truths = truths.astype(bool)
+    prec = precision_score(truths, predictions)
+    rec = recall_score(truths, predictions)
     f1 = f1_score(truths, predictions)
-    accuracy = accuracy_score(truths, predictions)
+    acc = accuracy_score(truths, predictions)
+    # Calculate true positives (TP), true negatives (TN), false positives (FP), and false negatives (FN)
+    tp_ind = np.logical_and(truths, predictions)
+    tn_ind = np.logical_and(~truths, ~predictions)
+    fp_ind = np.logical_and(~truths, predictions)
+    fn_ind = np.logical_and(truths, ~predictions)
+
+    tp = np.sum(tp_ind)
+    tn = np.sum(tn_ind)
+    fp = np.sum(fp_ind)
+    fn = np.sum(fn_ind)
+
+    assert (tn, fp, fn, tp) == tuple(confusion_matrix(truths, predictions).ravel())
+
     correct = truths == predictions
     correct_entropies, wrong_entropies = entropies[correct], entropies[~correct]
+    tn_entropies = entropies[tn_ind]
+    fp_entropies = entropies[fp_ind]
+    fn_entropies = entropies[fn_ind]
+    tp_entropies = entropies[tp_ind]
     results = {
-        "Accuracy": accuracy,
-        "Precision": precision,
-        "Recall": recall,
+        "Accuracy": acc,
+        "Precision": prec,
+        "Recall": rec,
         "F1": f1,
+        "TP": tp,
+        "TN": tn,
+        "FP": fp,
+        "FN": fn,
+        "PPV": positive_predicitive_value(tp, fp),
+        "NPV": negative_predictive_value(tn, fn),
         "Correct Entropy": correct_entropies.mean(),
         "Wrong Entropy": wrong_entropies.mean(),
+        "TP Entropy": tp_entropies.mean(),
+        "TN Entropy": tn_entropies.mean(),
+        "FP Entropy": fp_entropies.mean(),
+        "FN Entropy": fn_entropies.mean(),
     }
+
     with open(Path("eval") / run.name, "w") as f:
-        json.dump(results, f, indent=2)
+        json.dump(results, f, indent=2, cls=NumpyEncoder)
     print(results)
 
 
 if __name__ == "__main__":
     eval(
         Path(
-            "/home/v/coding/ermaster/runs/beer_simple_gpt-3.5-turbo-instruct_1max_token_0.json"
+            "/home/v/coding/ermaster/runs/dbpedia10k-2_1250_general_complex_force_gpt-3.5-turbo-instruct_1max_token_0.json"
         )
     )

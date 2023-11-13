@@ -5,6 +5,7 @@ import openai
 import math
 from tqdm import tqdm
 from pathlib import Path
+import numpy as np
 
 
 def write_json_iter(it, fh, N=None):
@@ -71,3 +72,40 @@ def bernoulli_entropy(p):
         return 0  # Entropy is 0 if p is 0 or 1
     else:
         return -p * math.log2(p) - (1 - p) * math.log2(1 - p)
+
+
+def accuracy(tp, tn, fp, fn):
+    return (tp + tn) / (tp + tn + fp + fn)
+
+
+def recall(tp, fn):
+    return tp / (tp + fn)
+
+
+def precision(tn, fp):
+    return tn / (tn + fp)
+
+
+def positive_predicitive_value(tp, fp):
+    return tp / (tp + fp)
+
+
+def negative_predictive_value(tn, fn):
+    return tn / (tn + fn)
+
+
+def f1(tp, tn, fp, fn):
+    p = precision(tn, fp)
+    r = recall(tp, fn)
+    return 2 * p * r / (p + r)
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NumpyEncoder, self).default(obj)
