@@ -7,6 +7,7 @@ data/benchmark_datasets
 eval/structured*
 eval/textual*
 eval/bu
+eval/
 prompt_data
 prompts/
 runs/
