@@ -84,7 +84,7 @@ def prompt_data_to_prompt_dict(
         d = prompt_dict(prompt_type, data, entity_type, entity_type_plural)
         d["dataset"] = prompt_data_fp.stem
         outpath = (
-            promptFolder / f"{prompt_data_fp.stem}_{prompt_type}{prompt_data_fp.suffix}"
+            promptFolder / f"{prompt_data_fp.stem}-{prompt_type}{prompt_data_fp.suffix}"
         )
         with open(outpath, "w") as f:
             json.dump(d, f, indent=2)

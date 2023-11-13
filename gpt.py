@@ -33,7 +33,7 @@ def get_completions(prompts, targets, model_params):
         yield {"p": p, "t": t, "c": resp.choices[0].to_dict_recursive()}
 
 
-def num_tokens_from_string(string, model):
+def num_tokens_from_string(string: str, model: str):
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.encoding_for_model(model)
     num_tokens = len(encoding.encode(string))
@@ -96,8 +96,9 @@ def run_test(
     prompts = list(prompt_dict_to_prompts(prompt_dict))
     dataset = prompt_dict["dataset"]
     model = model_params["model"]
+    modelstr = model.replace("-", "_")
     run_path = numbered_path(
-        Path(f"runs/{prompt_file.stem}_{model}_{description}.json")
+        Path(f"runs/{prompt_file.stem}-{modelstr}-{description}.json")
     )
     with open(run_path, "w") as f:
         write_json_iter(get_completions_batch(prompts, model_params), f, len(prompts))
