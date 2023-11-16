@@ -12,7 +12,6 @@ from utils import (
     NumpyEncoder,
     bernoulli_entropy,
     negative_predictive_value,
-    positive_predicitive_value,
 )
 
 
@@ -70,7 +69,6 @@ def eval(run: Path):
         "TN": tn,
         "FP": fp,
         "FN": fn,
-        "PPV": positive_predicitive_value(tp, fp),
         "NPV": negative_predictive_value(tn, fn),
         "Correct Entropy": correct_entropies.mean(),
         "Wrong Entropy": wrong_entropies.mean(),
@@ -88,6 +86,6 @@ def eval(run: Path):
 if __name__ == "__main__":
     eval(
         Path(
-            "/home/v/coding/ermaster/runs/dbpedia10k-2_1250_general_complex_force_gpt-3.5-turbo-instruct_1max_token_0.json"
+            "/home/v/coding/ermaster/runs/dbpedia10k-2_1250_general_complex_force-gpt-3.5_turbo_instruct-1max_token_0.json"
         )
     )

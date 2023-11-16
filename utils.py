@@ -82,11 +82,7 @@ def recall(tp, fn):
     return tp / (tp + fn)
 
 
-def precision(tn, fp):
-    return tn / (tn + fp)
-
-
-def positive_predicitive_value(tp, fp):
+def precision(tp, fp):
     return tp / (tp + fp)
 
 
