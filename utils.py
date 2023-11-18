@@ -1,11 +1,13 @@
+import json
+import math
 import random
 import time
-import json
-import openai
-import math
-from tqdm import tqdm
 from pathlib import Path
+
 import numpy as np
+import openai
+import tiktoken
+from tqdm import tqdm
 
 
 def write_json_iter(it, fh, N=None):
@@ -105,3 +107,23 @@ class NumpyEncoder(json.JSONEncoder):
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
         return super(NumpyEncoder, self).default(obj)
+
+
+# Function to load JSON data from file
+def load_json_file(file_path):
+    with open(file_path, "r") as file:
+        data = json.load(file)
+    return data
+
+
+def num_tokens_from_string(string: str, model: str):
+    """Returns the number of tokens in a text string."""
+    if not hasattr(num_tokens_from_string, "cached_encodings"):
+        num_tokens_from_string.cached_encodings = {}
+    if model not in num_tokens_from_string.cached_encodings:
+        num_tokens_from_string.cached_encodings[model] = tiktoken.encoding_for_model(
+            model
+        )
+    encoding = num_tokens_from_string.cached_encodings[model]
+    num_tokens = len(encoding.encode(string))
+    return num_tokens

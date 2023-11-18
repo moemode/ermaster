@@ -1,14 +1,17 @@
-import os
-import openai
-from pathlib import Path
-import tiktoken
-from prompts import (
-    Prompt,
-    prompt_dict_to_prompts,
-)
 import json
+import os
+from pathlib import Path
 from typing import Dict, Optional
-from utils import retry_with_exponential_backoff, numbered_path, write_json_iter
+
+import openai
+
+from prompts import Prompt, prompt_dict_to_prompts
+from utils import (
+    num_tokens_from_string,
+    numbered_path,
+    retry_with_exponential_backoff,
+    write_json_iter,
+)
 
 PRICE_PER_1K_TOKENS_PROMPT = 0.002
 PRICE_PER_1K_TOKENS_COMPLETE = 0.002
@@ -31,13 +34,6 @@ def get_completions(prompts, targets, model_params):
     for p, t in zip(prompts, targets):
         resp = completions_with_backoff(prompt=p, **model_params)
         yield {"p": p, "t": t, "c": resp.choices[0].to_dict_recursive()}
-
-
-def num_tokens_from_string(string: str, model: str):
-    """Returns the number of tokens in a text string."""
-    encoding = tiktoken.encoding_for_model(model)
-    num_tokens = len(encoding.encode(string))
-    return num_tokens
 
 
 def fitting_prefix(start: int, prompts: list[Prompt], model_params: Dict):
