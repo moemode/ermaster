@@ -2,6 +2,8 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Dict
 
+import pandas as pd
+
 from preclassify import DATASET_NAMES
 from utils import load_json_file, num_tokens_from_string
 
@@ -71,9 +73,12 @@ if __name__ == "__main__":
         DATASET_NAMES,
     )
     paths = filter(lambda p: p[1].exists(), paths)
-    models = [
-        "gpt-3.5-turbo-instruct",
-    ]
+    models = ["gpt-3.5-turbo", "gpt-3.5-turbo-instruct", "gpt-4-1106-preview"]
+    results = []
     for dataset, dataset_path in paths:
-        dataset_cost = cost(dataset_path, 10, "gpt-3.5-turbo-instruct")
-        print(f"Dataset: {dataset}, Cost: {dataset_cost}")
+        for model in models:
+            dataset_cost = cost(dataset_path, 10, model)
+            results.append({"Dataset": dataset, "Model": model, "Cost": dataset_cost})
+    # Create a DataFrame from the results
+    df = pd.DataFrame(results)
+    print(df)
