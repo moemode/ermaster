@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from timeit import default_timer as timer
 from typing import Dict, Optional
 
 import openai
@@ -18,7 +19,9 @@ PRICE_PER_1K_TOKENS_COMPLETE = 0.002
 
 
 def completions_with_backoff(**kwargs):
-    return openai.Completion.create(**kwargs)
+    start = timer()
+    c = openai.Completion.create(**kwargs)
+    return timer() - start, c
 
 
 completions_with_backoff = retry_with_exponential_backoff(
@@ -56,6 +59,21 @@ def fitting_prefix(start: int, prompts: list[Prompt], model_params: Dict):
         batch_tokens += new_tokens
 
 
+def get_completions(prompts: list[Prompt], model_params):
+    for p in prompts:
+        time_spent, r = completions_with_backoff(prompt=p.prompt_string, **model_params)
+        yield {
+            "id0": p.id0,
+            "id1": p.id1,
+            "p": p.prompt_string,
+            "t": p.truth,
+            "c": r.choices[0],
+            "d": time_spent,
+            "i": r["usage"]["prompt_tokens"],
+            "o": r["usage"]["completion_tokens"],
+        }
+
+
 def get_completions_batch(prompts: list[Prompt], model_params):
     batch_prompts = []
     start = 0
@@ -63,7 +81,7 @@ def get_completions_batch(prompts: list[Prompt], model_params):
     total_tokens = 0
     while start < end:
         batch_prompts = prompts[start:end]
-        r = completions_with_backoff(
+        time_spent, r = completions_with_backoff(
             prompt=list(map(lambda p: p.prompt_string, batch_prompts)), **model_params
         )
         total_tokens += r["usage"]["total_tokens"]
@@ -75,6 +93,7 @@ def get_completions_batch(prompts: list[Prompt], model_params):
                 "p": prompt.prompt_string,
                 "t": prompt.truth,
                 "c": choice,
+                "d": time_spent,
             }
         start = end
         end = fitting_prefix(start, prompts, model_params)
@@ -86,7 +105,7 @@ def run_test(
     model_params: Dict,
     description: Optional[str] = None,
 ):
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    openai.api_key = os.getenv("OAIST_KEY")
     with open(prompt_file, "r") as f:
         prompt_dict = json.load(f)
     prompts = list(prompt_dict_to_prompts(prompt_dict))
@@ -97,16 +116,18 @@ def run_test(
         Path(f"runs/{prompt_file.stem}-{modelstr}-{description}.json")
     )
     with open(run_path, "w") as f:
-        write_json_iter(get_completions_batch(prompts, model_params), f, len(prompts))
+        write_json_iter(get_completions(prompts[:5], model_params), f, len(prompts))
 
 
 if __name__ == "__main__":
     model = "gpt-3.5-turbo-instruct"
-    model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0)
+    model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0, seed=0)
+    """
     run_test(
         Path(
-            "/home/v/coding/ermaster/prompts/dbpedia10k-2_1250_general_complex_force.json"
+            "/home/v/coding/ermaster/prompts/dbpedia10k-2_1250-general_complex_force.json"
         ),
         model_params,
         "1max_token",
     )
+    """
