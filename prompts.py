@@ -1,7 +1,7 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable
-from dataclasses import dataclass
 
 from preclassify import SAMPLED_DATASET_NAMES
 
@@ -13,6 +13,8 @@ class Prompt:
     id1: int
     truth: bool
 
+
+VERB_CONFIDENCE = "Provide your best guess and the probability that it is correct (0.0 to 1.0) for the following question. Give ONLY the guess and probability, no other words or explanation. For example:\n\nGuess: <most likely guess, as short as possible; not a complete sentence, just the guess!>\n Probability: <the probability between 0.0 and 1.0 that your guess is correct, without any extra commentary whatsoever; just the probability!>\n\nThe question is: "
 
 DOMAIN_SIMPLE = "Do the two {entity_type_plural} match?"
 DOMAIN_COMPLEX = "Do the two {entity_type_plural} refer to the same real-world product?"
@@ -32,6 +34,12 @@ TASK_PREFIXES = {
     "general_simple_force": f"{GENERAL_SIMPLE} {FORCE}\n",
     "general_complex_force": f"{GENERAL_COMPLEX} {FORCE}\n",
 }
+
+newitems = []
+for name, prompt_prefix in TASK_PREFIXES.items():
+    newitems.append(("guess_" + name, VERB_CONFIDENCE + prompt_prefix))
+for k, v in newitems:
+    TASK_PREFIXES[k] = v
 
 
 SIMPLE_PROMPT_POSTFIX = """Do the two entity descriptions match?
