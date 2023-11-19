@@ -121,13 +121,11 @@ def run_test(
 
 if __name__ == "__main__":
     model = "gpt-3.5-turbo-instruct"
-    model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0, seed=0)
-    """
+    model_params = dict(model=model, max_tokens=10, logprobs=5, temperature=0, seed=0)
     run_test(
         Path(
             "/home/v/coding/ermaster/prompts/dbpedia10k-2_1250-general_complex_force.json"
         ),
         model_params,
-        "1max_token",
+        "10max_token",
     )
-    """
