@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Iterable
 import numpy as np
 from sklearn.metrics import (
     precision_score,
@@ -86,8 +87,7 @@ def eval(run: Path):
     return results
 
 
-def eval_dir(path: Path, fname="results.csv"):
-    json_files = list(path.glob("*.json"))
+def eval_dir(json_files: Iterable[Path], fname="results.csv"):
     all_results = []  # List to store results for each file
     for file in json_files:
         ds, prompt_type, model, description = file.parts[-1].split("-")
@@ -104,12 +104,20 @@ def eval_dir(path: Path, fname="results.csv"):
 
     # Convert the list of dictionaries into a DataFrame
     df = pd.DataFrame(all_results)
-    df.to_csv(f"eval_writeup/fname", index=False)
+    df.to_csv(f"eval_writeup/{fname}", index=False)
     print(df)
 
 
 if __name__ == "__main__":
-    eval_dir(Path("/home/v/coding/ermaster/runs"))
+    CONFIGURATIONS = {
+        "base": "*force-gpt*.json",
+        "hash": "*force_hash-gpt*.json",
+        "base_hash": "*.json",
+    }
+    eval_dir(
+        Path("/home/v/coding/ermaster/runs").glob(CONFIGURATIONS["base"]),
+        fname="base.csv",
+    )
     """
     eval(
         Path(
