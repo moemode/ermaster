@@ -5,6 +5,7 @@ from timeit import default_timer as timer
 from typing import Dict, Optional
 
 import openai
+from preclassify import SAMPLED_DATASET_NAMES
 
 from prompts import Prompt, prompt_dict_to_prompts
 from utils import (
@@ -116,16 +117,36 @@ def run_test(
         Path(f"runs/{prompt_file.stem}-{modelstr}-{description}.json")
     )
     with open(run_path, "w") as f:
-        write_json_iter(get_completions(prompts[:5], model_params), f, len(prompts))
+        write_json_iter(get_completions_batch(prompts, model_params), f, len(prompts))
 
 
 if __name__ == "__main__":
     model = "gpt-3.5-turbo-instruct"
-    model_params = dict(model=model, max_tokens=10, logprobs=5, temperature=0, seed=0)
+    datasets = SAMPLED_DATASET_NAMES
+    # remove dbpedia, and textual_company
+    datasets = filter(
+        lambda ds: "textual_company" not in ds and "dblp_acm" not in ds, datasets
+    )
+    # datasets = filter(lambda ds: "dblp_acm" in ds, datasets)
+    model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0, seed=0)
+    paths = map(
+        lambda d: Path("prompts") / f"{d}-general_complex_force_hash.json",
+        datasets,
+    )
+    paths = list(filter(lambda p: p.exists(), paths))
+    print(list(paths))
+    for p in paths:
+        run_test(
+            p,
+            model_params,
+            "1max_token",
+        )
+    """
     run_test(
         Path(
             "/home/v/coding/ermaster/prompts/dbpedia10k-2_1250-general_complex_force.json"
         ),
         model_params,
-        "10max_token",
+        "1max_token",
     )
+    """

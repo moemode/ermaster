@@ -23,6 +23,8 @@ GENERAL_COMPLEX = "Do the two entity descriptions refer to the same real-world e
 FORCE = "Answer with 'Yes' if they do and 'No' if they do not."
 DOMAIN_PAIR = "{entity_type} 1: '{e0}'\n{entity_type} 2: '{e1}'\n"
 GENERAL_PAIR = "Entity 1: '{e0}'\nEntity 2: '{e1}'\n"
+FORCE_HASH = "Answer with ####Yes if they do and ####No if they do not."
+
 
 TASK_PREFIXES = {
     "domain_simple_free": f"{DOMAIN_SIMPLE}\n",
@@ -33,6 +35,7 @@ TASK_PREFIXES = {
     "general_complex_free": f"{GENERAL_COMPLEX}\n",
     "general_simple_force": f"{GENERAL_SIMPLE} {FORCE}\n",
     "general_complex_force": f"{GENERAL_COMPLEX} {FORCE}\n",
+    "general_complex_force_hash": f"{GENERAL_COMPLEX} {FORCE_HASH}\n",
 }
 
 newitems = []
@@ -54,6 +57,7 @@ def prompt_dict(
     prompt_data: Iterable[Dict],
     entity_type: str = "",
     entity_type_plural: str = "",
+    postfix: str = "",
 ) -> Dict:
     is_domain = prompt_type.startswith("domain")
     prefix = TASK_PREFIXES[prompt_type].format(
@@ -66,7 +70,7 @@ def prompt_dict(
             {
                 "id0": pair["id0"],
                 "id1": pair["id1"],
-                "p": pair_str.format(**pair, entity_type=entity_type),
+                "p": pair_str.format(**pair, entity_type=entity_type) + postfix,
                 "t": pair["t"],
             }
         )
@@ -78,6 +82,7 @@ def prompt_data_to_prompt_dict(
     prompt_type: str,
     entity_type: str = "",
     entity_type_plural: str = "",
+    postfix: str = "",
 ) -> Path:
     if prompt_type.startswith("domain") and (
         entity_type == "" or entity_type_plural == ""
@@ -89,7 +94,7 @@ def prompt_data_to_prompt_dict(
     promptFolder.mkdir(parents=True, exist_ok=True)
     with open(prompt_data_fp, "r") as f:
         data = json.load(f)
-        d = prompt_dict(prompt_type, data, entity_type, entity_type_plural)
+        d = prompt_dict(prompt_type, data, entity_type, entity_type_plural, postfix)
         d["dataset"] = prompt_data_fp.stem
         outpath = (
             promptFolder / f"{prompt_data_fp.stem}-{prompt_type}{prompt_data_fp.suffix}"
@@ -108,7 +113,9 @@ def prompt_dict_to_prompts(prompt_dict: Dict) -> Iterable[Prompt]:
 if __name__ == "__main__":
     for dataset in SAMPLED_DATASET_NAMES:
         prompt_data_to_prompt_dict(
-            Path("prompt_data") / f"{dataset}.json", "general_complex_force"
+            Path("prompt_data") / f"{dataset}.json",
+            "general_complex_force_hash",
+            postfix="####",
         )
 
 """

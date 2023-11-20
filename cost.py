@@ -68,7 +68,9 @@ if __name__ == "__main__":
     paths = map(
         lambda d: (
             d,
-            Path(f"/home/v/coding/ermaster/prompts/{d}-general_complex_force.json"),
+            Path(
+                f"/home/v/coding/ermaster/prompts/{d}-general_complex_force_hash.json"
+            ),
         ),
         DATASET_NAMES,
     )
