@@ -107,7 +107,7 @@ if __name__ == "__main__":
     pairs = sample_dbpedia(10000, 0.05, include_keys=True)
     print(len(pairs))
     dbpedia_folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/dbpedia10k-2"
+        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/dbpedia10k"
     )
     dbpedia_folder.mkdir(parents=True, exist_ok=True)
     to_benchmark_csv(dbpedia_folder / "train.csv", pairs, include_keys=True)

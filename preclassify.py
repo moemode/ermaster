@@ -29,7 +29,7 @@ ORIGINAL_DATASET_NAMES = [
     "structured_beer",
     "structured_fodors_zagats",
     "textual_abt_buy",
-    "dbpedia10k-2",
+    "dbpedia10k",
 ]
 SAMPLED_DATASET_NAMES = [dataset + "_1250" for dataset in ORIGINAL_DATASET_NAMES]
 

@@ -14,6 +14,8 @@ from utils import (
     negative_predictive_value,
 )
 
+import pandas as pd
+
 
 def read_run(run: Path):
     Path("eval").mkdir(parents=True, exist_ok=True)
@@ -81,11 +83,38 @@ def eval(run: Path):
     with open(Path("eval") / run.name, "w") as f:
         json.dump(results, f, indent=2, cls=NumpyEncoder)
     print(results)
+    return results
+
+
+def eval_dir(path: Path, fname="results.csv"):
+    json_files = list(path.glob("*.json"))
+    all_results = []  # List to store results for each file
+    for file in json_files:
+        ds, prompt_type, model, description = file.parts[-1].split("-")
+        results = eval(file)
+        results.update(
+            {
+                "Dataset": ds,
+                "PromptType": prompt_type,
+                "Model": model,
+                "Description": description,
+            }
+        )
+        all_results.append(results)  # Append the results dictionary for each file
+
+    # Convert the list of dictionaries into a DataFrame
+    df = pd.DataFrame(all_results)
+    df.to_csv(f"eval_writeup/fname", index=False)
+    print(df)
 
 
 if __name__ == "__main__":
+    eval_dir(Path("/home/v/coding/ermaster/runs"))
+    """
     eval(
         Path(
-            "/home/v/coding/ermaster/runs/dbpedia10k-2_1250_general_complex_force-gpt-3.5_turbo_instruct-1max_token_0.json"
+            "/home/v/coding/ermaster/runs/dbpedia10k-2_1250-general_complex_force_hash-gpt_3.5_turbo_instruct-1max_token_0.json"
+            # "/home/v/coding/ermaster/runs/dbpedia10k-2_1250_general_complex_force-gpt-3.5_turbo_instruct-1max_token_0.json"
         )
     )
+    """
