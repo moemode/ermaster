@@ -64,6 +64,14 @@ if __name__ == "__main__":
             "ylabel": "Max. Possible Recall",
         },
     }
+    measure_relation = {
+        "mval_max_tpr": {
+            "x": "measure_value",
+            "y": "max_tpr",
+            "xlabel": "",
+            "ylabel": "Max. Possible Recall",
+        },
+    }
 
     df = pd.read_csv("eval/missclassifications.csv")
     df = df[df["measure"].isin(selected_sims)]
@@ -72,4 +80,9 @@ if __name__ == "__main__":
             plot_ds(dataset_subset, dataset, rname, r)
     for rname, r in relations.items():
         plot_all_ds(df, rname, r)
+    """
+    for measure in ["overlap"]:
+        df_measure = df[df["measure"] == measure]
+        plot_all_ds(df_measure, f"{measure}_max_tpr", measure_relation["mval_max_tpr"])
+    """
     print(df)

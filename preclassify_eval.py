@@ -8,14 +8,15 @@ def get_stat_functions(similarities: pd.DataFrame, sim_name: str):
     n_total = len(similarities)
     n_positive = similarities["label"].sum()
     n_fn = 0
-    stats = [(0, 0, 0, 0, 0)]
+    min_sim = similarities[sim_name].min()
+    stats = [(0, min_sim, 0, 0, 0, 0)]
     for i, (_, row) in enumerate(similarities.iterrows()):
         if row["label"] == 1:
             n_fn += 1
         coverage = (i + 1) / n_total
         risk = n_fn / (i + 1)
         fnr = n_fn / n_positive
-        stats.append((i + 1, n_fn, coverage, risk, fnr))
+        stats.append((i + 1, row[sim_name], n_fn, coverage, risk, fnr))
     return stats
 
 
@@ -40,14 +41,17 @@ if __name__ == "__main__":
             if sim_name not in s.columns:
                 continue
             stats = get_stat_functions(s, sim_name)
-            for n, n_fn, coverage, risk, fnr in stats:
-                data_list.append([ds, sim_name, n, n_fn, coverage, risk, fnr])
+            for n, measure_value, n_fn, coverage, risk, fnr in stats:
+                data_list.append(
+                    [ds, sim_name, n, measure_value, n_fn, coverage, risk, fnr]
+                )
     df = pd.DataFrame(
         data_list,
         columns=[
             "dataset",
             "measure",
             "n_discarded",
+            "measure_value",
             "n_false_negatives",
             "coverage",
             "risk",
