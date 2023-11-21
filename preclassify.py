@@ -217,6 +217,6 @@ if __name__ == "__main__":
     )
     for dataset, folder in [(dataset, root_folder / dataset) for dataset in datasets]:
         set_sim = set_sim_functions
-        if dataset in ["textual_company", "dbpedia10k-2"]:
+        if dataset in ["textual_company", "dbpedia10k"]:
             set_sim = fast_set_sim_functions
         dataset_similarities(dataset, folder, set_sim)
