@@ -30,6 +30,14 @@ def plot_all_ds(df: pd.DataFrame, relname: str, relation: dict):
 
 
 if __name__ == "__main__":
+    selected_sims = [
+        "jaccard",
+        "overlap",
+        # "mongeelkan",
+        # "genjaccard",
+        "cosine_sim",
+        # "euclidean_sim",
+    ]
     relations = {
         "n_fn": {
             "x": "n_discarded",
@@ -51,9 +59,8 @@ if __name__ == "__main__":
         },
     }
 
-    df = pd.read_csv(
-        "eval/missclassifications.csv"
-    )  # , index_col=["dataset", "measure"])
+    df = pd.read_csv("eval/missclassifications.csv")
+    df = df[df["measure"].isin(selected_sims)]
     for dataset, dataset_subset in df.groupby("dataset"):
         for rname, r in relations.items():
             plot_ds(dataset_subset, dataset, rname, r)

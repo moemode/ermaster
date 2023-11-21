@@ -28,8 +28,8 @@ def sample(dataset, folder, N):
 
 if __name__ == "__main__":
     datasets = DATASET_NAMES
-    root_folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
-    )
-    for dataset, folder in [(dataset, root_folder / dataset) for dataset in datasets]:
+    root_folder = Path("data/benchmark_datasets/existingDatasets")
+    for dataset, folder in [
+        (dataset, root_folder / dataset) for dataset in ["dbpedia10k_harder"]
+    ]:  # datasets]:
         sample(dataset, folder, 1250)

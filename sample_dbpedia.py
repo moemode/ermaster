@@ -60,7 +60,6 @@ def sample_dbpedia(
     include_keys: bool = False,
     max_lev_sim: float = 1,
     purge_factor: float = 1,
-    allow_equals: bool = True,
 ) -> list[tuple[bool, Entity, Entity]]:
     random.seed(42)
     pairs: list[tuple[bool, Entity, Entity]] = []
@@ -140,12 +139,12 @@ def to_benchmark_csv(
 CONFIGURATIONS = {
     "dbpedia": {
         "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k"),
-        "args": {"purge_factor": 1, "allow_equals": True, "max_lev_sim": 1},
+        "args": {"purge_factor": 1, "max_lev_sim": 1},
     },
     # create harder test dataset by purging large blocks and disallowing exact matches
     "dbpedia_harder": {
         "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k_harder"),
-        "args": {"purge_factor": 0.1, "allow_equals": False, "max_lev_sim": 0.9},
+        "args": {"purge_factor": 0.1, "max_lev_sim": 0.9},
     },
 }
 if __name__ == "__main__":

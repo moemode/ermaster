@@ -11,7 +11,7 @@ import pandas as pd
 from load_benchmark import load_benchmark
 from tqdm import tqdm
 
-# from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer
 import numpy as np
 
 
@@ -30,6 +30,7 @@ ORIGINAL_DATASET_NAMES = [
     "structured_fodors_zagats",
     "textual_abt_buy",
     "dbpedia10k",
+    "dbpedia10k_harder",
 ]
 SAMPLED_DATASET_NAMES = [dataset + "_1250" for dataset in ORIGINAL_DATASET_NAMES]
 
@@ -183,18 +184,23 @@ def dataset_similarities(
     save_to = Path("eval")
     save_to.mkdir(parents=True, exist_ok=True)
     dataset = folder.parts[-1]
-    pairs = load_benchmark(folder, use_tqdm=True)
     result_path_set_sim = save_to / f"{dataset}-sim.csv"
-    if set_sim and not result_path_set_sim.exists():
+    embedding_path = folder / "embeddings.pkl"
+    result_path_emb_sim = save_to / f"{dataset}-embsim.csv"
+    set_sim_missing = set_sim and not result_path_set_sim.exists()
+    emb_missing = compute_emb and not embedding_path.exists()
+    emb_sim_missing = emb_sim and not result_path_emb_sim.exists()
+    if not any([set_sim_missing, emb_missing, emb_sim_missing]):
+        return
+    pairs = load_benchmark(folder, use_tqdm=True)
+    if set_sim_missing:
         print("Similiarities on Dataset:", dataset)
         sims = similarities(pairs, set_sim, use_tqdm=True)
         sims.to_csv(result_path_set_sim, index=False)
-    embedding_path = folder / "embeddings.pkl"
-    if compute_emb and not embedding_path.exists():
+    if emb_missing:
         print("Embeddings on Dataset:", dataset)
         compute_embeddings(pairs, embedding_path, True)
-    result_path_emb_sim = save_to / f"{dataset}-embsim.csv"
-    if emb_sim and not result_path_emb_sim.exists():
+    if emb_sim_missing:
         print("Embedding similarities on Dataset:", dataset)
         s = embedding_similarities(pairs, embedding_path, emb_sim, True)
         s.to_csv(result_path_emb_sim, index=False)
@@ -211,12 +217,12 @@ def dataset_similarities(
 
 
 if __name__ == "__main__":
-    datasets = DATASET_NAMES
+    datasets = ORIGINAL_DATASET_NAMES
     root_folder = Path(
         "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
     )
     for dataset, folder in [(dataset, root_folder / dataset) for dataset in datasets]:
         set_sim = set_sim_functions
-        if dataset in ["textual_company", "dbpedia10k"]:
+        if dataset in ["textual_company", "dbpedia10k", "dbpedia10k_harder"]:
             set_sim = fast_set_sim_functions
         dataset_similarities(dataset, folder, set_sim)
