@@ -52,14 +52,24 @@ def calibration_data(paths: Iterable[Path]):
     return pd.DataFrame(dfdata), results
 
 
+CONFIGURATIONS = {
+    "3.5-hash": {
+        "paths": Path("/home/v/coding/ermaster/runs/35_hash").glob("*.json"),
+        "outpath_prefix": "hash",
+    },
+    "3.5-base": {
+        "paths": Path("/home/v/coding/ermaster/runs/35_base").glob("*.json"),
+        "outpath_prefix": "base",
+    },
+}
 if __name__ == "__main__":
-    # Create a DataFrame from the results list
-    df, results = calibration_data(
-        Path("/home/v/coding/ermaster/runs").glob("*force_hash-gpt*.json")
-    )
-    df.to_csv(f"eval_writeup/hash_calibration.csv", index=False)
+    cfg = CONFIGURATIONS["3.5-hash"]
+    inpaths, prefix = cfg["paths"], cfg["outpath_prefix"]
+    df, results = calibration_data(inpaths)
+    df.to_csv(f"eval_writeup/{prefix}_calibration.csv", index=False)
     # Display the DataFrame
     print(df)
+    setup_plt()
     fig = reliability_diagrams(
         results,
         num_bins=10,
@@ -69,7 +79,7 @@ if __name__ == "__main__":
         return_fig=True,
     )
     fig.savefig(
-        "figures/calibration-all.png",
+        f"figures/{prefix}-calibration-all.png",
         format="png",
         dpi=144,
         bbox_inches="tight",
