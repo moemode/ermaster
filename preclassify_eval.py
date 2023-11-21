@@ -5,15 +5,16 @@ from pathlib import Path
 def get_stat_functions(similarities: pd.DataFrame, sim_name: str):
     # Sort the DataFrame by the specified column in ascending order
     similarities.sort_values(by=sim_name, ascending=True, inplace=True)
-    N_total = len(similarities)
+    n_total = len(similarities)
+    n_positive = similarities["label"].sum()
     n_fn = 0
     stats = [(0, 0, 0, 0, 0)]
     for i, (_, row) in enumerate(similarities.iterrows()):
         if row["label"] == 1:
             n_fn += 1
-        coverage = (i + 1) / N_total
+        coverage = (i + 1) / n_total
         risk = n_fn / (i + 1)
-        fnr = n_fn / N_total
+        fnr = n_fn / n_positive
         stats.append((i + 1, n_fn, coverage, risk, fnr))
     return stats
 
@@ -53,4 +54,6 @@ if __name__ == "__main__":
             "fnr",
         ],
     )
+    # add column max_tpr = 1 - fnr
+    df["max_tpr"] = 1 - df["fnr"]
     df.to_csv("eval/missclassifications.csv", index=False)

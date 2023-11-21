@@ -57,6 +57,12 @@ if __name__ == "__main__":
             "xlabel": "Coverage",
             "ylabel": "FNR",
         },
+        "coverage_max_tpr": {
+            "x": "coverage",
+            "y": "max_tpr",
+            "xlabel": "Coverage",
+            "ylabel": "Max. Possible Recall",
+        },
     }
 
     df = pd.read_csv("eval/missclassifications.csv")
