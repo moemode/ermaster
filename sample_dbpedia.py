@@ -9,9 +9,9 @@ from access_dbpedia import (
     to_str,
 )
 from token_blocking import (
+    clean_block_pruning,
     clean_comparisons,
     clean_token_blocking,
-    clean_block_statistics,
 )
 import itertools
 import random
@@ -19,8 +19,9 @@ import pandas as pd
 
 
 def sample_dbpedia(
-    N, match_ratio, include_keys=False
+    N, match_ratio, include_keys=False, purge_factor=1
 ) -> list[tuple[bool, Entity, Entity]]:
+    random.seed(42)
     pairs: list[tuple[bool, Entity, Entity]] = []
     # Sample N * match_ratio entries from dbpedia matches
     n_desired_matches = int(N * match_ratio)
@@ -29,10 +30,10 @@ def sample_dbpedia(
     N_db0, N_db1 = get_number_of_entries("dbpedia0"), get_number_of_entries("dbpedia1")
     # get sufficient random entries from 0 to N_db0 -1
     random_ids0 = set(
-        random.sample(range(N_db0), int(2 * math.sqrt(n_desired_non_matches)))
+        random.sample(range(N_db0), int(4 * math.sqrt(n_desired_non_matches)))
     )
     random_ids1 = set(
-        random.sample(range(N_db1), int(2 * math.sqrt(n_desired_non_matches)))
+        random.sample(range(N_db1), int(4 * math.sqrt(n_desired_non_matches)))
     )
     entities0 = set()
     entities1 = set()
@@ -41,15 +42,14 @@ def sample_dbpedia(
     for id in random_ids1:
         entities1.add(get_entity_by_id(id, "dbpedia1"))
     token_blocks = clean_token_blocking(entities0, entities1, include_keys)
+    token_blocks = clean_block_pruning(token_blocks, purge_factor)
     potential_non_matches = set(clean_comparisons(token_blocks))
     # takes long time since no index on dbpedia_matches
     non_matches = filter(lambda x: not is_match(x[0], x[1]), potential_non_matches)
-    clean_block_statistics(token_blocks)
     # Sample N * (1 - match_ratio) entries by token blocking on N random entries
     matches = set(get_random_matches(n_desired_matches))
     entities0 = set()
     entities1 = set()
-
     for m in matches:
         entities0.add(get_entity_by_id(m[0], "dbpedia0"))
         entities1.add(get_entity_by_id(m[1], "dbpedia1"))
@@ -103,8 +103,19 @@ def to_benchmark_csv(
     df.to_csv(path, index=True, index_label="_id")
 
 
+CONFIGURATIONS = {
+    "dbpedia": {
+        "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k"),
+        "args": {},
+    },
+    "dbpedia_harder": {
+        "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k_harder"),
+        "args": {"purge_factor": 0.1},
+    },
+}
 if __name__ == "__main__":
-    pairs = sample_dbpedia(10000, 0.05, include_keys=True)
+    cfg = CONFIGURATIONS["dbpedia_harder"]
+    pairs = sample_dbpedia(10000, 0.05, include_keys=True, **cfg["args"])
     print(len(pairs))
     dbpedia_folder = Path(
         "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/dbpedia10k"

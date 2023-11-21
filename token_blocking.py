@@ -46,6 +46,17 @@ def clean_token_blocking(
     return blocks
 
 
+def clean_block_pruning(blocks: Dict[str, tuple[Set[int], Set[int]]], prune_factor):
+    bmax = clean_block_statistics(blocks)["max_size"]
+    # Filter out blocks with size > prune_factor * bmax
+    filtered_blocks = {
+        key: value
+        for key, value in blocks.items()
+        if len(value[0]) + len(value[1]) <= prune_factor * bmax
+    }
+    return filtered_blocks
+
+
 def clean_comparisons(
     blocks: Dict[str, tuple[Set[int], Set[int]]]
 ) -> Iterable[tuple[int, int]]:
@@ -63,6 +74,12 @@ def clean_block_statistics(blocks: Dict[str, tuple[Set[int], Set[int]]]):
     print(f"Average block size: {sum(sizes) / len(blocks)}")
     print(f"Minimum block size: {min(sizes)}")
     print(f"Maximum block size: {max(sizes)}")
+    return {
+        "n": len(blocks),
+        "mean_size": sum(sizes) / len(blocks),
+        "min_size": min(sizes),
+        "max_size": max(sizes),
+    }
 
 
 def overlap_coefficient(s1: Set, s2: Set):
