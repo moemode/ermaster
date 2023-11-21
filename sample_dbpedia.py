@@ -1,5 +1,6 @@
 import math
 from pathlib import Path
+
 from access_dbpedia import (
     Entity,
     get_entity_by_id,
@@ -9,24 +10,55 @@ from access_dbpedia import (
     to_str,
 )
 from token_blocking import (
-    clean_block_pruning,
+    clean_block_purging,
+    clean_block_statistics,
     clean_comparisons,
     clean_token_blocking,
 )
 import itertools
 import random
 import pandas as pd
+from py_stringmatching import Levenshtein
+
+
+def sample_matches(
+    n_desired_matches: int, include_keys: bool, max_lev_sim: float
+) -> set[tuple[Entity, Entity]]:
+    levenshtein = Levenshtein()
+    matches = set()
+    skip_count = 0
+    while True:
+        candidates = set(get_random_matches(2 * n_desired_matches))
+        for c in candidates:
+            e0 = get_entity_by_id(c[0], "dbpedia0")
+            e1 = get_entity_by_id(c[1], "dbpedia1")
+            e0_str = to_str(e0, include_keys)
+            e1_str = to_str(e1, include_keys)
+            if levenshtein.get_sim_score(e0_str, e1_str) <= max_lev_sim:
+                matches.add((e0, e1))
+            else:
+                skip_count += 1
+            if len(matches) == n_desired_matches:
+                print("skipped matches", skip_count)
+                return matches
 
 
 def sample_dbpedia(
-    N, match_ratio, include_keys=False, purge_factor=1
+    N: int,
+    match_ratio: float,
+    include_keys: bool = False,
+    max_lev_sim: float = 1,
+    purge_factor: float = 1,
+    allow_equals: bool = True,
 ) -> list[tuple[bool, Entity, Entity]]:
     random.seed(42)
     pairs: list[tuple[bool, Entity, Entity]] = []
     # Sample N * match_ratio entries from dbpedia matches
     n_desired_matches = int(N * match_ratio)
+    # Sample N * (1 - match_ratio) entries by token blocking on N random entries
+    matches = sample_matches(n_desired_matches, include_keys, max_lev_sim)
+    pairs = [(True, e0, e1) for (e0, e1) in matches]
     n_desired_non_matches = N - n_desired_matches
-
     N_db0, N_db1 = get_number_of_entries("dbpedia0"), get_number_of_entries("dbpedia1")
     # get sufficient random entries from 0 to N_db0 -1
     random_ids0 = set(
@@ -42,22 +74,13 @@ def sample_dbpedia(
     for id in random_ids1:
         entities1.add(get_entity_by_id(id, "dbpedia1"))
     token_blocks = clean_token_blocking(entities0, entities1, include_keys)
-    token_blocks = clean_block_pruning(token_blocks, purge_factor)
+    print(clean_block_statistics(token_blocks))
+    token_blocks = clean_block_purging(token_blocks, purge_factor)
+    print("After Block purging")
+    print(clean_block_statistics(token_blocks))
     potential_non_matches = set(clean_comparisons(token_blocks))
     # takes long time since no index on dbpedia_matches
     non_matches = filter(lambda x: not is_match(x[0], x[1]), potential_non_matches)
-    # Sample N * (1 - match_ratio) entries by token blocking on N random entries
-    matches = set(get_random_matches(n_desired_matches))
-    entities0 = set()
-    entities1 = set()
-    for m in matches:
-        entities0.add(get_entity_by_id(m[0], "dbpedia0"))
-        entities1.add(get_entity_by_id(m[1], "dbpedia1"))
-
-    pairs = [
-        (True, get_entity_by_id(x[0], "dbpedia0"), get_entity_by_id(x[1], "dbpedia1"))
-        for x in matches
-    ]
     # draw N * (1-match_ratio) entries from non_matches
     non_matches = set(itertools.islice(non_matches, int(N * (1 - match_ratio))))
     pairs.extend(
@@ -106,19 +129,17 @@ def to_benchmark_csv(
 CONFIGURATIONS = {
     "dbpedia": {
         "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k"),
-        "args": {},
+        "args": {"purge_factor": 1, "allow_equals": True, "max_lev_sim": 1},
     },
     "dbpedia_harder": {
         "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k_harder"),
-        "args": {"purge_factor": 0.1},
+        "args": {"purge_factor": 0.1, "allow_equals": False, "max_lev_sim": 0.9},
     },
 }
 if __name__ == "__main__":
     cfg = CONFIGURATIONS["dbpedia_harder"]
     pairs = sample_dbpedia(10000, 0.05, include_keys=True, **cfg["args"])
     print(len(pairs))
-    dbpedia_folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/dbpedia10k"
-    )
+    dbpedia_folder = cfg["folder"]
     dbpedia_folder.mkdir(parents=True, exist_ok=True)
     to_benchmark_csv(dbpedia_folder / "train.csv", pairs, include_keys=True)

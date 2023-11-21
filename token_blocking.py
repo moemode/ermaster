@@ -46,7 +46,7 @@ def clean_token_blocking(
     return blocks
 
 
-def clean_block_pruning(blocks: Dict[str, tuple[Set[int], Set[int]]], prune_factor):
+def clean_block_purging(blocks: Dict[str, tuple[Set[int], Set[int]]], prune_factor):
     bmax = clean_block_statistics(blocks)["max_size"]
     # Filter out blocks with size > prune_factor * bmax
     filtered_blocks = {
@@ -70,10 +70,6 @@ def clean_block_statistics(blocks: Dict[str, tuple[Set[int], Set[int]]]):
     sizes = list(
         map(lambda blockpair: len(blockpair[0]) + len(blockpair[1]), blocks.values())
     )
-    print(f"Number of blocks: {len(blocks)}")
-    print(f"Average block size: {sum(sizes) / len(blocks)}")
-    print(f"Minimum block size: {min(sizes)}")
-    print(f"Maximum block size: {max(sizes)}")
     return {
         "n": len(blocks),
         "mean_size": sum(sizes) / len(blocks),
