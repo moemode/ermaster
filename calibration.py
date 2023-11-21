@@ -1,47 +1,63 @@
-from evalrun import read_run
+from typing import Iterable
+from evalrun import read_run_alternate
 from sklearn.metrics import brier_score_loss
 from pathlib import Path
 import matplotlib.pyplot as plt
-import pandas as pd
 from reliability_diagrams import *
+import pandas as pd
 
 
-# Override matplotlib default styling.
-# plt.style.use("seaborn")
+def setup_plt():
+    # Override matplotlib default styling.
+    plt.style.use("seaborn-v0_8")
+    plt.rc("font", size=12)
+    plt.rc("axes", labelsize=12)
+    plt.rc("xtick", labelsize=12)
+    plt.rc("ytick", labelsize=12)
+    plt.rc("legend", fontsize=12)
 
-plt.rc("font", size=12)
-plt.rc("axes", labelsize=12)
-plt.rc("xtick", labelsize=12)
-plt.rc("ytick", labelsize=12)
-plt.rc("legend", fontsize=12)
+    plt.rc("axes", titlesize=16)
+    plt.rc("figure", titlesize=16)
 
-plt.rc("axes", titlesize=16)
-plt.rc("figure", titlesize=16)
 
-if __name__ == "__main__":
-    results = dict()
+def calibration_data(paths: Iterable[Path]):
     dfdata = []
-    for path in Path("/home/v/coding/ermaster/runs").glob("*force_hash-gpt*.json"):
-        truths, predictions, entropies, probabilities = read_run(path)
-        correct = (truths == predictions).astype(int)
+    results = dict()
+    for path in paths:
+        truths, predictions, _, probabilities = read_run_alternate(path)
         # print(path.stem, brier_score_loss(correct, probabilities))
         dataset_name = (
             path.stem.split("-")[0].replace("structured_", "").replace("textual_", "")
         )
-        brier = brier_score_loss(correct, probabilities)
+        probabilities_brier = probabilities.copy()
+        pred0 = 0 == predictions
+        probabilities_brier[pred0] = 1 - probabilities_brier[pred0]
+        brier = brier_score_loss(truths, probabilities_brier)
         ece = compute_calibration(truths, predictions, probabilities, num_bins=10)[
             "expected_calibration_error"
         ]
-        dfdata.append({"Dataset": dataset_name, "Brier Score": brier, "ECE": ece})
-
+        dfdata.append(
+            {
+                "Dataset": dataset_name,
+                "Brier Score": brier,
+                "ECE": ece,
+            }
+        )
         results[dataset_name] = {
             "true_labels": truths,
             "pred_labels": predictions,
             "confidences": probabilities,
         }
         # Create a DataFrame from the results list
-    df = pd.DataFrame(dfdata)
+    return pd.DataFrame(dfdata), results
 
+
+if __name__ == "__main__":
+    # Create a DataFrame from the results list
+    df, results = calibration_data(
+        Path("/home/v/coding/ermaster/runs").glob("*force_hash-gpt*.json")
+    )
+    df.to_csv(f"eval_writeup/hash_calibration.csv", index=False)
     # Display the DataFrame
     print(df)
     fig = reliability_diagrams(

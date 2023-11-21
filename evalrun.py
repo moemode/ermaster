@@ -46,6 +46,45 @@ def read_run(run: Path):
     )
 
 
+def read_run_alternate(run: Path):
+    Path("eval").mkdir(parents=True, exist_ok=True)
+    truths = []
+    predictions = []
+    entropies = []
+    probabilities = []
+    with open(run, "r") as file:
+        data = json.load(file)
+    for sample in data:
+        prompt, truth, completion = sample["p"], sample["t"], sample["c"]
+        topprobs_first = completion["logprobs"]["top_logprobs"][0]
+        # Define Yes/No tokens
+        yn_tokens = ["Yes", "No", " Yes", " No"]
+        # Initialize dictionary for Yes/No probabilities
+        yn_probs = {}
+        total_probability = 0
+        max_prob_token = None
+        # Sum the probabilities of Yes/No tokens
+        for t in yn_tokens:
+            yn_probs[t] = np.exp(topprobs_first.get(t, -1000))
+            total_probability += yn_probs[t]
+        p_yes = (yn_probs["Yes"] + yn_probs[" Yes"]) / total_probability
+        p_no = (yn_probs["No"] + yn_probs[" No"]) / total_probability
+        # Find the token with the maximum probability
+        # max_prob_token = max(yn_probs, key=yn_probs.get)
+        # Calculate the ratio of the max_prob_token probability to the total probability
+        # probability = yn_probs[max_prob_token] / total_probability
+        entropies.append(bernoulli_entropy(p_yes / (p_yes + p_no)))
+        truths.append(truth)
+        predictions.append(p_yes > p_no)
+        probabilities.append(p_yes if p_yes > p_no else p_no)
+    return (
+        np.array(truths),
+        np.array(predictions),
+        np.array(entropies),
+        np.array(probabilities),
+    )
+
+
 def eval(run: Path):
     truths, predictions, entropies, _ = (np.array(l) for l in read_run(run))
     truths = truths.astype(bool)
