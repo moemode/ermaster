@@ -24,6 +24,17 @@ from py_stringmatching import Levenshtein
 def sample_matches(
     n_desired_matches: int, include_keys: bool, max_lev_sim: float
 ) -> set[tuple[Entity, Entity]]:
+    """
+    Based on known matches generate a sample of matches whoose Levenshtein similarity does not exceed max_lev_sim.
+
+    Parameters:
+    - n_desired_matches (int): The desired number of matches to generate.
+    - include_keys (bool): A flag indicating whether to include keys in the string representation of entities.
+    - max_lev_sim (float): The maximum allowed Levenshtein similarity score for a match.
+
+    Returns:
+    set[tuple[Entity, Entity]]: A set of tuples representing matched entity pairs.
+    """
     levenshtein = Levenshtein()
     matches = set()
     skip_count = 0
@@ -131,6 +142,7 @@ CONFIGURATIONS = {
         "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k"),
         "args": {"purge_factor": 1, "allow_equals": True, "max_lev_sim": 1},
     },
+    # create harder test dataset by purging large blocks and disallowing exact matches
     "dbpedia_harder": {
         "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k_harder"),
         "args": {"purge_factor": 0.1, "allow_equals": False, "max_lev_sim": 0.9},
