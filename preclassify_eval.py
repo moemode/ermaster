@@ -14,16 +14,62 @@ def count_miss_classifications(similarities: pd.DataFrame, sim_name: str):
             n_fn += 1
         coverage = (i + 1) / N_total
         risk = n_fn / (i + 1)
-        fpr = n_fn / N_total
-        stats.append((i + 1, n_fn, coverage, risk, fpr))
+        fnr = n_fn / N_total
+        stats.append((i + 1, n_fn, coverage, risk, fnr))
     return stats
+
+
+def plot_ds(df: pd.DataFrame, dataset: str, relname: str, relation: dict):
+    g = sns.relplot(
+        data=df, x=relation["x"], y=relation["y"], hue="measure", kind="line"
+    )
+    g.set_axis_labels(relation["xlabel"], relation["ylabel"])
+    # Set title
+    g.suptitle(f"{dataset}")
+    g.savefig(f"figures/{relname}-{dataset}-missclassifications.png")
+
+
+def plot_all_ds(df: pd.DataFrame, relname: str, relation: dict):
+    g = sns.relplot(
+        data=df,
+        x=relation["x"],
+        y=relation["y"],
+        hue="measure",
+        col="dataset",
+        kind="line",
+        col_wrap=3,
+        facet_kws={"sharex": False, "sharey": False},
+    )
+    # Set axis labels
+    g.set_axis_labels(relation["xlabel"], relation["ylabel"])
+    # Save the Seaborn plot to a file
+    g.savefig(f"figures/{relname}-missclassifications.png")
 
 
 if __name__ == "__main__":
     # Specify the path to the CSV file
     file_paths = Path("/home/v/coding/ermaster/eval").glob("*-allsim.csv")
-    datasets = dict()
     data_list = []
+    relations = {
+        "n_fn": {
+            "x": "n_discarded",
+            "y": "n_false_negatives",
+            "xlabel": "N",
+            "ylabel": "FN",
+        },
+        "coverage_risk": {
+            "x": "coverage",
+            "y": "risk",
+            "xlabel": "Coverage",
+            "ylabel": "Risk",
+        },
+        "coverage_fnr": {
+            "x": "coverage",
+            "y": "fnr",
+            "xlabel": "Coverage",
+            "ylabel": "FNR",
+        },
+    }
 
     for f in file_paths:
         # Read the CSV file into a DataFrame
@@ -45,8 +91,8 @@ if __name__ == "__main__":
             if sim_name not in s.columns:
                 continue
             stats = count_miss_classifications(s, sim_name)
-            for n, n_fn, coverage, risk, fpr in stats:
-                data_list.append([ds, sim_name, n, n_fn, coverage, risk, fpr])
+            for n, n_fn, coverage, risk, fnr in stats:
+                data_list.append([ds, sim_name, n, n_fn, coverage, risk, fnr])
             data_dict[sim_name] = data_list
         """
         # Create a graph using Matplotlib with different lines for each dataset
@@ -72,22 +118,14 @@ if __name__ == "__main__":
             "n_false_negatives",
             "coverage",
             "risk",
-            "fpr",
+            "fnr",
         ],
     )
-    df.to_csv("eval/cr-missclassifications.csv", index=False)
-    g = sns.relplot(
-        data=df,
-        x="n_discarded",
-        y="n_false_negatives",
-        hue="measure",
-        col="dataset",
-        kind="line",
-        col_wrap=3,
-        facet_kws={"sharex": False, "sharey": False},
-    )
-    # Set axis labels
-    g.set_axis_labels("# Discarded", "# False Negatives")
-    # Save the Seaborn plot to a file
-    g.savefig("figures/cr-missclassifications.png")
+    df.set_index(["dataset", "measure"], inplace=True)
+    df.to_csv("eval/missclassifications.csv", index=False)
+    for dataset, dataset_subset in df.groupby("dataset"):
+        for rname, r in relations.items():
+            plot_ds(dataset_subset, dataset, rname, r)
+    for rname, r in relations.items():
+        plot_all_ds(df, rname, r)
     print(df)
