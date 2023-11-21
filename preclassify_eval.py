@@ -121,7 +121,6 @@ if __name__ == "__main__":
             "fnr",
         ],
     )
-    df.set_index(["dataset", "measure"], inplace=True)
     df.to_csv("eval/missclassifications.csv", index=False)
     for dataset, dataset_subset in df.groupby("dataset"):
         for rname, r in relations.items():
