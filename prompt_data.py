@@ -28,8 +28,6 @@ if __name__ == "__main__":
     datasets = DATASET_NAMES
     sampled_datasets = [dataset + "_1250" for dataset in datasets]
     datasets.extend(sampled_datasets)
-    root_folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
-    )
+    root_folder = Path("data/benchmark_datasets/existingDatasets")
     for folder in [root_folder / dataset for dataset in datasets]:
         dataset_to_prompt_data(folder)
