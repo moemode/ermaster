@@ -158,13 +158,14 @@ def eval_dir(json_files: Iterable[Path], fname="results.csv"):
 
 if __name__ == "__main__":
     CONFIGURATIONS = {
-        "base": "*force-gpt*.json",
-        "hash": "*force_hash-gpt*.json",
-        "base_hash": "*.json",
+        "base": "35_base/*force-gpt*.json",
+        "hash": "35_hash/*force_hash-gpt*.json",
+        "base_hash": "35_base_hash/*.json",
     }
+    cfg = "hash"
     eval_dir(
-        Path("/home/v/coding/ermaster/runs").glob(CONFIGURATIONS["base"]),
-        fname="base.csv",
+        Path("/home/v/coding/ermaster/runs").glob(CONFIGURATIONS[cfg]),
+        fname=f"{cfg}.csv",
     )
     """
     eval(
