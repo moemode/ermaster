@@ -5,6 +5,14 @@ from tabulate import tabulate
 # Read CSV data into a DataFrame
 df = pd.read_csv("eval_writeup/base_selected.csv")
 
+# Sort DataFrame by F1 column in descending order
+df = df.sort_values(by="F1", ascending=False)
+# Define the desired column order
+column_order = ["F1", "Precision", "Recall"]
+
+# Reorder columns
+df = df[["Dataset"] + column_order]
+
 # Scale and demean each column
 scaler = MinMaxScaler(feature_range=(-1, 1))
 df_scaled = pd.DataFrame(scaler.fit_transform(df.iloc[:, 1:]), columns=df.columns[1:])
