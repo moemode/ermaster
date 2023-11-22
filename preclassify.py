@@ -22,7 +22,7 @@ ORIGINAL_DATASET_NAMES = [
     # "dirty_dblp_scholar",
     "structured_dblp_acm",
     "structured_itunes_amazon",
-    "textual_company",
+    # "textual_company",
     "structured_amazon_google",
     "structured_dblp_scholar",
     "structured_walmart_amazon",
