@@ -1,3 +1,10 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+from writeup_utils import rename_datasets
+
 import pandas as pd
 
 # Read in the CSV file into a DataFrame
@@ -21,31 +28,44 @@ comparison_pivot = metrics_df.pivot_table(index="Dataset", columns="PromptType")
 
 
 comparison_pivot["Recall_Diff"] = (
-    comparison_pivot["Recall"]["general_complex_force"]
-    - comparison_pivot["Recall"]["general_complex_force_hash"]
+    comparison_pivot["Recall"]["general_complex_force_hash"]
+    - comparison_pivot["Recall"]["general_complex_force"]
 )
 comparison_pivot["Precision_Diff"] = (
-    comparison_pivot["Precision"]["general_complex_force"]
-    - comparison_pivot["Precision"]["general_complex_force_hash"]
+    comparison_pivot["Precision"]["general_complex_force_hash"]
+    - comparison_pivot["Precision"]["general_complex_force"]
 )
 comparison_pivot["F1_Diff"] = (
-    comparison_pivot["F1"]["general_complex_force"]
-    - comparison_pivot["F1"]["general_complex_force_hash"]
+    comparison_pivot["F1"]["general_complex_force_hash"]
+    - comparison_pivot["F1"]["general_complex_force"]
 )
 # Calculate the difference between PromptTypes for each metric
 comparison_pivot["Accuracy_Diff"] = (
-    comparison_pivot["Accuracy"]["general_complex_force"]
-    - comparison_pivot["Accuracy"]["general_complex_force_hash"]
+    comparison_pivot["Accuracy"]["general_complex_force_hash"]
+    - comparison_pivot["Accuracy"]["general_complex_force"]
 )
 
-print(comparison_pivot[["Accuracy_Diff", "Recall_Diff", "Precision_Diff", "F1_Diff"]])
+df = comparison_pivot.reset_index(drop=False)
+df = rename_datasets(df, preserve_sampled=False)
+df = df[
+    [
+        "Dataset",
+        "F1_Diff",
+        "Recall_Diff",
+        "Precision_Diff",
+    ]
+]
+df.columns = df.columns.get_level_values(0)
+
+print(df)
+df.to_csv("eval_writeup/base_vs_hash.csv", index=False)
 
 # Rename 'general_complex_force' to an empty string and 'general_complex_force_hash' to 'hash'
 metrics_df["PromptType"] = metrics_df["PromptType"].replace(
     {"general_complex_force": "base", "general_complex_force_hash": "hash"}
 )
 metrics_df = metrics_df.sort_values(by=["Dataset", "PromptType"])
-print(metrics_df)
+# print(metrics_df)
 
 # Create a pivot table with 'Dataset' as index and 'PromptType' as columns
 pivot_metrics = pd.pivot_table(metrics_df, index="Dataset", columns="PromptType")

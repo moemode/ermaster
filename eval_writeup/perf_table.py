@@ -1,44 +1,62 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from tabulate import tabulate
-
-# Read CSV data into a DataFrame
-df = pd.read_csv("eval_writeup/base_selected.csv")
-
-# Sort DataFrame by F1 column in descending order
-df = df.sort_values(by="F1", ascending=False)
-# Define the desired column order
-column_order = ["F1", "Precision", "Recall"]
-
-# Reorder columns
-df = df[["Dataset"] + column_order]
-
-# Scale and demean each column
-scaler = MinMaxScaler(feature_range=(-1, 1))
-df_scaled = pd.DataFrame(scaler.fit_transform(df.iloc[:, 1:]), columns=df.columns[1:])
+from pathlib import Path
 
 
-# Convert original values to LaTeX color codes
-def original_to_color(value, mean, std):
-    scaled_value = (value - mean) / std
-    color = "cyan" if scaled_value > 0 else "orange"
-    return f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}{value:.3f}"
+def make_table(path, sortby, column_order):
+    # Read CSV data into a DataFrame
+    df = pd.read_csv(path)
 
+    # Sort DataFrame by F1 column in descending order
+    df = df.sort_values(by=sortby, ascending=False)
 
-# Apply color coding to each cell in the DataFrame
-df_colored = df.copy()
-for col in df.columns[1:]:
-    df_colored[col] = df[col].apply(
-        lambda x: original_to_color(x, df[col].mean(), df[col].std())
+    # Reorder columns
+    df = df[["Dataset"] + column_order]
+
+    # Scale and demean each column
+    scaler = MinMaxScaler(feature_range=(-1, 1))
+    df_scaled = pd.DataFrame(
+        scaler.fit_transform(df.iloc[:, 1:]), columns=df.columns[1:]
     )
 
-# Convert DataFrame to LaTeX table
-latex_table = tabulate(
-    df_colored, headers="keys", tablefmt="latex_raw", showindex=False
-)
+    # Convert original values to LaTeX color codes
+    def original_to_color(value, mean, std):
+        scaled_value = (value - mean) / std
+        color = "cyan" if scaled_value > 0 else "orange"
+        return f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}{value:.3f}"
 
-# Print the LaTeX table
-print(latex_table)
+    # Apply color coding to each cell in the DataFrame
+    df_colored = df.copy()
+    for col in df.columns[1:]:
+        df_colored[col] = df[col].apply(
+            lambda x: original_to_color(x, df[col].mean(), df[col].std())
+        )
+
+    # Convert DataFrame to LaTeX table
+    latex_table = tabulate(
+        df_colored, headers="keys", tablefmt="latex_raw", showindex=False
+    )
+
+    # Print the LaTeX table
+    print(latex_table)
+
+
+CONFIGURATIONS = {
+    "base": {
+        "column_order": ["F1", "Precision", "Recall"],
+        "sort_by": "F1",
+        "path": Path("eval_writeup/base_selected.csv"),
+    },
+    "base_hash": {
+        "column_order": ["F1_Diff", "Precision_Diff", "Recall_Diff"],
+        "sort_by": "F1_Diff",
+        "path": Path("eval_writeup/base_vs_hash.csv"),
+    },
+}
+if __name__ == "__main__":
+    cfg = CONFIGURATIONS["base_hash"]
+    make_table(cfg["path"], cfg["sort_by"], cfg["column_order"])
 
 """
 # Working code but has scaled values in table - not good
