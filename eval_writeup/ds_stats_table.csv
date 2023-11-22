@@ -1,0 +1,21 @@
+,Type,Dataset,Total Pairs,Positive Pairs,Negative Pairs
+0,structured,Dblp-Acm,12363,2220,10143
+1,structured,Itunes-Amazon,539,132,407
+2,structured,Amazon-Google,11460,1167,10293
+3,structured,Dblp-Scholar,28707,5347,23360
+4,structured,Walmart-Amazon,10242,962,9280
+5,structured,Beer,450,68,382
+6,structured,Fodors-Zagats,946,110,836
+7,textual,Abt-Buy,9575,1028,8547
+8,dbpedia10k,Dbpedia10K,10000,500,9500
+9,dbpedia10k,Dbpedia10K-Harder,10000,500,9500
+10,structured,Dblp-Acm Sampled,1250,224,1026
+11,structured,Itunes-Amazon Sampled,539,132,407
+12,structured,Amazon-Google Sampled,1250,127,1123
+13,structured,Dblp-Scholar Sampled,1250,232,1018
+14,structured,Walmart-Amazon Sampled,1250,117,1133
+15,structured,Beer Sampled,450,68,382
+16,structured,Fodors-Zagats Sampled,946,110,836
+17,textual,Abt-Buy Sampled,1250,134,1116
+18,dbpedia10k,Dbpedia10K Sampled,1250,62,1188
+19,dbpedia10k,Dbpedia10K-Harder Sampled,1250,62,1188
