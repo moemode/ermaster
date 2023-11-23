@@ -26,11 +26,17 @@ def make_table(path, sortby, column_order):
         color = "cyan" if scaled_value > 0 else "orange"
         return f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}{value:.3f}"
 
+    def original_to_color(value, min_val, max_val):
+        r = (value - min_val) / (max_val - min_val)
+        scaled_value = 2 * (r - 0.5)
+        color = "cyan" if scaled_value > 0 else "orange"
+        return f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}{value:.3f}"
+
     # Apply color coding to each cell in the DataFrame
     df_colored = df.copy()
     for col in df.columns[1:]:
         df_colored[col] = df[col].apply(
-            lambda x: original_to_color(x, df[col].mean(), df[col].std())
+            lambda x: original_to_color(x, df[col].min(), df[col].max())
         )
 
     # Convert DataFrame to LaTeX table
