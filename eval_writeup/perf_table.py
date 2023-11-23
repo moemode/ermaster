@@ -1,24 +1,28 @@
+from typing import Iterable
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 from tabulate import tabulate
 from pathlib import Path
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from writeup_utils import rename_datasets
 
 
-def make_table(path, sortby, column_order):
+def make_table(
+    path, sort_by, column_order, color_columns: Iterable = None, rename=False
+):
     # Read CSV data into a DataFrame
     df = pd.read_csv(path)
 
+    if rename:
+        df = rename_datasets(df, preserve_sampled=False)
+
     # Sort DataFrame by F1 column in descending order
-    df = df.sort_values(by=sortby, ascending=False)
+    df = df.sort_values(by=sort_by, ascending=False)
 
     # Reorder columns
     df = df[["Dataset"] + column_order]
-
-    # Scale and demean each column
-    scaler = MinMaxScaler(feature_range=(-1, 1))
-    df_scaled = pd.DataFrame(
-        scaler.fit_transform(df.iloc[:, 1:]), columns=df.columns[1:]
-    )
 
     # Convert original values to LaTeX color codes
     def original_to_color(value, mean, std):
@@ -26,17 +30,22 @@ def make_table(path, sortby, column_order):
         color = "cyan" if scaled_value > 0 else "orange"
         return f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}{value:.3f}"
 
-    def original_to_color(value, min_val, max_val):
+    def original_to_color(value, min_val, max_val, do_color: bool):
         r = (value - min_val) / (max_val - min_val)
         scaled_value = 2 * (r - 0.5)
         color = "cyan" if scaled_value > 0 else "orange"
-        return f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}{value:.3f}"
+        prefix = (
+            f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}" if do_color else ""
+        )
+        return f"{prefix}{value:.3f}"
 
     # Apply color coding to each cell in the DataFrame
     df_colored = df.copy()
     for col in df.columns[1:]:
         df_colored[col] = df[col].apply(
-            lambda x: original_to_color(x, df[col].min(), df[col].max())
+            lambda x: original_to_color(
+                x, df[col].min(), df[col].max(), col in color_columns
+            )
         )
 
     # Convert DataFrame to LaTeX table
@@ -59,10 +68,17 @@ CONFIGURATIONS = {
         "sort_by": "F1_Diff",
         "path": Path("eval_writeup/base_vs_hash.csv"),
     },
+    "base_calibration": {
+        "column_order": ["ECE", "Brier Score"],
+        "sort_by": "ECE",
+        "path": Path("eval_writeup/base_calibration.csv"),
+        "color_columns": ["ECE"],
+        "rename": True,
+    },
 }
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["base_hash"]
-    make_table(cfg["path"], cfg["sort_by"], cfg["column_order"])
+    cfg_name = "base_calibration"
+    make_table(**CONFIGURATIONS[cfg_name])
 
 """
 # Working code but has scaled values in table - not good
