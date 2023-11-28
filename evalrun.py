@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Iterable
 import numpy as np
 from sklearn.metrics import (
+    brier_score_loss,
     precision_score,
     recall_score,
     f1_score,
@@ -14,10 +15,11 @@ from utils import (
     bernoulli_entropy,
     negative_predictive_value,
 )
+from reliability_diagrams import *
 
 import pandas as pd
 
-
+"""
 def read_run(run: Path):
     Path("eval").mkdir(parents=True, exist_ok=True)
     truths = []
@@ -44,6 +46,43 @@ def read_run(run: Path):
         np.array(entropies),
         np.array(probabilities),
     )
+"""
+
+
+def calibration_data(truths, predictions, probabilities):
+    probabilities_brier = probabilities.copy()
+    pred0 = 0 == predictions
+    probabilities_brier[pred0] = 1 - probabilities_brier[pred0]
+    brier = brier_score_loss(truths, probabilities_brier)
+    ece = compute_calibration(truths, predictions, probabilities, num_bins=10)[
+        "expected_calibration_error"
+    ]
+    # create an estimated confusion matrix from predictions and probabilities
+    est_tn = np.sum((~predictions) * probabilities)
+    est_fp = np.sum((~predictions) * (1 - probabilities))
+    est_fn = np.sum(predictions * (1 - probabilities))
+    est_tp = np.sum(predictions * probabilities)
+    confusion_matrix = np.array([[est_tn, est_fp], [est_fn, est_tp]])
+    accuracy = (est_tp + est_tn) / np.sum(confusion_matrix)
+    precision = est_tp / (est_tp + est_fp) if (est_tp + est_fp) > 0 else 0
+    recall = est_tp / (est_tp + est_fn) if (est_tp + est_fn) > 0 else 0
+    f1 = (
+        2 * (precision * recall) / (precision + recall)
+        if (precision + recall) > 0
+        else 0
+    )
+    return {
+        "Brier Score": brier,
+        "ECE": ece,
+        "EST_TN": est_tn,
+        "EST_FP": est_fp,
+        "EST_FN": est_fn,
+        "EST_TP": est_tp,
+        "EST_Accuracy": accuracy,
+        "EST_Precision": precision,
+        "EST_Recall": recall,
+        "EST_F1": f1,
+    }
 
 
 def read_run_alternate(run: Path):
@@ -86,7 +125,9 @@ def read_run_alternate(run: Path):
 
 
 def eval(run: Path):
-    truths, predictions, entropies, _ = (np.array(l) for l in read_run(run))
+    truths, predictions, entropies, probabilities = (
+        np.array(l) for l in read_run_alternate(run)
+    )
     truths = truths.astype(bool)
     prec = precision_score(truths, predictions)
     rec = recall_score(truths, predictions)
@@ -128,6 +169,8 @@ def eval(run: Path):
         "FP Entropy": fp_entropies.mean(),
         "FN Entropy": fn_entropies.mean(),
     }
+    calibration_results = calibration_data(truths, predictions, probabilities)
+    results.update(calibration_results)
 
     with open(Path("eval") / run.name, "w") as f:
         json.dump(results, f, indent=2, cls=NumpyEncoder)
@@ -162,11 +205,11 @@ if __name__ == "__main__":
         "hash": "35_hash/*force_hash-gpt*.json",
         "base_hash": "35_base_hash/*.json",
     }
-    cfg = "hash"
-    eval_dir(
-        Path("/home/v/coding/ermaster/runs").glob(CONFIGURATIONS[cfg]),
-        fname=f"{cfg}.csv",
-    )
+    for cfg in CONFIGURATIONS.keys():
+        eval_dir(
+            Path("/home/v/coding/ermaster/runs").glob(CONFIGURATIONS[cfg]),
+            fname=f"{cfg}.csv",
+        )
     """
     eval(
         Path(
