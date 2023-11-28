@@ -1,9 +1,39 @@
 from pathlib import Path
 from typing import Iterable, Optional
+from sklearn.metrics import (
+    precision_score,
+    recall_score,
+    f1_score,
+    accuracy_score,
+)
+from evalrun import read_run_alternate
+import pandas as pd
 
 
-def pre_llm(runFile: Path, similaritiesFile: Path):
-    pass
+def pre_llm(
+    threshold: float, runFile: Path, similaritiesFile: Path, sim_function="overlap"
+):
+    truths, predictions, entropies, probabilities, pairs = read_run_alternate(runFile)
+    similarities = pd.read_csv(similaritiesFile)
+    # ensure all pairs have a similarity value
+    sim_pairs = set(zip(similarities["table1.id"], similarities["table2.id"]))
+    # Ensure that all discarded pairs are also present in the original pairs set
+    if not set(pairs).issubset(sim_pairs):
+        raise ValueError("Similarity file misses values for some pairs.")
+
+    # Filter rows based on the specified threshold for the "overlap" column
+    discarded_rows = similarities[similarities[sim_function] < threshold]
+    discarded_pairs = set(zip(discarded_rows["table1.id"], discarded_rows["table2.id"]))
+    # Get indices of discarded pairs in pairs
+    discarded_pairs_indices = [
+        i for i, pair in enumerate(pairs) if pair in discarded_pairs
+    ]
+    predictions[discarded_pairs_indices] = 0
+    prec = precision_score(truths, predictions)
+    rec = recall_score(truths, predictions)
+    f1 = f1_score(truths, predictions)
+    acc = accuracy_score(truths, predictions)
+    return acc, prec, rec, f1
 
 
 def find_matching_csv(
@@ -39,8 +69,12 @@ if __name__ == "__main__":
         "base": {"runfiles": "runs/35_base/*force-gpt*.json", "similarities": "eval"},
     }
     for path in Path(".").glob(CONFIGURATIONS["base"]["runfiles"]):
-        print(
-            find_matching_csv(
-                path, Path(CONFIGURATIONS["base"]["similarities"]).glob("*-allsim.csv")
-            )
+        dataset_name = path.stem.split("-")[0]
+        simPath = find_matching_csv(
+            path, Path(CONFIGURATIONS["base"]["similarities"]).glob("*-allsim.csv")
         )
+        if not simPath:
+            raise ValueError(
+                f"No matching similarity file in {CONFIGURATIONS['base']['similarities']} found for {path}"
+            )
+        pre_llm(0.3, path, simPath)

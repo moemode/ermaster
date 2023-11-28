@@ -48,7 +48,7 @@ if __name__ == "__main__":
         results = dict()
 
         for path in inpaths:
-            truths, predictions, _, probabilities = read_run_alternate(path)
+            truths, predictions, _, probabilities, _ = read_run_alternate(path)
             dataset_name = (
                 path.stem.split("-")[0]
                 .replace("structured_", "")

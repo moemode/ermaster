@@ -87,6 +87,7 @@ def calibration_data(truths, predictions, probabilities):
 
 def read_run_alternate(run: Path):
     Path("eval").mkdir(parents=True, exist_ok=True)
+    pairs = []
     truths = []
     predictions = []
     entropies = []
@@ -95,6 +96,7 @@ def read_run_alternate(run: Path):
         data = json.load(file)
     for sample in data:
         prompt, truth, completion = sample["p"], sample["t"], sample["c"]
+        pairs.append((sample["id0"], sample["id1"]))
         topprobs_first = completion["logprobs"]["top_logprobs"][0]
         # Define Yes/No tokens
         yn_tokens = ["Yes", "No", " Yes", " No"]
@@ -121,13 +123,12 @@ def read_run_alternate(run: Path):
         np.array(predictions),
         np.array(entropies),
         np.array(probabilities),
+        pairs,
     )
 
 
 def eval(run: Path):
-    truths, predictions, entropies, probabilities = (
-        np.array(l) for l in read_run_alternate(run)
-    )
+    truths, predictions, entropies, probabilities, _ = read_run_alternate(run)
     truths = truths.astype(bool)
     prec = precision_score(truths, predictions)
     rec = recall_score(truths, predictions)
