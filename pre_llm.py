@@ -22,7 +22,7 @@ def pre_llm(
         raise ValueError("Similarity file misses values for some pairs.")
 
     # Filter rows based on the specified threshold for the "overlap" column
-    discarded_rows = similarities[similarities[sim_function] < threshold]
+    discarded_rows = similarities[similarities[sim_function] <= threshold]
     discarded_pairs = set(zip(discarded_rows["table1.id"], discarded_rows["table2.id"]))
     # Get indices of discarded pairs in pairs
     discarded_pairs_indices = [
@@ -66,7 +66,10 @@ def find_matching_csv(
 
 if __name__ == "__main__":
     CONFIGURATIONS = {
-        "base": {"runfiles": "runs/35_base/*force-gpt*.json", "similarities": "eval"},
+        "base": {
+            "runfiles": "runs/35_base/*dblp_scholar*force-gpt*.json",
+            "similarities": "eval",
+        },
     }
     for path in Path(".").glob(CONFIGURATIONS["base"]["runfiles"]):
         dataset_name = path.stem.split("-")[0]
