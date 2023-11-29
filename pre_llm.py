@@ -6,34 +6,47 @@ from sklearn.metrics import (
     f1_score,
     accuracy_score,
 )
-from evalrun import read_run_alternate
+from cost import str_cost
+from evalrun import read_run_alternate, read_run_raw
 import pandas as pd
 
 
 def pre_llm(
     threshold: float, runFile: Path, similaritiesFile: Path, sim_function="overlap"
 ):
-    truths, predictions, entropies, probabilities, pairs = read_run_alternate(runFile)
+    truths, predictions, entropies, probabilities, pair_ids = read_run_alternate(
+        runFile
+    )
+    completions = read_run_raw(runFile)
+    prompts = list(map(lambda cp: cp.prompt_string, completions.values()))
+    cost_full = str_cost(prompts, 1, "gpt-3.5-turbo-instruct")
     similarities = pd.read_csv(similaritiesFile)
     # ensure all pairs have a similarity value
     sim_pairs = set(zip(similarities["table1.id"], similarities["table2.id"]))
-    # Ensure that all discarded pairs are also present in the original pairs set
-    if not set(pairs).issubset(sim_pairs):
+    if not set(pair_ids).issubset(sim_pairs):
         raise ValueError("Similarity file misses values for some pairs.")
-
     # Filter rows based on the specified threshold for the "overlap" column
     discarded_rows = similarities[similarities[sim_function] <= threshold]
     discarded_pairs = set(zip(discarded_rows["table1.id"], discarded_rows["table2.id"]))
+    # discarded prompts
+    discarded_prompts = [
+        completions[pair_id].prompt_string
+        for pair_id in discarded_pairs
+        if pair_id in pair_ids
+    ]
+    cost_remaining = cost_full - str_cost(
+        discarded_prompts, 1, "gpt-3.5-turbo-instruct"
+    )
     # Get indices of discarded pairs in pairs
     discarded_pairs_indices = [
-        i for i, pair in enumerate(pairs) if pair in discarded_pairs
+        i for i, pair in enumerate(pair_ids) if pair in discarded_pairs
     ]
     predictions[discarded_pairs_indices] = 0
     prec = precision_score(truths, predictions)
     rec = recall_score(truths, predictions)
     f1 = f1_score(truths, predictions)
     acc = accuracy_score(truths, predictions)
-    return acc, prec, rec, f1
+    return acc, prec, rec, f1, cost_remaining, cost_remaining / cost_full
 
 
 def find_matching_csv(

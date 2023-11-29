@@ -1,6 +1,6 @@
 from collections import namedtuple
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import pandas as pd
 
@@ -60,6 +60,19 @@ def cost(
     if model not in costs:
         raise ValueError(f"No costs available for {model}")
     N, intokens = prompt_tokens(prompt_file, model)
+    outtokens = N * outtokens_per_prompt
+    return intokens / 1000 * costs[model].input + outtokens / 1000 * costs[model].output
+
+
+def str_cost(
+    prompt_strings: List[str],
+    outtokens_per_prompt: int,
+    model: str,
+    costs: Dict[str, ModelCost] = MODEL_COSTS,
+) -> float:
+    N = len(prompt_strings)
+    # Iterate over pairs and calculate f, then sum the results
+    intokens = sum(num_tokens_from_string(p, model) for p in prompt_strings)
     outtokens = N * outtokens_per_prompt
     return intokens / 1000 * costs[model].input + outtokens / 1000 * costs[model].output
 

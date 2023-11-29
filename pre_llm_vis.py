@@ -39,7 +39,7 @@ if __name__ == "__main__":
     setup_plt()
     df = pd.read_csv("eval_writeup/pre_llm_perf.csv")
     id_vars = ["Dataset", "Threshold"]
-    selected_metrics = ["Precision", "Recall", "F1"]
+    selected_metrics = ["Precision", "Recall", "F1", "Cost Relative"]
     # Filter the dataframe to only contain the selected metrics and id_vars
     df = df[selected_metrics + id_vars]
     # Reshape the dataframe for seaborn

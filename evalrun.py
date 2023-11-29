@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Dict, Iterable
+from attr import dataclass
 import numpy as np
 from sklearn.metrics import (
     brier_score_loss,
@@ -49,6 +50,25 @@ def read_run(run: Path):
 """
 
 
+@dataclass
+class CompletedPrompt:
+    id0: int
+    id1: int
+    prompt_string: str
+    truth: bool
+    c: Dict[str, Any]
+
+    @classmethod
+    def from_json(cls, json_data: Dict[str, Any]) -> "CompletedPrompt":
+        return cls(
+            id0=json_data["id0"],
+            id1=json_data["id1"],
+            prompt_string=json_data["p"],
+            truth=json_data["t"],
+            c=json_data["c"],
+        )
+
+
 def calibration_data(truths, predictions, probabilities):
     probabilities_brier = probabilities.copy()
     pred0 = 0 == predictions
@@ -83,6 +103,16 @@ def calibration_data(truths, predictions, probabilities):
         "EST_Recall": recall,
         "EST_F1": f1,
     }
+
+
+def read_run_raw(run: Path) -> Dict[tuple, CompletedPrompt]:
+    with open(run, "r") as file:
+        data = json.load(file)
+    # Create a dictionary mapping a tuple of (id0, id1) to CompletedPrompt objects
+    prompt_dict: Dict[tuple, CompletedPrompt] = {
+        (item["id0"], item["id1"]): CompletedPrompt.from_json(item) for item in data
+    }
+    return prompt_dict
 
 
 def read_run_alternate(run: Path):
