@@ -20,6 +20,7 @@ def pre_llm(
     completions = read_run_raw(runFile)
     prompts = list(map(lambda cp: cp.prompt_string, completions.values()))
     cost_full = str_cost(prompts, 1, "gpt-3.5-turbo-instruct")
+    duration_full = sum(map(lambda cp: cp.duration, completions.values()))
     similarities = pd.read_csv(similaritiesFile)
     # ensure all pairs have a similarity value
     sim_pairs = set(zip(similarities["table1.id"], similarities["table2.id"]))
@@ -28,15 +29,17 @@ def pre_llm(
     # Filter rows based on the specified threshold for the "overlap" column
     discarded_rows = similarities[similarities[sim_function] <= threshold]
     discarded_pairs = set(zip(discarded_rows["table1.id"], discarded_rows["table2.id"]))
+    if threshold == 0.0:
+        discarded_pairs = set()
     # discarded prompts
-    discarded_prompts = [
-        completions[pair_id].prompt_string
-        for pair_id in discarded_pairs
-        if pair_id in pair_ids
+    discarded = [
+        completions[pair_id] for pair_id in discarded_pairs if pair_id in pair_ids
     ]
+    discarded_prompts = list(map(lambda cp: cp.prompt_string, discarded))
     cost_remaining = cost_full - str_cost(
         discarded_prompts, 1, "gpt-3.5-turbo-instruct"
     )
+    duration_remaining = duration_full - sum(map(lambda cp: cp.duration, discarded))
     # Get indices of discarded pairs in pairs
     discarded_pairs_indices = [
         i for i, pair in enumerate(pair_ids) if pair in discarded_pairs
@@ -46,7 +49,16 @@ def pre_llm(
     rec = recall_score(truths, predictions)
     f1 = f1_score(truths, predictions)
     acc = accuracy_score(truths, predictions)
-    return acc, prec, rec, f1, cost_remaining, cost_remaining / cost_full
+    return (
+        acc,
+        prec,
+        rec,
+        f1,
+        cost_remaining,
+        cost_remaining / cost_full,
+        duration_remaining,
+        duration_remaining / duration_full,
+    )
 
 
 def find_matching_csv(

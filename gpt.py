@@ -124,7 +124,8 @@ if __name__ == "__main__":
     model = "gpt-3.5-turbo-instruct"
     datasets = SAMPLED_DATASET_NAMES
     # remove dbpedia, and textual_company
-    datasets = filter(lambda ds: "textual_company" not in ds, datasets)
+    # datasets = filter(lambda ds: "textual_company" not in ds, datasets)
+    datasets = ["dbpedia10k_1250"]
     # datasets = filter(lambda ds: "dblp_acm" in ds, datasets)
     model_params = dict(model=model, max_tokens=1, logprobs=5, temperature=0, seed=0)
     paths = map(

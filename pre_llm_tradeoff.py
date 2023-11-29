@@ -19,6 +19,7 @@ if __name__ == "__main__":
         dataset_df["Original F1"] = reference_entry["F1"]
         dataset_df["F1"] = dataset_df["F1"]
         dataset_df["Relative_Cost"] = dataset_df["Cost Relative"]
+        dataset_df["Relative_Duration"] = dataset_df["Duration Relative"]
 
         # Append the results to the list
         decrease_entries.append(
@@ -30,6 +31,7 @@ if __name__ == "__main__":
                     "Original F1",
                     "F1",
                     "Relative_Cost",
+                    "Relative_Duration",
                 ]
             ]
         )
@@ -63,6 +65,7 @@ if __name__ == "__main__":
                         "F1",
                         "F1_Decrease",
                         "Relative_Cost",
+                        "Relative_Duration",
                     ]
                 ]
                 .to_frame()
@@ -74,12 +77,19 @@ if __name__ == "__main__":
     # add new column 1 - relative cost
     presentation_df["Cost Decrease"] = 1 - presentation_df["Relative_Cost"]
     presentation_df["F1_Decrease"] = presentation_df["F1_Decrease"].abs()
+    presentation_df["Time Decrease"] = 1 - presentation_df["Relative_Duration"]
 
     # Print the result DataFrame
     # print(result_df)
     print(
         presentation_df[
-            ["Dataset", "F1_Decrease", "Cost Decrease", "F1_Decrease_Threshold"]
+            [
+                "Dataset",
+                "F1_Decrease",
+                "Cost Decrease",
+                "Time Decrease",
+                "F1_Decrease_Threshold",
+            ]
         ]
     )
     presentation_df.to_csv("eval_writeup/pre_llm_tradeoff.csv", index=False)

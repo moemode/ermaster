@@ -25,7 +25,9 @@ if __name__ == "__main__":
                 )
 
             # Call pre_llm and store the results in the dataframe
-            acc, prec, rec, f1, cost, cost_rel = pre_llm(threshold, path, simPath)
+            acc, prec, rec, f1, cost, cost_rel, duration, duration_rel = pre_llm(
+                threshold, path, simPath
+            )
             results.append(
                 {
                     "Dataset": dataset_name,
@@ -36,6 +38,8 @@ if __name__ == "__main__":
                     "F1": f1,
                     "Cost": cost,
                     "Cost Relative": cost_rel,
+                    "Duration": duration,
+                    "Duration Relative": duration_rel,
                 }
             )
     results_df = pd.DataFrame(results)

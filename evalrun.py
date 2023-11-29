@@ -56,7 +56,8 @@ class CompletedPrompt:
     id1: int
     prompt_string: str
     truth: bool
-    c: Dict[str, Any]
+    completion: Dict[str, Any]
+    duration: float
 
     @classmethod
     def from_json(cls, json_data: Dict[str, Any]) -> "CompletedPrompt":
@@ -65,7 +66,8 @@ class CompletedPrompt:
             id1=json_data["id1"],
             prompt_string=json_data["p"],
             truth=json_data["t"],
-            c=json_data["c"],
+            completion=json_data["c"],
+            duration=json_data["d"],
         )
 
 
