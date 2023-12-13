@@ -1,11 +1,9 @@
 from collections import namedtuple
 from pathlib import Path
 from typing import Dict, List
-
 import pandas as pd
-
-from erllm.discarder import DATASET_NAMES
-from utils import load_json_file, num_tokens_from_string
+from erllm.dataset import DATASET_NAMES
+from erllm.utils import load_json_file, num_tokens_from_string
 
 # Define a named tuple for input and output costs
 ModelCost = namedtuple("ModelCost", ["input", "output"])
