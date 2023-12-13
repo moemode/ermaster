@@ -60,7 +60,7 @@ This must be accounted for when reading the data.
 
 The file `newDBPediaMatchesout` contains matching profile pairs.
 Each line has the format:
-`numerical_id_0 , numerical_id_1` 
+`numerical_id_0 , numerical_id_1`
 ## Format
 
 Each dataset consists of five CSV files: `tableA.csv`, `tableB.csv`, `test.csv`, `train.csv`, and `valid.csv`.
