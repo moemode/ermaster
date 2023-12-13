@@ -83,7 +83,7 @@ if __name__ == "__main__":
         # g.fig.suptitle("Metrics vs Threshold for Different Datasets", fontsize=16)
         p = Path(f"figures/pre_llm/pre_llm_perf_{postfix}.png")
         p.parent.mkdir(parents=True, exist_ok=True)
-        g.savefig(f"figures/pre_llm_perf_{postfix}.png")
+        g.savefig(p)
 
         # Iterate over each group and plot the dataset
         for dataset_name, group_data in df_melted.groupby("Dataset"):
