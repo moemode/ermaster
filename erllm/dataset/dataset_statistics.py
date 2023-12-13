@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
-from load_benchmark import load_benchmark
-from preclassify import DATASET_NAMES
+from erllm.dataset.load_ds import load_benchmark
+from erllm.discarder.discarder import DATASET_NAMES
 
 
 def dataset_statistics(

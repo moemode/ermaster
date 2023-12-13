@@ -4,7 +4,7 @@ from typing import Dict, List
 
 import pandas as pd
 
-from preclassify import DATASET_NAMES
+from erllm.discarder import DATASET_NAMES
 from utils import load_json_file, num_tokens_from_string
 
 # Define a named tuple for input and output costs

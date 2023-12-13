@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable
 
-from preclassify import SAMPLED_DATASET_NAMES
+from erllm.discarder import SAMPLED_DATASET_NAMES
 
 
 @dataclass

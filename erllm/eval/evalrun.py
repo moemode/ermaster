@@ -16,7 +16,7 @@ from utils import (
     bernoulli_entropy,
     negative_predictive_value,
 )
-from reliability_diagrams import *
+from erllm.eval.reliability_diagrams import *
 
 import pandas as pd
 

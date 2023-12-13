@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
  */
-package org.scify.jedai.generalexamples;
+package trash;
 
 import org.apache.log4j.BasicConfigurator;
 import org.scify.jedai.datamodel.Attribute;
@@ -31,6 +31,7 @@ import java.util.Set;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+
 /**
  *
  * @author G.A.P. II
@@ -41,10 +42,10 @@ public class CleanCleanErDatasetStatistics {
         BasicConfigurator.configure();
 
         String mainFolder = "/home/v/Documents/4whpm32y47-7/Real Clean-Clean ER data/newDBPedia/dbpedia/";
-        String[] entitiesFiles = {mainFolder + "cleanDBPedia2",
-            //mainFolder + "cleanDBPedia2"
+        String[] entitiesFiles = { mainFolder + "cleanDBPedia2",
+                // mainFolder + "cleanDBPedia2"
         };
-        String[] groundTruthFiles = {mainFolder + "newDBPediaMatches"
+        String[] groundTruthFiles = { mainFolder + "newDBPediaMatches"
         };
 
         for (String entitiesFile : entitiesFiles) {
@@ -59,8 +60,8 @@ public class CleanCleanErDatasetStatistics {
             double nameValuePairs = 0;
             int nProc = 0;
             for (EntityProfile profile : profiles) {
-                if(nProc % 1000 == 0) {
-                    System.out.println(nProc+ "/" +profiles.size() + '\n');
+                if (nProc % 1000 == 0) {
+                    System.out.println(nProc + "/" + profiles.size() + '\n');
                 }
                 String s = profile.dump();
                 writer.write(nProc + "," + profile.dump() + "\n");
@@ -76,11 +77,13 @@ public class CleanCleanErDatasetStatistics {
             System.out.println("Total Name-Value Pairs\t:\t" + nameValuePairs);
             System.out.println("Average Name-Value Pairs\t:\t" + nameValuePairs / profiles.size());
         }
-    /*
-        IGroundTruthReader gtReader = new GtSerializationReader(groundTruthFiles[0]);
-        final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
-        System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
-   */
+        /*
+         * IGroundTruthReader gtReader = new GtSerializationReader(groundTruthFiles[0]);
+         * final AbstractDuplicatePropagation duplicatePropagation = new
+         * BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
+         * System.out.println("Existing Duplicates\t:\t" +
+         * duplicatePropagation.getDuplicates().size());
+         */
     }
 
 }

@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
  */
-package org.scify.jedai.generalexamples;
+package trash;
 
 import org.apache.log4j.BasicConfigurator;
 import org.scify.jedai.datamodel.Attribute;
@@ -33,6 +33,7 @@ import java.util.Set;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+
 /**
  *
  * @author G.A.P. II
@@ -42,7 +43,7 @@ public class CleanCleanErDatasetGT {
     public static void main(String[] args) throws IOException {
         BasicConfigurator.configure();
         String mainFolder = "/home/v/Documents/4whpm32y47-7/Real Clean-Clean ER data/newDBPedia/dbpedia/";
-        String[] groundTruthFiles = {mainFolder + "newDBPediaMatches"
+        String[] groundTruthFiles = { mainFolder + "newDBPediaMatches"
         };
         String fileName = groundTruthFiles[0] + "out";
         BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
@@ -50,9 +51,10 @@ public class CleanCleanErDatasetGT {
         List<EntityProfile> l1 = new ArrayList<>();
         List<EntityProfile> l2 = new ArrayList<>();
         gtReader.getDuplicatePairs(l1, l2);
-        final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
+        final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(
+                gtReader.getDuplicatePairs(null));
         Set<IdDuplicates> duplicates = duplicatePropagation.getDuplicates();
-        for(IdDuplicates dup :duplicates) {
+        for (IdDuplicates dup : duplicates) {
             writer.write(dup.getEntityId1() + "," + dup.getEntityId2() + "\n");
         }
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());

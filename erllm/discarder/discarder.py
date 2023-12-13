@@ -1,6 +1,7 @@
 from pathlib import Path
 import pickle
-from access_dbpedia import OrderedEntity
+from erllm.dataset import ORIGINAL_DATASET_NAMES
+from erllm.dataset.dbpedia.access_dbpedia import OrderedEntity
 from py_stringmatching import (
     Jaccard,
     OverlapCoefficient,
@@ -8,33 +9,10 @@ from py_stringmatching import (
     GeneralizedJaccard,
 )
 import pandas as pd
-from load_benchmark import load_benchmark
+from erllm.dataset.load_ds import load_benchmark
 from tqdm import tqdm
-
 from sentence_transformers import SentenceTransformer
 import numpy as np
-
-
-ORIGINAL_DATASET_NAMES = [
-    # "dirty_dblp_acm",
-    # "dirty_walmart_amazon",
-    # "dirty_itunes_amazon",
-    # "dirty_dblp_scholar",
-    "structured_dblp_acm",
-    "structured_itunes_amazon",
-    # "textual_company",
-    "structured_amazon_google",
-    "structured_dblp_scholar",
-    "structured_walmart_amazon",
-    "structured_beer",
-    "structured_fodors_zagats",
-    "textual_abt_buy",
-    "dbpedia10k",
-    "dbpedia10k_harder",
-]
-SAMPLED_DATASET_NAMES = [dataset + "_1250" for dataset in ORIGINAL_DATASET_NAMES]
-
-DATASET_NAMES = ORIGINAL_DATASET_NAMES + SAMPLED_DATASET_NAMES
 
 
 def euclidean(vector1, vector2):

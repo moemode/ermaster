@@ -1,5 +1,10 @@
 from typing import Dict, Set, Iterable
-from access_dbpedia import Entity, get_entity_by_id, get_random_matches, tokens
+from .access_dbpedia import (
+    Entity,
+    get_entity_by_id,
+    get_random_matches,
+    tokens,
+)
 import itertools
 from py_stringmatching.tokenizer.whitespace_tokenizer import WhitespaceTokenizer
 import pandas as pd

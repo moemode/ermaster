@@ -1,7 +1,9 @@
 from pathlib import Path
 import pandas as pd
-from load_benchmark import load_into_df
-from preclassify import ORIGINAL_DATASET_NAMES
+from erllm import DATADIR
+from erllm.dataset.load_ds import load_into_df
+
+print(DATADIR)
 
 
 def sample(dataset: str, folder: Path, N: int) -> pd.DataFrame:
@@ -33,13 +35,13 @@ def sample(dataset: str, folder: Path, N: int) -> pd.DataFrame:
         sample_matches = matches.sample(int(N * len(matches) / len(df)), replace=False)
         sample_non_matches = non_matches.sample(N - len(sample_matches), replace=False)
     sampled_df = pd.concat([sample_matches, sample_non_matches])
-    sampled_df.to_csv(new_folder / "test.csv", index=True, index_label="_id")
+    sampled_df.to_csv(new_folder / "tmp_test.csv", index=True, index_label="_id")
     return sampled_df
 
 
 if __name__ == "__main__":
     datasets = ORIGINAL_DATASET_NAMES
-    root_folder = Path("data/benchmark_datasets/existingDatasets")
+    root_folder = Path("data") / "benchmark_datasets" / "existingDatasets"
     for dataset, folder in [
         (dataset, root_folder / dataset) for dataset in datasets
     ]:  # datasets]:

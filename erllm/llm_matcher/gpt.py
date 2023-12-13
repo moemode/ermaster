@@ -5,7 +5,7 @@ from timeit import default_timer as timer
 from typing import Dict, Optional
 
 import openai
-from preclassify import SAMPLED_DATASET_NAMES
+from erllm.discarder import SAMPLED_DATASET_NAMES
 
 from prompts import Prompt, prompt_dict_to_prompts
 from utils import (

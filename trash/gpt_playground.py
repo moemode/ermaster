@@ -1,11 +1,8 @@
 import os
 from timeit import default_timer as timer
-
 import openai
+from erllm.utils import retry_with_exponential_backoff
 
-from utils import (
-    retry_with_exponential_backoff,
-)
 
 PRICE_PER_1K_TOKENS_PROMPT = 0.002
 PRICE_PER_1K_TOKENS_COMPLETE = 0.002

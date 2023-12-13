@@ -1,10 +1,10 @@
 from typing import Callable
 import json
 from pathlib import Path
-from access_dbpedia import OrderedEntity
+from erllm.dbpedia.access_dbpedia import OrderedEntity
 
-from load_benchmark import load_benchmark
-from preclassify import DATASET_NAMES
+from erllm.dataset.load_ds import load_benchmark
+from erllm.discarder import DATASET_NAMES
 
 
 def dataset_to_prompt_data(

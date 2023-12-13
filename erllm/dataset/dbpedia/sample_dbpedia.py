@@ -1,7 +1,7 @@
 import math
 from pathlib import Path
 
-from access_dbpedia import (
+from erllm.dbpedia.access_dbpedia import (
     Entity,
     get_entity_by_id,
     get_number_of_entries,
@@ -9,7 +9,7 @@ from access_dbpedia import (
     is_match,
     to_str,
 )
-from token_blocking import (
+from erllm.dataset.dbpedia.token_blocking import (
     clean_block_purging,
     clean_block_statistics,
     clean_comparisons,

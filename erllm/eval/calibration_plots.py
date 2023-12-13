@@ -1,8 +1,8 @@
-from evalrun import read_run_alternate
+from erllm.eval.evalrun import read_run_alternate
 from sklearn.metrics import brier_score_loss
 from pathlib import Path
 import matplotlib.pyplot as plt
-from reliability_diagrams import *
+from erllm.eval.reliability_diagrams import *
 import pandas as pd
 
 

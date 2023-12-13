@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 from typing import List, Tuple
 from tqdm import tqdm
-from access_dbpedia import OrderedEntity
+from .dbpedia.access_dbpedia import OrderedEntity
 
 
 def load_into_df(fpaths: List[Path]) -> pd.DataFrame:
