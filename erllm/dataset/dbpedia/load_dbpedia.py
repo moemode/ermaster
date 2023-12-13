@@ -3,8 +3,7 @@ import json
 from tqdm import tqdm
 import sqlite3
 from typing import Iterable, Tuple
-
-DBFILE = "my_database.db"
+from erllm.dataset import DBFILE_PATH
 
 create_dbpediadb_table_stmt = """
         CREATE TABLE IF NOT EXISTS {} (
@@ -24,7 +23,7 @@ create_match_table_stmt = """
 
 def db_execute(stmt):
     # Connect to the SQLite database or create it if it doesn't exist
-    conn = sqlite3.connect(DBFILE)
+    conn = sqlite3.connect(DBFILE_PATH)
     # Create a cursor object to execute SQL commands
     cursor = conn.cursor()
     # Create a table with the specified schema
@@ -39,7 +38,7 @@ def list_to_pairs(l: list) -> Iterable[Tuple[str, str]]:
 
 
 def load_dbpedia_db(fname: Path, tname: str):
-    conn = sqlite3.connect(DBFILE)
+    conn = sqlite3.connect(DBFILE_PATH)
     cursor = conn.cursor()
     # Define the SQL query with placeholders
     insert_query = f"INSERT INTO {tname} (id, uri, kv) VALUES (?, ?, ?)"
@@ -73,7 +72,7 @@ def load_dbpedia_db(fname: Path, tname: str):
 
 
 def load_dbpedia_matches(fname: Path, tname: str):
-    conn = sqlite3.connect(DBFILE)
+    conn = sqlite3.connect(DBFILE_PATH)
     cursor = conn.cursor()
     # Define the SQL query with placeholders
     insert_query = f"INSERT INTO {tname} (id0, id1) VALUES (?, ?)"
@@ -99,7 +98,7 @@ def load_dbpedia(dbpaths, dbtnames, matchpath=None, matchtname=None):
 
 def create_indices():
     # Connect to the SQLite database
-    conn = sqlite3.connect(DBFILE)
+    conn = sqlite3.connect(DBFILE_PATH)
     # Create a cursor object to execute SQL commands
     cursor = conn.cursor()
     # Define the SQL command to create an index on the id0 column

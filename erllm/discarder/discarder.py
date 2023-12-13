@@ -9,7 +9,7 @@ from py_stringmatching import (
     GeneralizedJaccard,
 )
 import pandas as pd
-from erllm.dataset.load_ds import load_benchmark
+from erllm.dataset.load_ds import load_dataset
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 import numpy as np
@@ -170,7 +170,7 @@ def dataset_similarities(
     emb_sim_missing = emb_sim and not result_path_emb_sim.exists()
     if not any([set_sim_missing, emb_missing, emb_sim_missing]):
         return
-    pairs = load_benchmark(folder, use_tqdm=True)
+    pairs = load_dataset(folder, use_tqdm=True)
     if set_sim_missing:
         print("Similiarities on Dataset:", dataset)
         sims = similarities(pairs, set_sim, use_tqdm=True)

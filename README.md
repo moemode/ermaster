@@ -3,6 +3,9 @@
 | File            | Purpose                      |
 | --------------- | ------------------------- |
 | [sample_ds.py](sample_ds.py)    | Downsample datasets |
+| [llm_matcher/prompt_data.py](erllm/llm_matcher/prompt_data.py) | Serialize entities intro string represenation for use in prompt template
+| [llm_matcher/prompts.py](erllm/llm_matcher/prompts.py) | Take output of prompt_data.py and convert it to JSON files containing full prompts based on template choice|
+
 
 # Datasets and their Format
 We evaluate on a wide range of datasets.
@@ -47,11 +50,11 @@ data/benchmark_datasets/existingDatasets.
 ### DBPedia
 The [JedAIToolkit](https://github.com/scify/JedAIToolkit) contains the original copy of the DBPedia dataset in .jso format, which is a serialized Java object.  
 To make this dataset easier to use, we submitted a [pull request](https://github.com/scify/JedAIToolkit/pull/66) to convert it to .txt files.  
-We shared this .txt these with the authors of [JedAIToolkit](https://github.com/scify/JedAIToolkit) who uploaded it to https://zenodo.org/records/10059096.  
+We shared these with the authors of [JedAIToolkit](https://github.com/scify/JedAIToolkit) who uploaded it to https://zenodo.org/records/10059096.  
 We do not use .csv because there is no fixed schema.
 
 The files `cleanDBPedia1out`, `cleanDBPedia2out` contain the entities.
-Each line corresponds to a different entity profile and has the following structure (where n is number of attributes, aname and aval are the attribute names and values):
+Each line corresponds to a different entity profile and has the following structure (where n is number of attributes, aname and aval are the attribute names and values):  
 `numerical_id , uri , n ,  aname_0 , aval_0 , aname_1 , aval_1 ,...aname_n , aval_n`
 
 That is, the separator is `space,space`.
@@ -59,7 +62,7 @@ That is, the separator is `space,space`.
 This must be accounted for when reading the data.
 
 The file `newDBPediaMatchesout` contains matching profile pairs.
-Each line has the format:
+Each line has the format:  
 `numerical_id_0 , numerical_id_1`
 ## Format
 

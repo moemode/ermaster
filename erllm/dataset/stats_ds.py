@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
-from erllm.dataset.load_ds import load_benchmark
-from erllm.discarder.discarder import DATASET_NAMES
+from erllm import DATASET_FOLDER_PATH, DATASET_NAMES
+from erllm.dataset.load_ds import load_dataset
 
 
 def dataset_statistics(
@@ -9,8 +9,7 @@ def dataset_statistics(
 ):
     save_to = Path("prompt_data")
     save_to.mkdir(parents=True, exist_ok=True)
-    dataset = folder.parts[-1]
-    pairs = load_benchmark(folder, use_tqdm=True)
+    pairs = load_dataset(folder, use_tqdm=True)
     n_pos = len(list(filter(lambda p: p[0] == True, pairs)))
     n_neg = len(list(filter(lambda p: p[0] == False, pairs)))
     return len(pairs), n_pos, n_neg
@@ -19,7 +18,7 @@ def dataset_statistics(
 if __name__ == "__main__":
     datasets = DATASET_NAMES
     data = []
-    root_folder = Path("data/benchmark_datasets/existingDatasets")
+    root_folder = DATASET_FOLDER_PATH
     for folder in [root_folder / dataset for dataset in datasets]:
         dataset = folder.parts[-1]
         data.append((dataset, *dataset_statistics(folder)))

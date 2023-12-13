@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 from typing import List, Tuple
 from tqdm import tqdm
-from .dbpedia.access_dbpedia import OrderedEntity
+from erllm.dataset.entity import OrderedEntity
 
 
 def load_into_df(fpaths: List[Path]) -> pd.DataFrame:
@@ -31,7 +31,6 @@ def load_into_df(fpaths: List[Path]) -> pd.DataFrame:
     df = pd.read_csv(first_file_path)
     # Loop through the remaining file paths and validate their shape
     for file_path in fpaths[1:]:
-        # Load the CSV file
         new_df = pd.read_csv(file_path)
         # Check if the columns match the structure of the initial DataFrame
         if not df.columns.equals(new_df.columns):
@@ -42,38 +41,39 @@ def load_into_df(fpaths: List[Path]) -> pd.DataFrame:
     return df
 
 
-def load_benchmark(
+def load_dataset(
     folder: Path, use_tqdm=False
 ) -> List[Tuple[bool, OrderedEntity, OrderedEntity]]:
     """
     Load benchmark data from CSV files and return a list of tuples representing entity pairs.
 
     Args:
-        fpaths (List[Path]): A list of file paths to the CSV files containing benchmark data.
+        folder (Path): The folder containing CSV files with benchmark data.
+        use_tqdm (bool, optional): Whether to use tqdm for progress visualization. Defaults to False.
 
     Returns:
-        List[Tuple[bool, OrderedEntity, OrderedEntity]]: A list of tuples, each containing three elements:
+        List[Tuple[bool, OrderedEntity, OrderedEntity]]: A list of tuples representing entity pairs.
+            Each tuple contains:
             1. A boolean value representing the label for the entity pair.
             2. An OrderedEntity object representing the first entity.
             3. An OrderedEntity object representing the second entity.
 
-    The function loads benchmark data from CSV files specified by the file paths in the 'fpaths' list. It assumes that
-    the CSV files follow a specific structure where two tables, 'table1' and 'table2,' are compared, and the labels
-    for the entity pairs are included.
+    The function loads benchmark data from CSV files in the specified 'folder' by combining the 'test.csv', 'train.csv',
+    and 'valid.csv' files if they exist. It assumes a specific CSV structure where two tables, 'table1' and 'table2,'
+    are compared, and the labels for the entity pairs are included.
 
-    The 'OrderedEntity' objects are created for each entity in both tables, and the entity pairs are represented as tuples.
-    The 'OrderedEntity' objects include the entity's ID and attributes extracted from the corresponding columns in the CSV.
+    OrderedEntity objects are created for each entity in both tables, with attributes extracted from the corresponding
+    columns in the CSV. Entity pairs are represented as tuples.
 
     Example usage:
-    file_paths = [Path("benchmark1.csv"), Path("benchmark2.csv")]
-    benchmark_data = load_benchmark(file_paths)
+    folder_path = Path("path/to/benchmark")
+    benchmark_data = load_dataset(folder_path, use_tqdm=True)
     for label, entity1, entity2 in benchmark_data:
         # Process entity pairs and their labels
         ...
     """
     fnames = ["test.csv", "train.csv", "valid.csv"]
     fpaths = [folder / fname for fname in fnames if (folder / fname).exists()]
-    # Read the CSV file into a Pandas DataFrame
     df = load_into_df(fpaths)
     # Iterate over the rows of the DataFrame
     table1_columns = [col for col in df.columns if col.startswith("table1")]
@@ -101,14 +101,6 @@ def load_benchmark(
         table2_entities.append(e2)
         pairs.append((row["label"], e1, e2))
     return pairs
-
-
-def get_folders_in_directory(directory_path):
-    directory_path = Path(directory_path)
-    if not directory_path.is_dir():
-        raise ValueError("The provided path is not a directory.")
-    folder_paths = [entry for entry in directory_path.iterdir() if entry.is_dir()]
-    return folder_paths
 
 
 BENCHMARKS_PATH = Path(

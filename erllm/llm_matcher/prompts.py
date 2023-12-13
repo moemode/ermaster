@@ -2,8 +2,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable
-
-from erllm.discarder import SAMPLED_DATASET_NAMES
+from erllm import PROMPT_DATA_FOLDER_PATH, PROMPTS_FOLDER_PATH, SAMPLED_DATASET_NAMES
 
 
 @dataclass
@@ -15,7 +14,6 @@ class Prompt:
 
 
 VERB_CONFIDENCE = "Provide your best guess and the probability that it is correct (0.0 to 1.0) for the following question. Give ONLY the guess and probability, no other words or explanation. For example:\n\nGuess: <most likely guess, as short as possible; not a complete sentence, just the guess!>\n Probability: <the probability between 0.0 and 1.0 that your guess is correct, without any extra commentary whatsoever; just the probability!>\n\nThe question is: "
-
 DOMAIN_SIMPLE = "Do the two {entity_type_plural} match?"
 DOMAIN_COMPLEX = "Do the two {entity_type_plural} refer to the same real-world product?"
 GENERAL_SIMPLE = "Do the two entity descriptions match?"
@@ -45,13 +43,6 @@ for k, v in newitems:
     TASK_PREFIXES[k] = v
 
 
-SIMPLE_PROMPT_POSTFIX = """Do the two entity descriptions match?
-Entity 1: '{e0}'
-Entity 2: '{e1}'
-Answer with 'Yes' if they do and 'No' if they do not.
-"""
-
-
 def prompt_dict(
     prompt_type: str,
     prompt_data: Iterable[Dict],
@@ -59,6 +50,27 @@ def prompt_dict(
     entity_type_plural: str = "",
     postfix: str = "",
 ) -> Dict:
+    """
+    Convert serialized entity pairs in prompt data to a dictionary representing full prompts.
+    Args:
+        prompt_type (str): Type of the prompt.
+        prompt_data (Iterable[Dict]): Iterable containing serialized entity pairs.
+        entity_type (str, optional): Type of entity. Defaults to "".
+        entity_type_plural (str, optional): Plural form of entity type. Defaults to "".
+        postfix (str, optional): Additional string to append. Defaults to "".
+
+    Returns:
+        Dict: A dictionary with the following keys:
+            - "prefix": The prompt prefix, depending on the prompt_type, is shared between all prompts.
+            - "pairs": A list of dictionaries representing each serialized entity pair.
+                Each dictionary contains:
+                    - "id0": ID of the first entity.
+                    - "id1": ID of the second entity.
+                    - "p": Prompt string for the entity pair which is appended to prefix.
+                    - "t": Truth label for the entity pair.
+
+    The function formats the prompt prefix based on the prompt_type and creates a list of dictionaries,
+    """
     is_domain = prompt_type.startswith("domain")
     prefix = TASK_PREFIXES[prompt_type].format(
         entity_type_plural=entity_type_plural,
@@ -83,74 +95,70 @@ def prompt_data_to_prompt_dict(
     entity_type: str = "",
     entity_type_plural: str = "",
     postfix: str = "",
-) -> Path:
+    save_to: Path = PROMPTS_FOLDER_PATH,
+) -> None:
+    """
+    Convert serialized entity pairs from a JSON file to a JSON file containing full prompts.
+    The function reads serialized entity pairs from a JSON file specified by 'prompt_data_fp'.
+    It converts the serialized data into a dictionary representing full prompts using the 'prompt_dict' function.
+    The resulting dictionary is saved to a JSON file with a name based on the dataset and prompt type.
+
+    Raises:
+        ValueError: If prompt type is domain but entity type or entity type plural is empty.
+    """
     if prompt_type.startswith("domain") and (
         entity_type == "" or entity_type_plural == ""
     ):
         raise ValueError(
             "Prompt type is domain but entity type or entity type plural is empty."
         )
-    promptFolder = Path("prompts")
-    promptFolder.mkdir(parents=True, exist_ok=True)
     with open(prompt_data_fp, "r") as f:
         data = json.load(f)
         d = prompt_dict(prompt_type, data, entity_type, entity_type_plural, postfix)
+        # add dataset name to prompt dict
         d["dataset"] = prompt_data_fp.stem
         outpath = (
-            promptFolder / f"{prompt_data_fp.stem}-{prompt_type}{prompt_data_fp.suffix}"
+            save_to / f"{prompt_data_fp.stem}-{prompt_type}{prompt_data_fp.suffix}"
         )
         with open(outpath, "w") as f:
             json.dump(d, f, indent=2)
-    return outpath
 
 
 def prompt_dict_to_prompts(prompt_dict: Dict) -> Iterable[Prompt]:
+    """
+    Convert a dictionary representing full prompts to a list of Prompt objects
+    by concatenating the prefix with the prompt string for each entity pair.
+    """
     prefix = prompt_dict["prefix"]
     for pair in prompt_dict["pairs"]:
         yield Prompt(prefix + pair["p"], int(pair["id0"]), int(pair["id1"]), pair["t"])
 
 
+configurations = {
+    "base": {
+        "datasets": [
+            Path(PROMPT_DATA_FOLDER_PATH / f"{dataset}.json")
+            for dataset in SAMPLED_DATASET_NAMES
+        ],
+        "prompt_type": "general_complex_force",
+        "postfix": "",
+        "save_to": PROMPTS_FOLDER_PATH,
+    },
+    "hash": {
+        "datasets": [
+            Path(PROMPT_DATA_FOLDER_PATH / f"{dataset}.json")
+            for dataset in SAMPLED_DATASET_NAMES
+        ],
+        "prompt_type": "general_complex_force_hash",
+        "postfix": "####",
+        "save_to": PROMPTS_FOLDER_PATH,
+    },
+}
+
 if __name__ == "__main__":
-    for dataset in SAMPLED_DATASET_NAMES:
+    cfg = configurations["base"]
+    cfg["save_to"].mkdir(parents=True, exist_ok=True)
+    for dataset in cfg["datasets"]:
         prompt_data_to_prompt_dict(
-            Path("prompt_data") / f"{dataset}.json",
-            "general_complex_force_hash",
-            postfix="####",
+            dataset, cfg["prompt_type"], postfix=cfg["postfix"], save_to=cfg["save_to"]
         )
-
-"""
-def prompts_targets(file: Path, pattern=SIMPLE_PROMPT_POSTFIX) -> List[str]:
-    p = []
-    t = []
-    try:
-        with open(file, "r") as json_file:
-            data = json.load(json_file)
-            for element in data:
-                formatted_prompt = pattern.format(**element)
-                print(formatted_prompt)
-                p.append(formatted_prompt)
-                t.append(element["t"])
-        return p, t
-    except FileNotFoundError:
-        print(f"File not found: {file}")
-    except json.JSONDecodeError:
-        print(f"Error decoding JSON from file: {file}")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-
-
-def get_targets(file: Path) -> List[str]:
-    t = []
-    try:
-        with open(file, "r") as json_file:
-            data = json.load(json_file)
-            for element in data:
-                t.append(element["t"])
-        return t
-    except FileNotFoundError:
-        print(f"File not found: {file}")
-    except json.JSONDecodeError:
-        print(f"Error decoding JSON from file: {file}")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-"""

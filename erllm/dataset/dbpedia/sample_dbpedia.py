@@ -1,14 +1,14 @@
 import math
 from pathlib import Path
 
-from erllm.dbpedia.access_dbpedia import (
-    Entity,
+from erllm.dataset.entity import Entity, to_str
+from erllm.dataset.dbpedia.access_dbpedia import (
     get_entity_by_id,
     get_number_of_entries,
     get_random_matches,
     is_match,
-    to_str,
 )
+
 from erllm.dataset.dbpedia.token_blocking import (
     clean_block_purging,
     clean_block_statistics,
