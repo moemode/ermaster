@@ -43,6 +43,24 @@ data/benchmark_datasets/existingDatasets.
     │       └── existingDatasets
     │           ├── ... (contents of the existingDatasets directory)
     ```
+
+### DBPedia
+The [JedAIToolkit](https://github.com/scify/JedAIToolkit) contains the original copy of the DBPedia dataset in .jso format, which is a serialized Java object.  
+To make this dataset easier to use, we submitted a [pull request](https://github.com/scify/JedAIToolkit/pull/66) to convert it to .txt files.  
+We shared this .txt these with the authors of [JedAIToolkit](https://github.com/scify/JedAIToolkit) who uploaded it to https://zenodo.org/records/10059096.  
+We do not use .csv because there is no fixed schema.
+
+The files `cleanDBPedia1out`, `cleanDBPedia2out` contain the entities.
+Each line corresponds to a different entity profile and has the following structure (where n is number of attributes, aname and aval are the attribute names and values):
+`numerical_id , uri , n ,  aname_0 , aval_0 , aname_1 , aval_1 ,...aname_n , aval_n`
+
+That is, the separator is `space,space`.
+`,` in the original data have been replaced with `,,`.
+This must be accounted for when reading the data.
+
+The file `newDBPediaMatchesout` contains matching profile pairs.
+Each line has the format:
+`numerical_id_0 , numerical_id_1` 
 ## Format
 
 Each dataset consists of five CSV files: `tableA.csv`, `tableB.csv`, `test.csv`, `train.csv`, and `valid.csv`.
@@ -72,6 +90,4 @@ We use unsupervised approaches and thus combine the pairs in `test.csv`, `train.
 
 ## Subsampling
 
-| File            | Purpose                      |
-| --------------- | ------------------------- |
-| [sample_ds.py](sample_ds.py)    | Downsample |
+[sample_ds.py](sample_ds.py) does the subsampling and preserves the label ration.
