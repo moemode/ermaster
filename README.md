@@ -1,4 +1,8 @@
-# Entity Matching using LLM
+# Files
+
+| File            | Purpose                      |
+| --------------- | ------------------------- |
+| [sample_ds.py](sample_ds.py)    | Downsample datasets |
 
 # Datasets and their Format
 We evaluate on a wide range of datasets.
@@ -68,7 +72,6 @@ We use unsupervised approaches and thus combine the pairs in `test.csv`, `train.
 
 ## Subsampling
 
-| Syntax      | Description |
-| ----------- | ----------- |
-| Header      | Title       |
-| Paragraph   | Text        |
+| File            | Purpose                      |
+| --------------- | ------------------------- |
+| [sample_ds.py](sample_ds.py)    | Downsample |
