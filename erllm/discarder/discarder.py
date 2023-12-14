@@ -1,29 +1,33 @@
 from pathlib import Path
 import pickle
-from erllm.dataset import ORIGINAL_DATASET_NAMES
-from erllm.dataset.dbpedia.access_dbpedia import OrderedEntity
+from typing import Callable, List
 from py_stringmatching import (
     Jaccard,
     OverlapCoefficient,
     MongeElkan,
     GeneralizedJaccard,
 )
-import pandas as pd
-from erllm.dataset.load_ds import load_dataset
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 import numpy as np
+import pandas as pd
+from erllm import DATASET_FOLDER_PATH, ORIGINAL_DATASET_NAMES, SIMILARITIES_FOLDER_PATH
+from erllm.dataset.load_ds import load_dataset
+from erllm.dataset.entity import OrderedEntity
 
 
-def euclidean(vector1, vector2):
+def euclidean(vector1, vector2) -> float:
+    """Calculate the Euclidean distance between two vectors."""
     return np.sqrt(np.sum((vector1 - vector2) ** 2))
 
 
-def euclidean_sim(vector1, vector2):
+def euclidean_sim(vector1, vector2) -> float:
+    """Calculate the Euclidean similarity between two vectors."""
     return 1 / (1 + euclidean(vector1, vector2))
 
 
-def cosine_sim(vector1, vector2):
+def cosine_sim(vector1, vector2) -> float:
+    """Calculate the cosine similarity between two vectors."""
     norm1 = np.linalg.norm(vector1)
     norm2 = np.linalg.norm(vector2)
     if norm1 == 0 and norm2 == 0:
@@ -35,26 +39,26 @@ def cosine_sim(vector1, vector2):
     return np.dot(vector1, vector2) / (norm1 * norm2)
 
 
-set_sim_functions = (
+SET_SIM_FUNCTIONS = (
     ("jaccard", Jaccard().get_raw_score),
     ("overlap", OverlapCoefficient().get_raw_score),
     ("mongeelkan", MongeElkan().get_raw_score),
     ("genjaccard", GeneralizedJaccard().get_raw_score),
 )
 
-fast_set_sim_functions = (
+FAST_SET_SIM_FUNCTIONS = (
     ("jaccard", Jaccard().get_raw_score),
     ("overlap", OverlapCoefficient().get_raw_score),
 )
 
 
-def similarities(
+def set_similarities(
     pairs: list[tuple[bool, OrderedEntity, OrderedEntity]],
-    similarity_functions=set_sim_functions,
+    similarity_functions=SET_SIM_FUNCTIONS,
     use_tqdm: bool = False,
 ) -> pd.DataFrame:
     """
-    Calculate the similarity between pairs of entities and return the results as a pandas DataFrame.
+    Calculate set-based similarities between pairs of entities and return the results as a pandas DataFrame.
 
     Args:
         pairs (List[Tuple[bool, OrderedEntity, OrderedEntity]]): A list of tuples, each containing three elements:
@@ -93,12 +97,60 @@ def similarities(
     return df
 
 
+def compute_embeddings(
+    pairs: list[tuple[bool, OrderedEntity, OrderedEntity]],
+    save_to: Path,
+    use_tqdm: bool = False,
+):
+    """
+    Compute and save embeddings using Glove for the given pairs of entities.
+
+    Args:
+        pairs (List[Tuple[bool, OrderedEntity, OrderedEntity]]): A list of tuples,
+            each containing a boolean label and two OrderedEntity objects.
+        save_to (Path): The path to save the embeddings file.
+        use_tqdm (bool): Flag indicating whether to use tqdm for progress tracking.
+    """
+    model = SentenceTransformer(
+        "sentence-transformers/average_word_embeddings_glove.6B.300d"
+    )
+    # Create a dictionary to store embeddings for each entity
+    entity_embeddings = {}
+    # Use tqdm for progress tracking
+    if use_tqdm:
+        pairs_iterator = tqdm(pairs, total=len(pairs))
+    else:
+        pairs_iterator = pairs
+    for label, e0, e1 in pairs_iterator:
+        embedding_e0 = model.encode(e0.value_string())
+        embedding_e1 = model.encode(e1.value_string())
+        # Store embeddings in the dictionary
+        entity_embeddings[e0.id] = embedding_e0
+        entity_embeddings[e1.id] = embedding_e1
+    # Serialize embeddings to disk using pickle
+    with open(save_to, "wb") as f:
+        pickle.dump(entity_embeddings, f)
+
+
 def embedding_similarities(
     pairs: list[tuple[bool, OrderedEntity, OrderedEntity]],
     embeddings_path: Path,
-    sim_functions=[cosine_sim, euclidean_sim],
+    sim_functions: List[Callable] = [cosine_sim, euclidean_sim],
     use_tqdm: bool = False,
 ) -> pd.DataFrame:
+    """
+    Calculate and return embedding similarities for pairs of entities.
+
+    Args:
+        pairs (List[Tuple[bool, OrderedEntity, OrderedEntity]]): A list of tuples,
+            each containing a boolean label and two OrderedEntity objects.
+        embeddings_path (Path): The path to the embeddings file.
+        sim_functions (List[callable]): A list of similarity functions.
+        use_tqdm (bool): Flag indicating whether to use tqdm for progress tracking.
+
+    Returns:
+        pd.DataFrame: A DataFrame with embedding similarities for each pair.
+    """
     # Load embeddings from disk
     with open(embeddings_path, "rb") as f:
         entity_embeddings = pickle.load(f)
@@ -126,40 +178,31 @@ def embedding_similarities(
     return df
 
 
-def compute_embeddings(
-    pairs: list[tuple[bool, OrderedEntity, OrderedEntity]],
-    save_to: Path,
-    use_tqdm: bool = False,
-):
-    model = SentenceTransformer(
-        "sentence-transformers/average_word_embeddings_glove.6B.300d"
-    )
-    # Create a dictionary to store embeddings for each entity
-    entity_embeddings = {}
-    # Use tqdm for progress tracking
-    if use_tqdm:
-        pairs_iterator = tqdm(pairs, total=len(pairs))
-    else:
-        pairs_iterator = pairs
-    for label, e0, e1 in pairs_iterator:
-        embedding_e0 = model.encode(e0.value_string())
-        embedding_e1 = model.encode(e1.value_string())
-        # Store embeddings in the dictionary
-        entity_embeddings[e0.id] = embedding_e0
-        entity_embeddings[e1.id] = embedding_e1
-    # Serialize embeddings to disk using pickle
-    with open(save_to, "wb") as f:
-        pickle.dump(entity_embeddings, f)
-
-
 def dataset_similarities(
-    dataset,
-    folder,
-    set_sim=set_sim_functions,
+    dataset: str,
+    folder: Path,
+    save_to: Path,
+    set_sim=SET_SIM_FUNCTIONS,
     compute_emb=True,
     emb_sim=(cosine_sim, euclidean_sim),
 ):
-    save_to = Path("eval")
+    """
+    Compute and save set and embedding similarities for the given dataset.
+    Checks if the similarities have already been computed and skips the dataset if they have.
+
+    This function calculates both set-based and embedding-based similarities for pairs of entities in the provided dataset.
+    Set similarities are calculated using the specified set similarity functions, while embedding similarities are computed using
+    the chosen embedding similarity functions. The results are saved in separate CSV files.
+
+    Args:
+        dataset (str): The name of the dataset.
+        folder (Path): The path to the dataset folder.
+        set_sim (List[Tuple[str, callable]]): A list of tuples, each containing
+            a string name and a set similarity function. Default is set_sim_functions.
+        compute_emb (bool): Flag indicating whether to compute embeddings. Default is True.
+        emb_sim (Tuple[callable, callable]): A tuple of embedding similarity functions.
+            Default is (cosine_sim, euclidean_sim).
+    """
     save_to.mkdir(parents=True, exist_ok=True)
     dataset = folder.parts[-1]
     result_path_set_sim = save_to / f"{dataset}-sim.csv"
@@ -173,7 +216,7 @@ def dataset_similarities(
     pairs = load_dataset(folder, use_tqdm=True)
     if set_sim_missing:
         print("Similiarities on Dataset:", dataset)
-        sims = similarities(pairs, set_sim, use_tqdm=True)
+        sims = set_similarities(pairs, set_sim, use_tqdm=True)
         sims.to_csv(result_path_set_sim, index=False)
     if emb_missing:
         print("Embeddings on Dataset:", dataset)
@@ -196,11 +239,10 @@ def dataset_similarities(
 
 if __name__ == "__main__":
     datasets = ORIGINAL_DATASET_NAMES
-    root_folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets"
-    )
+    root_folder = DATASET_FOLDER_PATH
+    sim_folder = SIMILARITIES_FOLDER_PATH
     for dataset, folder in [(dataset, root_folder / dataset) for dataset in datasets]:
-        set_sim = set_sim_functions
+        set_sim = SET_SIM_FUNCTIONS
         if dataset in ["textual_company", "dbpedia10k", "dbpedia10k_harder"]:
-            set_sim = fast_set_sim_functions
-        dataset_similarities(dataset, folder, set_sim)
+            set_sim = FAST_SET_SIM_FUNCTIONS
+        dataset_similarities(dataset, folder, sim_folder, set_sim)

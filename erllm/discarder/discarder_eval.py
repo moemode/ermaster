@@ -3,6 +3,27 @@ from pathlib import Path
 
 
 def get_stat_functions(similarities: pd.DataFrame, sim_name: str):
+    """Calculate statistics about discarding based on given similarity column.
+    Sort the profile pairs in ascending order by the specified similarity column.
+    Calculate functions for statistic like number of false negatives dependent on the number of discarded pairs.
+    Args:
+        similarities (pd.DataFrame): A DataFrame with the similarity values. Has structure like this
+        |  table1.id  |  table2.id  |  label  |  jaccard  |  overlap  |  mongeelkan  |  genjaccard  |
+        |------------|------------|--------|----------|----------|-------------|-------------|
+        |    3505    |    30346   |   0    |  0.280000|  0.538462|   0.767434  |   0.544994  |
+        |    5343    |    47894   |   0    |  0.477273|  0.700000|   0.877984  |   0.620952  |
+        |    ...     |    ...     |  ...   |   ...    |   ...    |    ...      |    ...      |
+
+        sim_name (str): The name of the similarity column.
+
+    Returns:
+        A list of tuples, capturing the functions of the following values dependent on the number of discarded pairs (from 0 to all discarded):
+        - measure_value: The value of the similarity measure
+        - n_false_negatives: The number of false negatives
+        - coverage: The coverage
+        - risk: The risk
+        - fnr: The false negative rate
+    """
     # Sort the DataFrame by the specified column in ascending order
     similarities.sort_values(by=sim_name, ascending=True, inplace=True)
     n_total = len(similarities)
@@ -45,6 +66,7 @@ if __name__ == "__main__":
                 data_list.append(
                     [ds, sim_name, n, measure_value, n_fn, coverage, risk, fnr]
                 )
+    # Create one large dataframe containing all the statistics for all similarity functions
     df = pd.DataFrame(
         data_list,
         columns=[

@@ -7,6 +7,7 @@ DBPEDIA_RAW_FOLDER_PATH = DATA_FOLDER_PATH / Path("dbpedia_raw")
 PROMPT_DATA_FOLDER_PATH = DATA_FOLDER_PATH / Path("prompt_data")
 PROMPTS_FOLDER_PATH = DATA_FOLDER_PATH / Path("prompts")
 RUNS_FOLDER_PATH = DATA_FOLDER_PATH / Path("runs")
+SIMILARITIES_FOLDER_PATH = DATA_FOLDER_PATH / Path("similarities")
 EVAL_WRITEUP_FOLDER_PATH = Path(__file__).resolve().parent.parent / "eval_writeup"
 
 ORIGINAL_DATASET_NAMES = [
@@ -24,7 +25,7 @@ ORIGINAL_DATASET_NAMES = [
     "structured_fodors_zagats",
     "textual_abt_buy",
     "dbpedia10k",
-    "dbpedia10k_harder",
+    # "dbpedia10k_harder",
 ]
 SAMPLED_DATASET_NAMES = [dataset + "_1250" for dataset in ORIGINAL_DATASET_NAMES]
 

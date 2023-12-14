@@ -4,6 +4,7 @@ newDBPediaMatchesout
 my_database.db*
 __pycache__
 data/benchmark_datasets
+data/*
 eval/structured*
 eval/textual*
 eval/bu
