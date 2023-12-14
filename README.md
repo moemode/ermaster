@@ -1,8 +1,11 @@
 # Setup
 Install the conda environment.  
 The datasets are under `data/benchmark_datasets/existingDatasets`.
-<!-- 
+
 ## Download Datasets
+The datasets are already prepared under `data/benchmark_datasets/existingDatasets`.  
+For completeness we outline how to download the datasets (all except DBPedia) published by by Papadakis, George, Nishadi Kirielle, Peter Christen, and Themis Palpanas.  
+If you want to work with the full DBPedia dataset directly follow the instructions under [DBPedia](#raw-dbpedia)
 
 ### Datasets except DBPedia
 
@@ -30,7 +33,26 @@ The datasets are under `data/benchmark_datasets/existingDatasets`.
     │   └── benchmark_datasets
     │       └── existingDatasets
     │           ├── ... (contents of the existingDatasets directory)
-    ``` -->
+    ```
+
+### Raw DBPedia
+
+1. **Download the Archive:**
+   Download the archive `dbpediaText.tar.gz` from https://zenodo.org/records/10059096.
+2. **Extract and move to correct directory**
+   Extract the archive and move the files `cleanDBPedia1out`, `cleanDBPedia2out`, `newDBPediaMatchesout`
+   to data/dbpedia_raw.
+3. **Verify the Structure:**
+    Confirm that the directory structure now looks like this:
+    ```text
+    ├── data
+    │   └── dbpedia_raw
+    │       └── cleanDBPedia1out
+    │       └── cleanDBPedia2out
+    │       └── newDBPediaMatchesout
+    ```
+
+The python file in erllm/dataset/dbpedia are used to create the sample DBPedia dataset used in the work.
 
 
 # Structure
@@ -54,63 +76,13 @@ Contains code to create prompts from datasets and get responses via OpenAI's Api
 
 
 # Datasets and their Format
+## Datasets except DBPedia
 We evaluate on a wide range of datasets.
 With the exception of DBpedia, we use them in the format published by
 Papadakis, George, Nishadi Kirielle, Peter Christen, and Themis Palpanas. “A Critical Re-Evaluation of Benchmark Datasets for (Deep) Learning-Based Matching Algorithms.” arXiv, July 3, 2023. https://doi.org/10.48550/arXiv.2307.01231.
 
-## Download
 
-Their paper repo is at https://github.com/gpapadis/DLMatchers/.  
-The datasets themselves are at https://zenodo.org/records/8164151.
-Make sure to extract the `magellanExistingDatasets.tar.gz` so that the existingDatasets is under
-data/benchmark_datasets/existingDatasets.
-
-### Extracting `magellanExistingDatasets.tar.gz`
-
-1. **Download the Archive:**
-   Download the `magellanExistingDatasets.tar.gz` file from the source.
-
-2. **Navigate to the Directory:**
-   Open a terminal or command prompt and navigate to the location where the downloaded file is stored.
-
-3. **Extract the Archive:**
-   Use the following command to extract the contents of the archive:
-   ```bash
-   tar -xvzf magellanExistingDatasets.tar.gz
-
-4. **Move the Directory:**
-    After extraction, move the existingDatasets directory to the desired location (data/benchmark_datasets in this case):
-    ```bash
-    mv existingDatasets data/benchmark_datasets/
-    ```
-
-5. **Verify the Structure:**
-    Confirm that the directory structure now looks like this:
-    ```text
-    ├── data
-    │   └── benchmark_datasets
-    │       └── existingDatasets
-    │           ├── ... (contents of the existingDatasets directory)
-    ```
-
-### DBPedia
-The [JedAIToolkit](https://github.com/scify/JedAIToolkit) contains the original copy of the DBPedia dataset in .jso format, which is a serialized Java object.  
-To make this dataset easier to use, we submitted a [pull request](https://github.com/scify/JedAIToolkit/pull/66) to convert it to .txt files.  
-We shared these with the authors of [JedAIToolkit](https://github.com/scify/JedAIToolkit) who uploaded it to https://zenodo.org/records/10059096.  
-We do not use .csv because there is no fixed schema.
-
-The files `cleanDBPedia1out`, `cleanDBPedia2out` contain the entities.
-Each line corresponds to a different entity profile and has the following structure (where n is number of attributes, aname and aval are the attribute names and values):  
-`numerical_id , uri , n ,  aname_0 , aval_0 , aname_1 , aval_1 ,...aname_n , aval_n`
-
-That is, the separator is `space,space`.
-`,` in the original data have been replaced with `,,`.
-This must be accounted for when reading the data.
-
-The file `newDBPediaMatchesout` contains matching profile pairs.
-Each line has the format:  
-`numerical_id_0 , numerical_id_1`
-## Format
+## Dataset Format
 
 Each dataset consists of five CSV files: `tableA.csv`, `tableB.csv`, `test.csv`, `train.csv`, and `valid.csv`.
 
@@ -136,6 +108,27 @@ _id,label,table1.id,table2.id,table1.Beer_Name,table2.Beer_Name,table1.Brew_Fact
 ```
 
 We use unsupervised approaches and thus combine the pairs in `test.csv`, `train.csv`, and `valid.csv`.
+
+
+
+## DBPedia
+The [JedAIToolkit](https://github.com/scify/JedAIToolkit) contains the original copy of the DBPedia dataset in .jso format, which is a serialized Java object.  
+To make this dataset easier to use, we submitted a [pull request](https://github.com/scify/JedAIToolkit/pull/66) to convert it to .txt files.  
+We shared these with the authors of [JedAIToolkit](https://github.com/scify/JedAIToolkit) who uploaded it to https://zenodo.org/records/10059096.  
+We do not use .csv because there is no fixed schema.
+
+The files `cleanDBPedia1out`, `cleanDBPedia2out` contain the entities.
+Each line corresponds to a different entity profile and has the following structure (where n is number of attributes, aname and aval are the attribute names and values):  
+`numerical_id , uri , n ,  aname_0 , aval_0 , aname_1 , aval_1 ,...aname_n , aval_n`
+
+That is, the separator is `space,space`.
+`,` in the original data have been replaced with `,,`.
+This must be accounted for when reading the data.
+
+The file `newDBPediaMatchesout` contains matching profile pairs.
+Each line has the format:  
+`numerical_id_0 , numerical_id_1`
+
 
 ## Subsampling
 
