@@ -61,8 +61,8 @@ The python file in erllm/dataset/dbpedia are used to create the sample DBPedia d
 
 | Module            | Purpose                      |
 | --------------- | ------------------------- |
-| [datasets](#module-datasets)    | Work with datasets|
-| [llm_matcher](#module-llm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's Api.|
+| [datasets](#module-datasets)    | Covers entity representation, dataset loading, downsampling. The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled datasets of matching and non-matching DBpedia entity pairs for benchmarking.|
+| [llm_matcher](#module-llm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API.|
 
 ## Module datasets
 | Module            | Purpose                      |
