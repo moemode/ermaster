@@ -36,7 +36,7 @@ def dataset_to_prompt_data(
         json.dump(data, json_file, indent=2)
 
 
-configurations = {
+CONFIGURATIONS = {
     "default": {
         "save_to": Path(PROMPT_DATA_FOLDER_PATH),
         "dataset_paths": [DATASET_FOLDER_PATH / dataset for dataset in DATASET_NAMES],
@@ -44,7 +44,7 @@ configurations = {
 }
 
 if __name__ == "__main__":
-    cfg = configurations["default"]
+    cfg = CONFIGURATIONS["default"]
     datasets, save_to = cfg["dataset_paths"], cfg["save_to"]
     save_to.mkdir(parents=True, exist_ok=True)
     for folder in datasets:

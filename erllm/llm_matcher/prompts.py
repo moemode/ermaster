@@ -134,7 +134,7 @@ def prompt_dict_to_prompts(prompt_dict: Dict) -> Iterable[Prompt]:
         yield Prompt(prefix + pair["p"], int(pair["id0"]), int(pair["id1"]), pair["t"])
 
 
-configurations = {
+CONFIGURATIONS = {
     "base": {
         "datasets": [
             Path(PROMPT_DATA_FOLDER_PATH / f"{dataset}.json")
@@ -156,7 +156,7 @@ configurations = {
 }
 
 if __name__ == "__main__":
-    cfg = configurations["base"]
+    cfg = CONFIGURATIONS["base"]
     cfg["save_to"].mkdir(parents=True, exist_ok=True)
     for dataset in cfg["datasets"]:
         prompt_data_to_prompt_dict(

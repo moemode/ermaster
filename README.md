@@ -1,8 +1,17 @@
-# Files
+# Structure
 
-| File            | Purpose                      |
+## Module Overview
+
+| Module            | Purpose                      |
 | --------------- | ------------------------- |
 | [sample_ds.py](sample_ds.py)    | Downsample datasets |
+| [llm_matcher](#llm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's Api.|
+
+## llm_matcher
+
+Contains code to create prompts from datasets and get responses via OpenAI's Api.
+| File            | Purpose                      |
+| --------------- | ------------------------- |
 | [llm_matcher/prompt_data.py](erllm/llm_matcher/prompt_data.py) | Serialize entities intro string represenation for use in prompt template
 | [llm_matcher/prompts.py](erllm/llm_matcher/prompts.py) | Take output of prompt_data.py and convert it to JSON files containing full prompts based on template choice|
 
