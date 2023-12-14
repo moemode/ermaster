@@ -61,10 +61,19 @@ The python file in erllm/dataset/dbpedia are used to create the sample DBPedia d
 
 | Module            | Purpose                      |
 | --------------- | ------------------------- |
-| [sample_ds.py](sample_ds.py)    | Downsample datasets |
-| [llm_matcher](#llm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's Api.|
+| [datasets](#module-datasets)    | Work with datasets|
+| [llm_matcher](#module-llm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's Api.|
 
-## Module: llm_matcher
+## Module datasets
+| Module            | Purpose                      |
+| --------------- | ------------------------- |
+| [dataset/entity.py](erllm/dataset/load_ds.py)   | Representation of entities involving initialization, generating string or token representations.
+| [dataset/load_ds.py](erllm/dataset/load_ds.py)   | Code for reading datasets from csv into dataframes or list of profile pairs.|
+| [dataset/sample_ds.py](erllm/dataset/sample_ds.py)   | Downsample datasets.|
+| [dataset/stats_ds.py](erllm/dataset/stats_ds.py)   | Get number of instances, positive and negatives in datasets.|
+
+
+## Module llm_matcher
 
 Contains code to create prompts from datasets and get responses via OpenAI's Api.
 | File            | Purpose                      |

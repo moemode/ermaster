@@ -6,6 +6,7 @@ DATASET_FOLDER_PATH = DATA_FOLDER_PATH / Path("benchmark_datasets/existingDatase
 PROMPT_DATA_FOLDER_PATH = DATA_FOLDER_PATH / Path("prompt_data")
 PROMPTS_FOLDER_PATH = DATA_FOLDER_PATH / Path("prompts")
 RUNS_FOLDER_PATH = DATA_FOLDER_PATH / Path("runs")
+EVAL_WRITEUP_FOLDER_PATH = Path(__file__).resolve().parent.parent / "eval_writeup"
 
 ORIGINAL_DATASET_NAMES = [
     # "dirty_dblp_acm",

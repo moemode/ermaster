@@ -1,12 +1,21 @@
 from pathlib import Path
 import pandas as pd
-from erllm import DATASET_FOLDER_PATH, DATASET_NAMES
+from erllm import DATASET_FOLDER_PATH, DATASET_NAMES, EVAL_WRITEUP_FOLDER_PATH
 from erllm.dataset.load_ds import load_dataset
 
 
 def dataset_statistics(
     folder: Path,
-):
+) -> tuple[int, int, int]:
+    """
+    Compute dataset statistics.
+
+    Parameters:
+    - folder (Path): The folder containing the dataset.
+
+    Returns:
+    tuple[int, int, int]: The number of pairs, the number of positive pairs, and the number of negative pairs.
+    """
     save_to = Path("prompt_data")
     save_to.mkdir(parents=True, exist_ok=True)
     pairs = load_dataset(folder, use_tqdm=True)
@@ -27,4 +36,4 @@ if __name__ == "__main__":
     df = pd.DataFrame(data, columns=df_columns)
     # Print or further process the DataFrame
     print(df)
-    df.to_csv("eval_writeup/dataset_statistics.csv", index=False)
+    df.to_csv(f"{EVAL_WRITEUP_FOLDER_PATH}/dataset_statistics.csv", index=False)

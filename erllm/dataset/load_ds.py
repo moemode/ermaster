@@ -101,8 +101,3 @@ def load_dataset(
         table2_entities.append(e2)
         pairs.append((row["label"], e1, e2))
     return pairs
-
-
-BENCHMARKS_PATH = Path(
-    "/home/v/coding/ermaster/data/benchmark_datasets/existingDatasets/"
-)
