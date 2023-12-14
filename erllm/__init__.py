@@ -9,6 +9,8 @@ PROMPTS_FOLDER_PATH = DATA_FOLDER_PATH / Path("prompts")
 RUNS_FOLDER_PATH = DATA_FOLDER_PATH / Path("runs")
 SIMILARITIES_FOLDER_PATH = DATA_FOLDER_PATH / Path("similarities")
 EVAL_WRITEUP_FOLDER_PATH = Path(__file__).resolve().parent.parent / "eval_writeup"
+EVAL_FOLDER_PATH = Path(__file__).resolve().parent.parent / "eval"
+FIGURE_FOLDER_PATH = Path(__file__).resolve().parent.parent / "figures"
 
 ORIGINAL_DATASET_NAMES = [
     # "dirty_dblp_acm",

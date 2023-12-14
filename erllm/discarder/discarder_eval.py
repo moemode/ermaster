@@ -1,6 +1,8 @@
 import pandas as pd
 from pathlib import Path
 
+from erllm import EVAL_FOLDER_PATH
+
 
 def get_stat_functions(similarities: pd.DataFrame, sim_name: str):
     """Calculate statistics about discarding based on given similarity column.
@@ -82,4 +84,4 @@ if __name__ == "__main__":
     )
     # add column max_tpr = 1 - fnr
     df["max_tpr"] = 1 - df["fnr"]
-    df.to_csv("eval/missclassifications.csv", index=False)
+    df.to_csv(f"{EVAL_FOLDER_PATH}/discarder-stats.csv", index=False)

@@ -38,6 +38,16 @@ Contains code to create prompts from datasets and get responses via OpenAI's Api
 | [llm_matcher/gpt.py](erllm/llm_matcher/gpt.py) | Takes prompts prepared by `prompts.py`and generates completions via OpenAI API. The results of runs are saved in `runfiles` which store the full API response and information about the profile pairs.|
 | [llm_matcher/cost.py](erllm/llm_matcher/cost.py) | Given prompts, calculates the cost of generating completions specified models and datasets. |
 
+## Module discarder
+
+Explores the similarity based discarder in isolation.
+.
+| File            | Purpose                      |
+| --------------- | ------------------------- |
+| [discarder/discarder.py](erllm/discarder/discarder.py) | Computes and save set-based and embedding-based similarities for pairs of entities. Save results in csv for later processing.
+| [discarder/discarder_eval.py](erllm/discarder/discarder_eval.py) | Takes output of `discarder.py` and figures out what happens if one discards based on the various similarity functions. Computes various functions capturing the relation of e.g. number of missclassifications on the number of discarded pairs (in ascending order of similarity).
+| [discarder/discarder_vis.py](erllm/discarder/discarder_vis.py) | Visualizes the functions computed by `discarder_eval.py`|
+
 
 # Datasets and their Format
 The datasets are available in the repo but we describe how they can be downloaded and put in the right place for completion.
