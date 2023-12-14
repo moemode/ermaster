@@ -1,3 +1,38 @@
+# Setup
+Install the conda environment.  
+The datasets are under `data/benchmark_datasets/existingDatasets`.
+<!-- 
+## Download Datasets
+
+### Datasets except DBPedia
+
+1. **Download the Archive:**
+   Download the `magellanExistingDatasets.tar.gz` file from https://zenodo.org/records/8164151.
+
+2. **Navigate to the Directory:**
+   Open a terminal or command prompt and navigate to the location where the downloaded file is stored.
+
+3. **Extract the Archive:**
+   Use the following command to extract the contents of the archive:
+   ```bash
+   tar -xvzf magellanExistingDatasets.tar.gz
+
+4. **Move the Directory:**
+    After extraction, move the existingDatasets directory to the desired location (data/benchmark_datasets in this case):
+    ```bash
+    mv existingDatasets data/benchmark_datasets/
+    ```
+
+5. **Verify the Structure:**
+    Confirm that the directory structure now looks like this:
+    ```text
+    ├── data
+    │   └── benchmark_datasets
+    │       └── existingDatasets
+    │           ├── ... (contents of the existingDatasets directory)
+    ``` -->
+
+
 # Structure
 
 ## Module Overview
