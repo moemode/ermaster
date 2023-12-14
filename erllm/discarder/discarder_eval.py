@@ -1,13 +1,12 @@
 import pandas as pd
-from pathlib import Path
 
-from erllm import EVAL_FOLDER_PATH
+from erllm import EVAL_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 
 
 def get_stat_functions(similarities: pd.DataFrame, sim_name: str):
     """Calculate statistics about discarding based on given similarity column.
     Sort the profile pairs in ascending order by the specified similarity column.
-    Calculate functions for statistic like number of false negatives dependent on the number of discarded pairs.
+    Calculate functions for various statistic like number of false negatives dependent on the number of discarded pairs.
     Args:
         similarities (pd.DataFrame): A DataFrame with the similarity values. Has structure like this
         |  table1.id  |  table2.id  |  label  |  jaccard  |  overlap  |  mongeelkan  |  genjaccard  |
@@ -44,8 +43,7 @@ def get_stat_functions(similarities: pd.DataFrame, sim_name: str):
 
 
 if __name__ == "__main__":
-    # Specify the path to the CSV file
-    file_paths = Path("/home/v/coding/ermaster/eval").glob("*-allsim.csv")
+    file_paths = SIMILARITIES_FOLDER_PATH.glob("*-allsim.csv")
     data_list = []
     for f in file_paths:
         ds = f.stem.split("-")[0]
