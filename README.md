@@ -72,6 +72,13 @@ The python file in erllm/dataset/dbpedia are used to create the sample DBPedia d
 | [dataset/sample_ds.py](erllm/dataset/sample_ds.py)   | Downsample datasets.|
 | [dataset/stats_ds.py](erllm/dataset/stats_ds.py)   | Get number of instances, positive and negatives in datasets.|
 
+### Submodule DBpedia
+Module for loading raw DBPedia data into subsampled csv files
+| Module            | Purpose                      |
+| --------------- | ------------------------- |
+| [dataset/dbpedia/load_dbpedia.py](erllm/dataset/dbpedia/load_dbpedia.py)   | Reads raw DBpedia data into SQLite database. |
+[dataset/dbpedia/access_dbpedia.py](erllm/dataset/dbpedia/access_dbpedia.py)   | Database interaction functions for querying and retrieving DBpedia entities and matching pairs.
+| 
 
 ## Module llm_matcher
 

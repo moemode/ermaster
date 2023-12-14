@@ -3,6 +3,7 @@ from pathlib import Path
 DATA_FOLDER_PATH = Path(__file__).resolve().parent.parent / "data"
 DBFILE_PATH = DATA_FOLDER_PATH / "my_database.db"
 DATASET_FOLDER_PATH = DATA_FOLDER_PATH / Path("benchmark_datasets/existingDatasets")
+DBPEDIA_RAW_FOLDER_PATH = DATA_FOLDER_PATH / Path("dbpedia_raw")
 PROMPT_DATA_FOLDER_PATH = DATA_FOLDER_PATH / Path("prompt_data")
 PROMPTS_FOLDER_PATH = DATA_FOLDER_PATH / Path("prompts")
 RUNS_FOLDER_PATH = DATA_FOLDER_PATH / Path("runs")

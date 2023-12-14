@@ -1,9 +1,36 @@
+"""
+Reads raw data from specified paths and loads it into SQLite tables. 
+The primary tables store DBpedia entities with key-value pairs, and an additional table stores matching pairs.
+
+Raw File Structure:
+
+- The files `cleanDBPedia1out`, `cleanDBPedia2out` contain the entities.
+Each line corresponds to a different entity profile and has the following structure (where n is number of attributes, aname and aval are the attribute names and values):  
+`numerical_id , uri , n ,  aname_0 , aval_0 , aname_1 , aval_1 ,...aname_n , aval_n`
+
+That is, the separator is `space,space`.
+`,` in the original data have been replaced with `,,`.
+This must be accounted for when reading the data.
+
+- The file `newDBPediaMatchesout` contains matching profile pairs.
+Each line has the format:  
+`numerical_id_0 , numerical_id_1`
+
+Table Structure:
+- Entities Table (e.g., dbpedia0, dbpedia1):
+  - Columns: id (INTEGER PRIMARY KEY), uri (TEXT), kv (JSON)
+
+- Matches Table (e.g., dbpedia_matches):
+  - Columns: id0 (INTEGER), id1 (INTEGER)
+Note: The file is intended to be executed directly to populate the database.
+"""
+
 from pathlib import Path
 import json
 from tqdm import tqdm
 import sqlite3
 from typing import Iterable, Tuple
-from erllm.dataset import DBFILE_PATH
+from erllm import DBFILE_PATH, DBPEDIA_RAW_FOLDER_PATH
 
 create_dbpediadb_table_stmt = """
         CREATE TABLE IF NOT EXISTS {} (
@@ -21,36 +48,54 @@ create_match_table_stmt = """
         """
 
 
-def db_execute(stmt):
-    # Connect to the SQLite database or create it if it doesn't exist
+def db_execute(stmt: str):
+    """
+    Execute a SQL statement on the SQLite database.
+
+    Args:
+        stmt (str): The SQL statement to execute.
+    """
     conn = sqlite3.connect(DBFILE_PATH)
-    # Create a cursor object to execute SQL commands
     cursor = conn.cursor()
-    # Create a table with the specified schema
     cursor.execute(stmt)
-    # Commit the changes and close the connection
     conn.commit()
     conn.close()
 
 
 def list_to_pairs(l: list) -> Iterable[Tuple[str, str]]:
+    """
+    Breakup list into pairs of length two.
+
+    Args:
+        l (list): The list to convert.
+
+    Returns:
+        Iterable[Tuple[str, str]]: A generator of pairs.
+    """
     return ((l[i], l[i + 1]) for i in range(0, len(l), 2))
 
 
-def load_dbpedia_db(fname: Path, tname: str):
+def load_dbpedia_entities(fname: Path, tname: str):
+    """
+    Load DBpedia entity data from a file into the specified table.
+
+    Args:
+        fname (Path): Path to the file containing DBpedia entity data.
+        tname (str): Name of the table to load the data into.
+    """
     conn = sqlite3.connect(DBFILE_PATH)
     cursor = conn.cursor()
     # Define the SQL query with placeholders
     insert_query = f"INSERT INTO {tname} (id, uri, kv) VALUES (?, ?, ?)"
     # Execute the query with the data tuple
     with open(fname, "r") as f:
+        # destructure each raw line into id, uri, n_kv, *kv
         for line_number, l in enumerate(tqdm(f, desc=f"Load table {tname}")):
             values = [item.strip() for item in l.split(" , ")]
+            # during serialization ',' were replaced with ',,'. Undo this.
             values = [s.replace(",,", ",") for s in values]
             id, uri, n_kv, *kv = values
             id = int(id)
-            if id == 539677:
-                print("hi")
             n_kv = int(n_kv)
             kv_dict = {}
             # Iterate through the list of tuples
@@ -72,6 +117,13 @@ def load_dbpedia_db(fname: Path, tname: str):
 
 
 def load_dbpedia_matches(fname: Path, tname: str):
+    """
+    Load matching pairs data from a file into the specified table.
+
+    Args:
+        fname (Path): Path to the file containing matching pairs data.
+        tname (str): Name of the table to load the data into.
+    """
     conn = sqlite3.connect(DBFILE_PATH)
     cursor = conn.cursor()
     # Define the SQL query with placeholders
@@ -87,9 +139,18 @@ def load_dbpedia_matches(fname: Path, tname: str):
 
 
 def load_dbpedia(dbpaths, dbtnames, matchpath=None, matchtname=None):
+    """
+    Load data into DBpedia tables and matching pairs table if provided.
+
+    Args:
+        dbpaths: Paths to DBpedia entity data files.
+        dbtnames: Names of the DBpedia entity tables.
+        matchpath: Path to the matching pairs data file.
+        matchtname: Name of the matching pairs table.
+    """
     for f, tname in zip(dbpaths, dbtnames):
         db_execute(create_dbpediadb_table_stmt.format(tname))
-        load_dbpedia_db(f, tname)
+        load_dbpedia_entities(f, tname)
     if not matchpath:
         return
     db_execute(create_match_table_stmt.format(matchtname))
@@ -97,22 +158,25 @@ def load_dbpedia(dbpaths, dbtnames, matchpath=None, matchtname=None):
 
 
 def create_indices():
-    # Connect to the SQLite database
+    """
+    Create an index on the id0 column of the matches table.
+    """
+
     conn = sqlite3.connect(DBFILE_PATH)
-    # Create a cursor object to execute SQL commands
     cursor = conn.cursor()
-    # Define the SQL command to create an index on the id0 column
     create_index_sql = "CREATE INDEX idx_id0 ON dbpedia_matches (id0);"
     cursor.execute(create_index_sql)
-    # Commit the changes to the database
     conn.commit()
     print("Index created successfully.")
 
 
 if __name__ == "__main__":
-    current_dir = Path(__file__).resolve().parent
-    dbpaths = [current_dir / "cleanDBPedia1out", current_dir / "cleanDBPedia2out"]
+    dbpedia_raw_dir = DBPEDIA_RAW_FOLDER_PATH
+    dbpaths = [
+        dbpedia_raw_dir / "cleanDBPedia1out",
+        dbpedia_raw_dir / "cleanDBPedia2out",
+    ]
     tnames = ["dbpedia0", "dbpedia1"]
-    matchpath = current_dir / "newDBPediaMatchesout"
+    matchpath = dbpedia_raw_dir / "newDBPediaMatchesout"
     load_dbpedia(dbpaths, tnames, matchpath, "dbpedia_matches")
     create_indices()
