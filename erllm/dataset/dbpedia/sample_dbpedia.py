@@ -1,5 +1,6 @@
 import math
 from pathlib import Path
+from erllm import DATASET_FOLDER_PATH
 
 from erllm.dataset.entity import Entity, to_str
 from erllm.dataset.dbpedia.access_dbpedia import (
@@ -25,15 +26,15 @@ def sample_matches(
     n_desired_matches: int, include_keys: bool, max_lev_sim: float
 ) -> set[tuple[Entity, Entity]]:
     """
-    Based on known matches generate a sample of matches whoose Levenshtein similarity does not exceed max_lev_sim.
+    Generate a sample of matching DBPedia entities based on known matches with a specified Levenshtein similarity constraint.
 
-    Parameters:
-    - n_desired_matches (int): The desired number of matches to generate.
-    - include_keys (bool): A flag indicating whether to include keys in the string representation of entities.
-    - max_lev_sim (float): The maximum allowed Levenshtein similarity score for a match.
+    Args:
+        n_desired_matches (int): The desired number of matches to generate.
+        include_keys (bool): A flag indicating whether to include keys in the string representation of entities.
+        max_lev_sim (float): The maximum allowed Levenshtein similarity score for a match.
 
     Returns:
-    set[tuple[Entity, Entity]]: A set of tuples representing matched entity pairs.
+        Set[Tuple[Entity, Entity]]: A set of tuples representing matched entity pairs.
     """
     levenshtein = Levenshtein()
     matches = set()
@@ -57,10 +58,25 @@ def sample_matches(
 def sample_dbpedia(
     N: int,
     match_ratio: float,
-    include_keys: bool = False,
+    include_keys: bool,
     max_lev_sim: float = 1,
     purge_factor: float = 1,
 ) -> list[tuple[bool, Entity, Entity]]:
+    """
+    Generate a dataset of entity pairs with a specified number of matched and non-matching pairs from the DBPedia dataset.
+    Only matching pairs are known and can be used directly.
+    To find non-matching pairs with shared tokens, perform token blocking on random entities
+    and then sample pairs from the resulting blocks.
+    Args:
+        N (int): The total number of pairs to sample.
+        match_ratio (float): The ratio of matching pairs in the sample.
+        include_keys (bool): A flag indicating whether to include keys in the string representation of entities.
+        max_lev_sim (float): The maximum allowed Levenshtein similarity score for a match.
+        purge_factor (float): The factor for purging large blocks during token blocking.
+
+    Returns:
+        List[Tuple[bool, Entity, Entity]]: A list of tuples representing labeled entity pairs.
+    """
     random.seed(42)
     pairs: list[tuple[bool, Entity, Entity]] = []
     # Sample N * match_ratio entries from dbpedia matches
@@ -89,7 +105,6 @@ def sample_dbpedia(
     print("After Block purging")
     print(clean_block_statistics(token_blocks))
     potential_non_matches = set(clean_comparisons(token_blocks))
-    # takes long time since no index on dbpedia_matches
     non_matches = filter(lambda x: not is_match(x[0], x[1]), potential_non_matches)
     # draw N * (1-match_ratio) entries from non_matches
     non_matches = set(itertools.islice(non_matches, int(N * (1 - match_ratio))))
@@ -108,9 +123,17 @@ def sample_dbpedia(
 
 
 def to_benchmark_csv(
-    path: Path, pairs: list[tuple[bool, Entity, Entity]], include_keys=False
+    path: Path, pairs: list[tuple[bool, Entity, Entity]], include_keys
 ):
-    # Extract information from pairs
+    """
+    Convert a list of labeled entity pairs to a CSV file following the common
+    format of all entity matching datasets.
+
+    Args:
+        path (Path): The path to save the CSV file.
+        pairs (List[Tuple[bool, Entity, Entity]]): A list of tuples representing labeled entity pairs.
+        include_keys (bool): Indiates whether to include keys (attribute names) in the string representation of entities for blocking.
+    """
     data = []
     columns = [
         "label",
@@ -129,28 +152,31 @@ def to_benchmark_csv(
                 to_str(entity2, include_keys),
             )
         )
-
-    # Create a Pandas DataFrame
     df = pd.DataFrame(data, columns=columns)
-    # Write the DataFrame to a CSV file
     df.to_csv(path, index=True, index_label="_id")
 
 
 CONFIGURATIONS = {
     "dbpedia": {
-        "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k"),
-        "args": {"purge_factor": 1, "max_lev_sim": 1},
+        "N": 10000,
+        "match_ratio": 0.05,
+        "folder": DATASET_FOLDER_PATH / "dbpedia10k_new",
+        "args": {"purge_factor": 1, "max_lev_sim": 1, "include_keys": True},
     },
     # create harder test dataset by purging large blocks and disallowing exact matches
     "dbpedia_harder": {
-        "folder": Path("data/benchmark_datasets/existingDatasets/dbpedia10k_harder"),
-        "args": {"purge_factor": 0.1, "max_lev_sim": 0.9},
+        "N": 10000,
+        "match_ratio": 0.05,
+        "folder": DATASET_FOLDER_PATH / "dbpedia10k_harder_new",
+        "args": {"purge_factor": 0.1, "max_lev_sim": 0.9, "include_keys": True},
     },
 }
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["dbpedia_harder"]
-    pairs = sample_dbpedia(10000, 0.05, include_keys=True, **cfg["args"])
+    cfg = CONFIGURATIONS["dbpedia"]
+    pairs = sample_dbpedia(cfg["N"], cfg["match_ratio"], **cfg["args"])
     print(len(pairs))
     dbpedia_folder = cfg["folder"]
     dbpedia_folder.mkdir(parents=True, exist_ok=True)
-    to_benchmark_csv(dbpedia_folder / "train.csv", pairs, include_keys=True)
+    to_benchmark_csv(
+        dbpedia_folder / "train.csv", pairs, include_keys=cfg["args"]["include_keys"]
+    )

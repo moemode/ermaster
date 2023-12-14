@@ -78,7 +78,8 @@ Module for loading raw DBPedia data into subsampled csv files
 | --------------- | ------------------------- |
 | [dataset/dbpedia/load_dbpedia.py](erllm/dataset/dbpedia/load_dbpedia.py)   | Reads raw DBpedia data into SQLite database. |
 [dataset/dbpedia/access_dbpedia.py](erllm/dataset/dbpedia/access_dbpedia.py)   | Database interaction functions for querying and retrieving DBpedia entities and matching pairs.
-| 
+| [dataset/dbpedia/token_blocking.py](erllm/dataset/dbpedia/access_dbpedia.py)   | Implements dirty and clean-clean token blocking 
+| [dataset/dbpedia/sample_dbpedia.py](erllm/dataset/dbpedia/sample_dbpedia.py)   | Generates a labeled dataset of matching and non-matching DBpedia entity pairs.|
 
 ## Module llm_matcher
 
