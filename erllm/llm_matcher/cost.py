@@ -2,13 +2,13 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Dict, List
 import pandas as pd
-from erllm.dataset import DATASET_NAMES
+from erllm import PROMPTS_FOLDER_PATH, SAMPLED_DATASET_NAMES
 from erllm.utils import load_json_file, num_tokens_from_string
 
 # Define a named tuple for input and output costs
 ModelCost = namedtuple("ModelCost", ["input", "output"])
 
-# Create a dictionary mapping model names to Costs named tuples
+# maps model names to ModelCosts
 MODEL_COSTS = {
     "gpt-4-1106-preview": ModelCost(input=0.01, output=0.03),
     "gpt-4-1106-vision-preview": ModelCost(input=0.01, output=0.03),
@@ -38,12 +38,20 @@ legacy_model_info = {
 }
 
 
-def prompt_tokens(prompt_file: Path, model: str):
-    # Load JSON data from the specified file path
+def prompt_tokens(prompt_file: Path, model: str) -> tuple[int, int]:
+    """
+    Calculate the number of prompts and total tokens for a given prompt file and model.
+
+    Args:
+        prompt_file (Path): Path to the JSON file containing prompts.
+        model (str): Name of the language model.
+
+    Returns:
+        tuple[int, int]: Number of prompts and total tokens.
+    """
     promptsJson = load_json_file(prompt_file)
     pairs = promptsJson["pairs"]
     N = len(pairs)
-    # Iterate over pairs and calculate f, then sum the results
     entity_tokens = sum(num_tokens_from_string(pair["p"], model) for pair in pairs)
     prefix_tokens = num_tokens_from_string(promptsJson["prefix"], model)
     return N, N * prefix_tokens + entity_tokens
@@ -55,6 +63,18 @@ def cost(
     model: str,
     costs: Dict[str, ModelCost] = MODEL_COSTS,
 ) -> float:
+    """
+    Calculate the cost of generating output tokens for a given prompt file and model.
+
+    Args:
+        prompt_file (Path): Path to the JSON file containing prompts.
+        outtokens_per_prompt (int): Number of output tokens per prompt.
+        model (str): Name of the language model.
+        costs (Dict[str, ModelCost], optional): Dictionary mapping model names to cost values.
+
+    Returns:
+        float: Cost of generating output tokens.
+    """
     if model not in costs:
         raise ValueError(f"No costs available for {model}")
     N, intokens = prompt_tokens(prompt_file, model)
@@ -68,6 +88,18 @@ def str_cost(
     model: str,
     costs: Dict[str, ModelCost] = MODEL_COSTS,
 ) -> float:
+    """
+    Calculate the cost of generating output tokens for a given list of prompt strings and model.
+
+    Args:
+        prompt_strings (List[str]): List of prompt strings.
+        outtokens_per_prompt (int): Number of output tokens per prompt.
+        model (str): Name of the language model.
+        costs (Dict[str, ModelCost], optional): Dictionary mapping model names to cost values.
+
+    Returns:
+        float: Cost of generating output tokens.
+    """
     N = len(prompt_strings)
     # Iterate over pairs and calculate f, then sum the results
     intokens = sum(num_tokens_from_string(p, model) for p in prompt_strings)
@@ -75,22 +107,32 @@ def str_cost(
     return intokens / 1000 * costs[model].input + outtokens / 1000 * costs[model].output
 
 
-if __name__ == "__main__":
-    paths = map(
-        lambda d: (
-            d,
-            Path(
-                f"/home/v/coding/ermaster/prompts/{d}-general_complex_force_hash.json"
-            ),
+CONFIGURATIONS = {
+    "base": {
+        "models": ["gpt-3.5-turbo", "gpt-3.5-turbo-instruct", "gpt-4-1106-preview"],
+        "prompt_paths": map(
+            lambda d: (d, PROMPTS_FOLDER_PATH / f"{d}-general_complex_force.json"),
+            SAMPLED_DATASET_NAMES,
         ),
-        DATASET_NAMES,
-    )
-    paths = filter(lambda p: p[1].exists(), paths)
-    models = ["gpt-3.5-turbo", "gpt-3.5-turbo-instruct", "gpt-4-1106-preview"]
+        "outtokens_per_prompt": 10,
+    },
+    "hash": {
+        "models": ["gpt-3.5-turbo", "gpt-3.5-turbo-instruct", "gpt-4-1106-preview"],
+        "prompt_paths": map(
+            lambda d: (d, PROMPTS_FOLDER_PATH / f"{d}-general_complex_force.json"),
+            SAMPLED_DATASET_NAMES,
+        ),
+        "outtokens_per_prompt": 10,
+    },
+}
+
+
+if __name__ == "__main__":
+    cfg = CONFIGURATIONS["base"]
     results = []
-    for dataset, dataset_path in paths:
-        for model in models:
-            dataset_cost = cost(dataset_path, 10, model)
+    for dataset, dataset_path in cfg["prompt_paths"]:
+        for model in cfg["models"]:
+            dataset_cost = cost(dataset_path, cfg["outtokens_per_prompt"], model)
             results.append({"Dataset": dataset, "Model": model, "Cost": dataset_cost})
     # Create a DataFrame from the results
     df = pd.DataFrame(results)

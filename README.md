@@ -13,8 +13,9 @@ Contains code to create prompts from datasets and get responses via OpenAI's Api
 | File            | Purpose                      |
 | --------------- | ------------------------- |
 | [llm_matcher/prompt_data.py](erllm/llm_matcher/prompt_data.py) | Serialize entities intro string represenation for use in prompt template
-| [llm_matcher/prompts.py](erllm/llm_matcher/prompts.py) | Take output of prompt_data.py and convert it to JSON files containing full prompts based on template choice|
-| [llm_matcher/gpt.py](erllm/llm_matcher/gpt.py) | Generates ompletions for prompts via OpenAI API. The results of runs are saved in `runfiles` which store the full API response and information about the profile pairs.|
+| [llm_matcher/prompts.py](erllm/llm_matcher/prompts.py) | Takes output of `prompt_data.py` and convert it to JSON files containing full prompts based on template choice|
+| [llm_matcher/gpt.py](erllm/llm_matcher/gpt.py) | Takes prompts prepared by `prompts.py`and generates completions via OpenAI API. The results of runs are saved in `runfiles` which store the full API response and information about the profile pairs.|
+| [llm_matcher/cost.py](erllm/llm_matcher/cost.py) | Given prompts, calculates the cost of generating completions specified models and datasets. |
 
 
 # Datasets and their Format

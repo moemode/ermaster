@@ -6,7 +6,7 @@ from sklearn.metrics import (
     f1_score,
     accuracy_score,
 )
-from cost import str_cost
+from erllm.llm_matcher.cost import str_cost
 from erllm.eval.evalrun import read_run_alternate, read_run_raw
 import pandas as pd
 
