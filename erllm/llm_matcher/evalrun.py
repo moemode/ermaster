@@ -1,54 +1,26 @@
+"""
+Methods for reading run files, deriving classification decisions, and calculating classification and calibration metrics 
+"""
 import json
 from pathlib import Path
-from typing import Any, Dict, Iterable
+from typing import Any, Dict
 from attr import dataclass
 import numpy as np
 from sklearn.metrics import (
     brier_score_loss,
+    confusion_matrix,
     precision_score,
     recall_score,
     f1_score,
     accuracy_score,
     confusion_matrix,
 )
-import pandas as pd
-
 from erllm.utils import (
     NumpyEncoder,
     bernoulli_entropy,
     negative_predictive_value,
 )
 from erllm.eval.reliability_diagrams import *
-
-
-"""
-def read_run(run: Path):
-    Path("eval").mkdir(parents=True, exist_ok=True)
-    truths = []
-    predictions = []
-    entropies = []
-    probabilities = []
-    with open(run, "r") as file:
-        data = json.load(file)
-    for sample in data:
-        prompt, truth, completion = sample["p"], sample["t"], sample["c"]
-        topprobs_first = completion["logprobs"]["top_logprobs"][0]
-        for t in ["Yes", "No", " Yes", " No"]:
-            topprobs_first.setdefault(t, -1000)
-        lp_yes = max(topprobs_first[" Yes"], topprobs_first["Yes"])
-        lp_no = max(topprobs_first[" No"], topprobs_first["No"])
-        p_yes, p_no = np.exp(lp_yes), np.exp(lp_no)
-        entropies.append(bernoulli_entropy(p_yes / (p_yes + p_no)))
-        truths.append(truth)
-        predictions.append(lp_yes > lp_no)
-        probabilities.append(p_yes if p_yes > p_no else p_no)
-    return (
-        np.array(truths),
-        np.array(predictions),
-        np.array(entropies),
-        np.array(probabilities),
-    )
-"""
 
 
 @dataclass
@@ -73,6 +45,18 @@ class CompletedPrompt:
 
 
 def calibration_data(truths, predictions, probabilities):
+    """
+    Calculate calibration metrics given ground truth, predictions, and predicted probabilities.
+    These are returned by read_run.
+
+    Parameters:
+        truths (array-like): Ground truth labels.
+        predictions (array-like): Predicted binary labels.
+        probabilities (array-like): Predicted probabilities.
+
+    Returns:
+        dict: Calibration metrics including Brier Score, Expected Calibration Error (ECE), and confusion matrix components.
+    """
     probabilities_brier = probabilities.copy()
     pred0 = 0 == predictions
     probabilities_brier[pred0] = 1 - probabilities_brier[pred0]
@@ -109,6 +93,15 @@ def calibration_data(truths, predictions, probabilities):
 
 
 def read_run_raw(run: Path) -> Dict[tuple, CompletedPrompt]:
+    """
+    Read a JSON run file and create a dictionary mapping (id0, id1) tuples to CompletedPrompt objects.
+
+    Parameters:
+        run (Path): Path to the JSON run file.
+
+    Returns:
+        Dict: Mapping of (id0, id1) tuples to CompletedPrompt objects.
+    """
     with open(run, "r") as file:
         data = json.load(file)
     # Create a dictionary mapping a tuple of (id0, id1) to CompletedPrompt objects
@@ -118,7 +111,16 @@ def read_run_raw(run: Path) -> Dict[tuple, CompletedPrompt]:
     return prompt_dict
 
 
-def read_run_alternate(run: Path):
+def read_run(run: Path):
+    """
+    Read a JSON run file, process the completed prompts, and return relevant information for evaluation.
+
+    Parameters:
+        run (Path): Path to the JSON run file.
+
+    Returns:
+        Tuple: A tuple containing arrays of truths, predictions, entropies, probabilities, and pairs.
+    """
     Path("eval").mkdir(parents=True, exist_ok=True)
     pairs = []
     truths = []
@@ -160,8 +162,17 @@ def read_run_alternate(run: Path):
     )
 
 
-def eval(run: Path):
-    truths, predictions, entropies, probabilities, _ = read_run_alternate(run)
+def eval(run: Path, save_to: Path):
+    """
+    Evaluate LLM matcher performance based on a run file and save the results.
+
+    Parameters:
+        run (Path): Path to the JSON run file produced by gpt.py.
+
+    Returns:
+        Dict: Evaluation results.
+    """
+    truths, predictions, entropies, probabilities, _ = read_run(run)
     truths = truths.astype(bool)
     prec = precision_score(truths, predictions)
     rec = recall_score(truths, predictions)
@@ -205,50 +216,7 @@ def eval(run: Path):
     }
     calibration_results = calibration_data(truths, predictions, probabilities)
     results.update(calibration_results)
-
-    with open(Path("eval") / run.name, "w") as f:
+    with open(save_to / run.name, "w") as f:
         json.dump(results, f, indent=2, cls=NumpyEncoder)
     print(results)
     return results
-
-
-def eval_dir(json_files: Iterable[Path], fname="results.csv"):
-    all_results = []  # List to store results for each file
-    for file in json_files:
-        ds, prompt_type, model, description = file.parts[-1].split("-")
-        results = eval(file)
-        results.update(
-            {
-                "Dataset": ds,
-                "PromptType": prompt_type,
-                "Model": model,
-                "Description": description,
-            }
-        )
-        all_results.append(results)  # Append the results dictionary for each file
-
-    # Convert the list of dictionaries into a DataFrame
-    df = pd.DataFrame(all_results)
-    df.to_csv(f"eval_writeup/{fname}", index=False)
-    print(df)
-
-
-if __name__ == "__main__":
-    CONFIGURATIONS = {
-        "base": "35_base/*force-gpt*.json",
-        "hash": "35_hash/*force_hash-gpt*.json",
-        "base_hash": "35_base_hash/*.json",
-    }
-    for cfg in CONFIGURATIONS.keys():
-        eval_dir(
-            Path("/home/v/coding/ermaster/runs").glob(CONFIGURATIONS[cfg]),
-            fname=f"{cfg}.csv",
-        )
-    """
-    eval(
-        Path(
-            "/home/v/coding/ermaster/runs/dbpedia10k-2_1250-general_complex_force_hash-gpt_3.5_turbo_instruct-1max_token_0.json"
-            # "/home/v/coding/ermaster/runs/dbpedia10k-2_1250_general_complex_force-gpt-3.5_turbo_instruct-1max_token_0.json"
-        )
-    )
-    """

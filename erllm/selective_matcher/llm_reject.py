@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
-from erllm.llm_matcher.evalrun import read_run_alternate
+from erllm.llm_matcher.evalrun import read_run
 import numpy as np
 
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     for path in Path(".").glob(CONFIGURATIONS["base"]["runfiles"]):
         dataset_name = path.stem.split("-")[0]
 
-        truths, predictions, _, probabilities, _ = read_run_alternate(path)
+        truths, predictions, _, probabilities, _ = read_run(path)
         f1 = f1_score(truths, predictions)
         rec = recall_score(truths, predictions)
         k = int(round(0.05 * len(truths)))

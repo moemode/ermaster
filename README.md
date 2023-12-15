@@ -38,7 +38,10 @@ Contains code to create prompts from datasets and get responses via OpenAI's Api
 | [llm_matcher/prompt_data.py](erllm/llm_matcher/prompt_data.py) | Serialize entities intro string represenation for use in prompt template
 | [llm_matcher/prompts.py](erllm/llm_matcher/prompts.py) | Takes output of `prompt_data.py` and convert it to JSON files containing full prompts based on template choice|
 | [llm_matcher/gpt.py](erllm/llm_matcher/gpt.py) | Takes prompts prepared by `prompts.py`and generates completions via OpenAI API. The results of runs are saved in `runfiles` which store the full API response and information about the profile pairs.|
+| [llm_matcher/evalrun.py](erllm/llm_matcher/eval_run.py) | Methods for reading `runfiles``, deriving classification decisions, and calculating classification and calibration metrics 
+| [llm_matcher/llm_matcher.py](erllm/llm_matcher/llm_matcher.py) | Evaluates the performance of the LLM Matcher on a set of run files produced by the `gpt.py` accessing the OpenAI API.
 | [llm_matcher/cost.py](erllm/llm_matcher/cost.py) | Given prompts, calculates the cost of generating completions specified models and datasets. |
+
 
 ## Module discarder
 
@@ -59,6 +62,7 @@ Explores the similarity based discarder in isolation.
 | [discarding_matcher/discarding_matcher_runner.py](erllm/discarding_matcher/discarding_matcher_runner.py) | Runs the discarding matcher in `discarding_matcher.py`` on multiple datasets with different threshold values. Stores performance metrics in a pandas DataFrame and saves them as CSV file.
 | [discarding_matcher/discarding_matcher_vis.py](erllm/discarding_matcher/discarding_matcher_vis.py) | Generates performance plots for the discarding matcher. It produces line plots for each dataset and summary plots displaying the performance across all datasets. |
 | [discarding_matcher/discarding_matcher_tradeoff.py](erllm/discarding_matcher/discarding_matcher_tradeoff.py) | Generate and analyze performance trade-off metrics for the discarding matcher based on F1 decrease thresholds. Reads performance metrics from a CSV file, calculates F1 decrease, relative cost, and relative duration for each dataset and threshold. |
+
 
 
 # Datasets and their Format

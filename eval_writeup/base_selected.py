@@ -6,9 +6,7 @@ import pandas as pd
 from writeup_utils import rename_datasets
 
 # Read in the CSV file into a DataFrame
-df = pd.read_csv(
-    "eval_writeup/base.csv"
-)  # Replace "your_file.csv" with the path to your CSV file
+df = pd.read_csv("eval/llm_matcher/base.csv")
 
 df = df[
     [

@@ -9,7 +9,7 @@ from sklearn.metrics import (
 import pandas as pd
 from erllm import RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 from erllm.llm_matcher.cost import str_cost
-from erllm.llm_matcher.evalrun import read_run_alternate, read_run_raw
+from erllm.llm_matcher.evalrun import read_run, read_run_raw
 
 
 def discarding_matcher(
@@ -31,7 +31,7 @@ def discarding_matcher(
                remaining cost, cost reduction percentage, remaining duration,
                and duration reduction percentage.
     """
-    truths, predictions, _, _, pair_ids = read_run_alternate(runFile)
+    truths, predictions, _, _, pair_ids = read_run(runFile)
     completions = read_run_raw(runFile)
     prompts = list(map(lambda cp: cp.prompt_string, completions.values()))
     cost_full = str_cost(prompts, 1, "gpt-3.5-turbo-instruct")

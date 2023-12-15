@@ -1,4 +1,4 @@
-from erllm.llm_matcher.evalrun import read_run_alternate
+from erllm.llm_matcher.evalrun import read_run
 from sklearn.metrics import brier_score_loss
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         results = dict()
 
         for path in inpaths:
-            truths, predictions, _, probabilities, _ = read_run_alternate(path)
+            truths, predictions, _, probabilities, _ = read_run(path)
             dataset_name = (
                 path.stem.split("-")[0]
                 .replace("structured_", "")
