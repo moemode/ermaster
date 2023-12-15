@@ -50,8 +50,6 @@ Explores the similarity based discarder in isolation.
 | [discarder/discarder_vis.py](erllm/discarder/discarder_vis.py) | Visualizes the functions computed by `discarder_eval.py`|
 
 
-
-
 ## Module discarding_matcher
 
 Explores the similarity based discarder in isolation.

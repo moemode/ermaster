@@ -9,7 +9,7 @@ from sklearn.metrics import (
 import pandas as pd
 from erllm import RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 from erllm.llm_matcher.cost import str_cost
-from erllm.eval.evalrun import read_run_alternate, read_run_raw
+from erllm.llm_matcher.evalrun import read_run_alternate, read_run_raw
 
 
 def discarding_matcher(

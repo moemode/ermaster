@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
-from erllm.eval.evalrun import read_run_alternate
+from erllm.llm_matcher.evalrun import read_run_alternate
 import numpy as np
 
 

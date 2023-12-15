@@ -1,4 +1,4 @@
-from erllm.eval.evalrun import read_run_alternate
+from erllm.llm_matcher.evalrun import read_run_alternate
 from sklearn.metrics import brier_score_loss
 from pathlib import Path
 import matplotlib.pyplot as plt
