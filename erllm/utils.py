@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import openai
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 import tiktoken
 from tqdm import tqdm
 
@@ -139,3 +140,13 @@ def rename_datasets(df, preserve_sampled=True):
     )
     df["Dataset"] = df["Dataset"].str.replace("Dbpedia10K", "DBpedia")
     return df
+
+
+def classification_metrics(
+    truths: np.ndarray, predictions: np.ndarray
+) -> tuple[float, float, float, float]:
+    prec = precision_score(truths, predictions)
+    rec = recall_score(truths, predictions)
+    f1 = f1_score(truths, predictions)
+    acc = accuracy_score(truths, predictions)
+    return prec, rec, f1, acc
