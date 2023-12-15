@@ -6,17 +6,32 @@ from sklearn.metrics import (
     f1_score,
     accuracy_score,
 )
+import pandas as pd
+from erllm import RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 from erllm.llm_matcher.cost import str_cost
 from erllm.eval.evalrun import read_run_alternate, read_run_raw
-import pandas as pd
 
 
-def pre_llm(
+def discarding_matcher(
     threshold: float, runFile: Path, similaritiesFile: Path, sim_function="overlap"
 ):
-    truths, predictions, entropies, probabilities, pair_ids = read_run_alternate(
-        runFile
-    )
+    """
+    Evaluate the performance of a discarding matcher based on a given threshold.
+
+    Parameters:
+        threshold (float): The similarity threshold for discarding pairs.
+        runFile (Path): Path to the run JSON file containing completion information.
+        Created by llm_matcher/gpt.py.
+        similaritiesFile (Path): Path to the CSV file containing pair similarities.
+        Created by discarder/discarder.py.
+        sim_function (str, optional): The similarity function to use. Default is "overlap".
+
+    Returns:
+        tuple: A tuple containing accuracy, precision, recall, F1 score,
+               remaining cost, cost reduction percentage, remaining duration,
+               and duration reduction percentage.
+    """
+    truths, predictions, _, _, pair_ids = read_run_alternate(runFile)
     completions = read_run_raw(runFile)
     prompts = list(map(lambda cp: cp.prompt_string, completions.values()))
     cost_full = str_cost(prompts, 1, "gpt-3.5-turbo-instruct")
@@ -76,27 +91,26 @@ def find_matching_csv(
     Returns:
         Optional[Path]: The path to the matching similarity CSV file, or None if not found.
     """
-    json_dataset_name = run_file.stem.split("-")[0]
-    json_dataset_name = json_dataset_name.replace("_1250", "")
+    ds_name = run_file.stem.split("-")[0]
+    ds_name = ds_name.replace("_1250", "")
     matching_csv = next(
-        (
-            csv_file
-            for csv_file in similarity_files
-            if json_dataset_name in csv_file.stem
-        ),
+        (csv_file for csv_file in similarity_files if ds_name in csv_file.stem),
         None,
     )
     return matching_csv
 
 
 if __name__ == "__main__":
+    # example run for debugging
     CONFIGURATIONS = {
         "base": {
-            "runfiles": "runs/35_base/*dblp_scholar*force-gpt*.json",
-            "similarities": "eval",
+            "runfiles": RUNS_FOLDER_PATH / "35_base",
+            "similarities": SIMILARITIES_FOLDER_PATH,
         },
     }
-    for path in Path(".").glob(CONFIGURATIONS["base"]["runfiles"]):
+    for path in CONFIGURATIONS["base"]["runfiles"].glob(
+        "*dblp_scholar*force-gpt*.json"
+    ):
         dataset_name = path.stem.split("-")[0]
         simPath = find_matching_csv(
             path, Path(CONFIGURATIONS["base"]["similarities"]).glob("*-allsim.csv")
@@ -105,4 +119,4 @@ if __name__ == "__main__":
             raise ValueError(
                 f"No matching similarity file in {CONFIGURATIONS['base']['similarities']} found for {path}"
             )
-        pre_llm(0.3, path, simPath)
+        print(discarding_matcher(0.3, path, simPath))

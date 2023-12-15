@@ -82,4 +82,4 @@ if __name__ == "__main__":
     )
     # add column max_tpr = 1 - fnr
     df["max_tpr"] = 1 - df["fnr"]
-    df.to_csv(f"{EVAL_FOLDER_PATH}/discarder-stats.csv", index=False)
+    df.to_csv(f"{EVAL_FOLDER_PATH}/discarder_stats.csv", index=False)

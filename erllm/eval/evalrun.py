@@ -11,14 +11,15 @@ from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
 )
-from utils import (
+import pandas as pd
+
+from erllm.utils import (
     NumpyEncoder,
     bernoulli_entropy,
     negative_predictive_value,
 )
 from erllm.eval.reliability_diagrams import *
 
-import pandas as pd
 
 """
 def read_run(run: Path):

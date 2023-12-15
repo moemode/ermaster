@@ -1,7 +1,9 @@
 import pandas as pd
 
+from erllm import EVAL_FOLDER_PATH
+
 if __name__ == "__main__":
-    df = pd.read_csv("eval_writeup/pre_llm_perf.csv")
+    df = pd.read_csv(EVAL_FOLDER_PATH / "discarding_matcher_perf.csv")
     # Create an empty list to store DataFrames
     decrease_entries = []
     # Iterate through each unique dataset

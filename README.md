@@ -41,10 +41,18 @@ Contains code to create prompts from datasets and get responses via OpenAI's Api
 ## Module discarder
 
 Explores the similarity based discarder in isolation.
-.
 | File            | Purpose                      |
 | --------------- | ------------------------- |
 | [discarder/discarder.py](erllm/discarder/discarder.py) | Computes and save set-based and embedding-based similarities for pairs of entities. Save results in csv for later processing.
+| [discarder/discarder_eval.py](erllm/discarder/discarder_eval.py) | Takes output of `discarder.py` and figures out what happens if one discards based on the various similarity functions. Computes various functions capturing the relation of e.g. number of missclassifications on the number of discarded pairs (in ascending order of similarity).
+| [discarder/discarder_vis.py](erllm/discarder/discarder_vis.py) | Visualizes the functions computed by `discarder_eval.py`|
+
+## Module discarding_matcher
+
+Explores the similarity based discarder in isolation.
+| File            | Purpose                      |
+| --------------- | ------------------------- |
+| [discarding_matcher/discarding_matcher.py](erllm/discarder/discarder.py) | Simulates a discarding matcher and evaluates its performance by applying a specified similarity threshold to discard pairs, calculating relevant metrics, and returning a tuple containing classification metrics.
 | [discarder/discarder_eval.py](erllm/discarder/discarder_eval.py) | Takes output of `discarder.py` and figures out what happens if one discards based on the various similarity functions. Computes various functions capturing the relation of e.g. number of missclassifications on the number of discarded pairs (in ascending order of similarity).
 | [discarder/discarder_vis.py](erllm/discarder/discarder_vis.py) | Visualizes the functions computed by `discarder_eval.py`|
 
