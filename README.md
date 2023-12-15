@@ -8,12 +8,19 @@ The datasets are under `data/benchmark_datasets/existingDatasets`.
 
 | Module            | Purpose                      |
 | --------------- | ------------------------- |
+| [root](#module-root)    | Contains helpers and installer.|
 | [dataset](#module-dataset)    | Covers entity representation, dataset loading, downsampling. The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled datasets of matching and non-matching DBpedia entity pairs for benchmarking.|
 | [llm_matcher](#module-llm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API.|
 | [discarder](#module-discarder)| Explores the similarity-based discarder in isolation. Computes and saves set-based and embedding-based similarities for pairs of entities, evaluates the impact of discarding based on various similarity functions, and visualizes the results.|
 | [discarding_matcher](#module-discarding_matcher)| Explores the similarity-based discarding matcher. Simulates a discarding matcher, evaluates its performance on multiple datasets with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds.|
 | [calibration](#module-calibration)| Calibration analysis on LLM predictions. |
 | [selective_matcher](#module-selective_matcher) | Explores selective classification | 
+
+## Module root
+| Module            | Purpose                      |
+| --------------- | ------------------------- |
+| [erllm_setup.py](erllm/erllm_setup.py)   | Adds parent folder of erllm to python path of executing interpreter. Makes erllm importable like installed package | 
+| [utils.py](erllm/utils.py)   | Miscellaneous helper for writing files, API access, classification metrics and more.|
 
 ## Module dataset
 | Module            | Purpose                      |
