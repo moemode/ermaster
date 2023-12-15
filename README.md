@@ -12,6 +12,7 @@ The datasets are under `data/benchmark_datasets/existingDatasets`.
 | [llm_matcher](#module-llm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API.|
 | [discarder](#module-discarder)| Explores the similarity-based discarder in isolation. Computes and saves set-based and embedding-based similarities for pairs of entities, evaluates the impact of discarding based on various similarity functions, and visualizes the results.|
 | [discarding_matcher](#module-discarding_matcher)| Explores the similarity-based discarding matcher. Simulates a discarding matcher, evaluates its performance on multiple datasets with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds.|
+| [calibration](#module-calibration)| Calibration analysis on LLM predictions. |
 
 ## Module datasets
 | Module            | Purpose                      |
@@ -63,7 +64,13 @@ Explores the similarity based discarder in isolation.
 | [discarding_matcher/discarding_matcher_vis.py](erllm/discarding_matcher/discarding_matcher_vis.py) | Generates performance plots for the discarding matcher. It produces line plots for each dataset and summary plots displaying the performance across all datasets. |
 | [discarding_matcher/discarding_matcher_tradeoff.py](erllm/discarding_matcher/discarding_matcher_tradeoff.py) | Generate and analyze performance trade-off metrics for the discarding matcher based on F1 decrease thresholds. Reads performance metrics from a CSV file, calculates F1 decrease, relative cost, and relative duration for each dataset and threshold. |
 
+## Module calibration
 
+Calibration analysis on LLM predictions for different datasets.
+| File            | Purpose                      |
+| --------------- | ------------------------- |
+| [calibration/reliability_diagrams.py](erllm/calibration/reliability_diagrams.py) | 3rd party code to create calibration diagrams and compute calibration metrics |
+| [calibration/calibration_plots.py](erllm/calibration/calibration_plots.py) | Performs calibration analysis on language model predictions for different datasets, calculating Brier Score and Expected Calibration Error (ECE). Generates visualizations of reliability diagrams using `reliability_diagrams.py` and saves the calibration metrics in CSV files.|
 
 # Datasets and their Format
 The datasets are available in the repo but we describe how they can be downloaded and put in the right place for completion.

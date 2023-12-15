@@ -20,7 +20,7 @@ from erllm.utils import (
     bernoulli_entropy,
     negative_predictive_value,
 )
-from erllm.eval.reliability_diagrams import *
+from erllm.calibration.reliability_diagrams import *
 
 
 @dataclass

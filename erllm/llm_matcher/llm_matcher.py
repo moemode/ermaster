@@ -8,8 +8,7 @@ from typing import Iterable
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH
 from erllm.llm_matcher.evalrun import eval
-
-from erllm.eval.reliability_diagrams import *
+from erllm.calibration.reliability_diagrams import *
 
 LLM_MATCHER_FOLDER_PATH = EVAL_FOLDER_PATH / "llm_matcher"
 

@@ -71,7 +71,7 @@ CONFIGURATIONS = {
     "base_calibration": {
         "column_order": ["ECE", "Brier Score"],
         "sort_by": "ECE",
-        "path": Path("eval_writeup/base_calibration.csv"),
+        "path": Path("eval/calibration/base_calibration.csv"),
         "color_columns": ["ECE"],
         "rename": True,
     },
