@@ -1,20 +1,19 @@
+"""
+Generate and analyze performance trade-off metrics for the discarding matcher based on F1 decrease thresholds.
+Reads performance metrics from a CSV file, calculates F1 decrease, relative cost, and relative duration for each dataset and threshold.
+"""
 import pandas as pd
-
-from erllm import EVAL_FOLDER_PATH
+from erllm import EVAL_FOLDER_PATH, EVAL_WRITEUP_FOLDER_PATH
 
 if __name__ == "__main__":
     df = pd.read_csv(EVAL_FOLDER_PATH / "discarding_matcher_perf.csv")
-    # Create an empty list to store DataFrames
     decrease_entries = []
-    # Iterate through each unique dataset
     for dataset in df["Dataset"].unique():
-        # Filter the DataFrame for the current dataset
+        # Filter to current dataset
         dataset_df = df[df["Dataset"] == dataset]
-
         # Get the entry for threshold 0
         reference_entry = dataset_df[dataset_df["Threshold"] == 0.0].iloc[0]
-
-        # Calculate the decrease in F1 and include the relative cost
+        # Calculate the decrease in F1 for each threshold and include the relative cost
         dataset_df["F1_Decrease"] = (dataset_df["F1"] - reference_entry["F1"]) / (
             reference_entry["F1"]
         )
@@ -22,7 +21,6 @@ if __name__ == "__main__":
         dataset_df["F1"] = dataset_df["F1"]
         dataset_df["Relative_Cost"] = dataset_df["Cost Relative"]
         dataset_df["Relative_Duration"] = dataset_df["Duration Relative"]
-
         # Append the results to the list
         decrease_entries.append(
             dataset_df[
@@ -49,7 +47,6 @@ if __name__ == "__main__":
     for dataset in decrease_df["Dataset"].unique():
         # Filter the DataFrame for the current dataset
         dataset_df = decrease_df[decrease_df["Dataset"] == dataset]
-
         # Get the rows with the largest threshold where F1 decrease is greater than the threshold
         for threshold in f1_decrease_thresholds:
             largest_threshold_row = (
@@ -57,7 +54,6 @@ if __name__ == "__main__":
                 .sort_values(by="Threshold", ascending=False)
                 .iloc[0]
             )
-
             aboveth_entries.append(
                 largest_threshold_row[
                     [
@@ -81,8 +77,6 @@ if __name__ == "__main__":
     presentation_df["F1_Decrease"] = presentation_df["F1_Decrease"].abs()
     presentation_df["Time Decrease"] = 1 - presentation_df["Relative_Duration"]
 
-    # Print the result DataFrame
-    # print(result_df)
     print(
         presentation_df[
             [
@@ -94,4 +88,6 @@ if __name__ == "__main__":
             ]
         ]
     )
-    presentation_df.to_csv("eval_writeup/pre_llm_tradeoff.csv", index=False)
+    presentation_df.to_csv(
+        EVAL_WRITEUP_FOLDER_PATH / "discarding_matcher_tradeoff.csv", index=False
+    )

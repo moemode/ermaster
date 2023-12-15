@@ -2,8 +2,7 @@ import pandas as pd
 from writeup_utils import rename_datasets
 from tabulate import tabulate
 
-# load eval_writeup/pre_llm_tradeoff.csv
-df = pd.read_csv("eval_writeup/pre_llm_tradeoff.csv")
+df = pd.read_csv("eval_writeup/discarding_matcher_tradeoff.csv")
 df = rename_datasets(df, preserve_sampled=False)
 df = df[
     [

@@ -10,6 +10,8 @@ The datasets are under `data/benchmark_datasets/existingDatasets`.
 | --------------- | ------------------------- |
 | [datasets](#module-datasets)    | Covers entity representation, dataset loading, downsampling. The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled datasets of matching and non-matching DBpedia entity pairs for benchmarking.|
 | [llm_matcher](#module-llm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API.|
+| [discarder](#module-discarder)| Explores the similarity-based discarder in isolation. Computes and saves set-based and embedding-based similarities for pairs of entities, evaluates the impact of discarding based on various similarity functions, and visualizes the results.|
+| [discarding_matcher](#module-discarding_matcher)| Explores the similarity-based discarding matcher. Simulates a discarding matcher, evaluates its performance on multiple datasets with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds.|
 
 ## Module datasets
 | Module            | Purpose                      |
@@ -47,14 +49,18 @@ Explores the similarity based discarder in isolation.
 | [discarder/discarder_eval.py](erllm/discarder/discarder_eval.py) | Takes output of `discarder.py` and figures out what happens if one discards based on the various similarity functions. Computes various functions capturing the relation of e.g. number of missclassifications on the number of discarded pairs (in ascending order of similarity).
 | [discarder/discarder_vis.py](erllm/discarder/discarder_vis.py) | Visualizes the functions computed by `discarder_eval.py`|
 
+
+
+
 ## Module discarding_matcher
 
 Explores the similarity based discarder in isolation.
 | File            | Purpose                      |
 | --------------- | ------------------------- |
-| [discarding_matcher/discarding_matcher.py](erllm/discarder/discarder.py) | Simulates a discarding matcher and evaluates its performance by applying a specified similarity threshold to discard pairs, calculating relevant metrics, and returning a tuple containing classification metrics.
-| [discarder/discarder_eval.py](erllm/discarder/discarder_eval.py) | Takes output of `discarder.py` and figures out what happens if one discards based on the various similarity functions. Computes various functions capturing the relation of e.g. number of missclassifications on the number of discarded pairs (in ascending order of similarity).
-| [discarder/discarder_vis.py](erllm/discarder/discarder_vis.py) | Visualizes the functions computed by `discarder_eval.py`|
+| [discarding_matcher/discarding_matcher.py](erllm/discarding_matcher/discarding_matcher.py) | Simulates a discarding matcher and evaluates its performance by applying a specified similarity threshold to discard pairs, calculating relevant metrics, and returning a tuple containing classification metrics.
+| [discarding_matcher/discarding_matcher_runner.py](erllm/discarding_matcher/discarding_matcher_runner.py) | Runs the discarding matcher in `discarding_matcher.py`` on multiple datasets with different threshold values. Stores performance metrics in a pandas DataFrame and saves them as CSV file.
+| [discarding_matcher/discarding_matcher_vis.py](erllm/discarding_matcher/discarding_matcher_vis.py) | Generates performance plots for the discarding matcher. It produces line plots for each dataset and summary plots displaying the performance across all datasets. |
+| [discarding_matcher/discarding_matcher_tradeoff.py](erllm/discarding_matcher/discarding_matcher_tradeoff.py) | Generate and analyze performance trade-off metrics for the discarding matcher based on F1 decrease thresholds. Reads performance metrics from a CSV file, calculates F1 decrease, relative cost, and relative duration for each dataset and threshold. |
 
 
 # Datasets and their Format

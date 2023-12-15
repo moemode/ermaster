@@ -1,12 +1,22 @@
+"""
+This script generates performance comparison plots for the discarding matcher.
+It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots
+for each dataset with different configurations, such as all metrics, no cost, and F1 with cost.
+It also creates plots with showing the performance on all datasets at once.
+"""
 from pathlib import Path
 import seaborn as sns
 import pandas as pd
-
-from utils import rename_datasets
 import matplotlib.pyplot as plt
+
+from erllm import EVAL_FOLDER_PATH, FIGURE_FOLDER_PATH
+from erllm.utils import rename_datasets
 
 
 def setup_plt():
+    """
+    Set up matplotlib styling to use Seaborn and adjust font sizes for better readability.
+    """
     # Override matplotlib default styling.
     plt.style.use("seaborn-v0_8")
     plt.rc("font", size=12)
@@ -19,7 +29,15 @@ def setup_plt():
     plt.rc("figure", titlesize=16)
 
 
-def plot_dataset(data, dataset_name, postfix):
+def plot_dataset(data: pd.DataFrame, dataset_name: str, postfix: str, save_to: Path):
+    """
+    Plot the performance metrics for a specific dataset and save the figure.
+
+    Parameters:
+        data (pd.DataFrame): DataFrame containing performance metrics.
+        dataset_name (str): Name of the dataset.
+        postfix (str): Postfix to append to the saved figure file name.
+    """
     # Create the relplot for the specified dataset
     g = sns.relplot(
         x="Threshold",
@@ -33,7 +51,7 @@ def plot_dataset(data, dataset_name, postfix):
     g.fig.subplots_adjust(top=0.92)
     # Set title for the plot
     g.fig.suptitle(f"{dataset_name}")
-    g.savefig(f"figures/pre_llm/pre_llm_perf_{postfix}-{dataset_name}.png")
+    g.savefig(save_to / f"discarding_matcher_perf_{postfix}-{dataset_name}.png")
 
 
 CONFIGURATIONS = {
@@ -51,12 +69,14 @@ CONFIGURATIONS = {
     },
 }
 
+FIGURE_SAVE_TO = FIGURE_FOLDER_PATH / "discarding_matcher"
+
 if __name__ == "__main__":
     for cfg in CONFIGURATIONS.keys():
         selected_metrics = CONFIGURATIONS[cfg]["selected_metrics"]
         postfix = CONFIGURATIONS[cfg]["postfix"]
         setup_plt()
-        df = pd.read_csv("eval_writeup/pre_llm_perf.csv")
+        df = pd.read_csv(EVAL_FOLDER_PATH / "discarding_matcher_perf.csv")
         id_vars = ["Dataset", "Threshold"]
         # Filter the dataframe to only contain the selected metrics and id_vars
         df = df[selected_metrics + id_vars]
@@ -81,10 +101,9 @@ if __name__ == "__main__":
         # Adjust layout
         # g.fig.subplots_adjust(top=0.9)
         # g.fig.suptitle("Metrics vs Threshold for Different Datasets", fontsize=16)
-        p = Path(f"figures/pre_llm/pre_llm_perf_{postfix}.png")
+        p = Path(FIGURE_SAVE_TO / f"pre_llm_perf_{postfix}.png")
         p.parent.mkdir(parents=True, exist_ok=True)
         g.savefig(p)
-
-        # Iterate over each group and plot the dataset
+        # Plot each dataset
         for dataset_name, group_data in df_melted.groupby("Dataset"):
-            plot_dataset(group_data, dataset_name, postfix)
+            plot_dataset(group_data, dataset_name, postfix, FIGURE_SAVE_TO)
