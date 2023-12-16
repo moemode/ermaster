@@ -62,6 +62,7 @@ CONFIGURATIONS = {
         "column_order": ["F1", "Precision", "Recall"],
         "sort_by": "F1",
         "path": Path("eval_writeup/base_selected.csv"),
+        "color_columns": ["F1"],
     },
     "base_hash": {
         "column_order": ["F1_Diff", "Precision_Diff", "Recall_Diff"],
@@ -77,7 +78,7 @@ CONFIGURATIONS = {
     },
 }
 if __name__ == "__main__":
-    cfg_name = "base_calibration"
+    cfg_name = "base"
     make_table(**CONFIGURATIONS[cfg_name])
 
 """
