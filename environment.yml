@@ -10,8 +10,10 @@ dependencies:
   - scikit-learn=1.3
   - tqdm=4.65
   - transformers=4.32
+  - matplotlib-base=3.8
   - cpuonly
   - pytorch=2.1
+  - tabulate=0.8.10
   - scipy
   - nltk
   - pillow
@@ -19,3 +21,4 @@ dependencies:
   - pip:
       - openai==0.28.1
       - py_stringmatching==0.4.3
+      - tiktoken==0.5.1
