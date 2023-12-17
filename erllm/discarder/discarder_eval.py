@@ -57,8 +57,7 @@ if __name__ == "__main__":
             "euclidean_sim",
         ]
         for sim_name in similarity_columns:
-            # Calculate miss classifications for each similarity column
-            # check if name exists in dataframe
+            # Calculate statistics for each similarity column
             if sim_name not in s.columns:
                 continue
             stats = get_stat_functions(s, sim_name)
@@ -82,4 +81,5 @@ if __name__ == "__main__":
     )
     # add column max_tpr = 1 - fnr
     df["max_tpr"] = 1 - df["fnr"]
-    df.to_csv(f"{EVAL_FOLDER_PATH}/discarder_stats.csv", index=False)
+    (EVAL_FOLDER_PATH / "discarder").mkdir(parents=True, exist_ok=True)
+    df.to_csv(f"{EVAL_FOLDER_PATH}/discarder/stats.csv", index=False)

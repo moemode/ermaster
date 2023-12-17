@@ -11,6 +11,7 @@ import pandas as pd
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 import tiktoken
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 def write_json_iter(it: Iterable, fh: TextIOWrapper, N=None):
@@ -284,3 +285,34 @@ def classification_metrics(
     f1 = f1_score(truths, predictions)
     acc = accuracy_score(truths, predictions)
     return prec, rec, f1, acc
+
+
+def rename_datasets(df, preserve_sampled=True):
+    # Check if "Dataset" column exists, else use "dataset"
+    column_name = "Dataset" if "Dataset" in df.columns else "dataset"
+    # Remove prefixes from the selected column
+    df[column_name] = df[column_name].str.replace(
+        r"^structured_|textual_", "", regex=True
+    )
+    # Reorder columns for clarity
+    df[column_name] = df[column_name].str.replace("_", "-").str.title()
+    df[column_name] = df[column_name].str.replace(
+        "-1250", " Sampled" if preserve_sampled else ""
+    )
+    df[column_name] = df[column_name].str.replace("Dbpedia10K", "DBpedia")
+    return df
+
+
+def setup_plt():
+    """
+    Override matplotlib default styling.
+    """
+    plt.style.use("seaborn-v0_8")
+    plt.rc("font", size=12)
+    plt.rc("axes", labelsize=12)
+    plt.rc("xtick", labelsize=12)
+    plt.rc("ytick", labelsize=12)
+    plt.rc("legend", fontsize=12)
+
+    plt.rc("axes", titlesize=16)
+    plt.rc("figure", titlesize=16)

@@ -62,10 +62,11 @@ CONFIGURATIONS = {
         "column_order": ["F1", "Precision", "Recall"],
         "sort_by": "F1",
         "path": Path("eval_writeup/base_selected.csv"),
-        "color_columns": ["F1"],
+        "color_columns": ["F1", "Precision", "Recall"],
     },
     "base_hash": {
         "column_order": ["F1_Diff", "Precision_Diff", "Recall_Diff"],
+        "color_columns": ["F1_Diff", "Precision_Diff", "Recall_Diff"],
         "sort_by": "F1_Diff",
         "path": Path("eval_writeup/base_vs_hash.csv"),
     },
@@ -78,7 +79,7 @@ CONFIGURATIONS = {
     },
 }
 if __name__ == "__main__":
-    cfg_name = "base"
+    cfg_name = "base_hash"
     make_table(**CONFIGURATIONS[cfg_name])
 
 """
