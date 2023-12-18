@@ -7,22 +7,26 @@ The results are stored in a pandas DataFrame and saved as a CSV file.
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from erllm import EVAL_FOLDER_PATH
+from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 from erllm.discarding_matcher.discarding_matcher import (
     find_matching_csv,
     discarding_matcher,
 )
 
 CONFIGURATIONS = {
-    "base": {"runfiles": "runs/35_base/*force-gpt*.json", "similarities": "eval"},
+    "base": {
+        "runfiles": RUNS_FOLDER_PATH / "35_base",
+        "similarities": SIMILARITIES_FOLDER_PATH,
+    },
 }
 
 if __name__ == "__main__":
     results = []
     # Create values in the range 0.0 to 1.0 with an increment of 0.05
-    threshold_values = np.arange(0.0, 1.05, 0.05)
+    inc = 0.01
+    threshold_values = np.arange(0.0, 1 + inc, inc)
     for threshold in threshold_values:
-        for path in Path(".").glob(CONFIGURATIONS["base"]["runfiles"]):
+        for path in CONFIGURATIONS["base"]["runfiles"].glob("*force-gpt*.json"):
             dataset_name = path.stem.split("-")[0]
             simPath = find_matching_csv(
                 path, Path(CONFIGURATIONS["base"]["similarities"]).glob("*-allsim.csv")

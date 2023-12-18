@@ -10,7 +10,12 @@ from writeup_utils import rename_datasets
 
 
 def make_table(
-    path, sort_by, column_order, color_columns: Iterable = None, rename=False
+    path,
+    sort_by,
+    column_order,
+    color_columns: Iterable = None,
+    rename=False,
+    decimals=3,
 ):
     # Read CSV data into a DataFrame
     df = pd.read_csv(path)
@@ -24,27 +29,22 @@ def make_table(
     # Reorder columns
     df = df[["Dataset"] + column_order]
 
-    # Convert original values to LaTeX color codes
-    def original_to_color(value, mean, std):
-        scaled_value = (value - mean) / std
-        color = "cyan" if scaled_value > 0 else "orange"
-        return f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}{value:.3f}"
-
-    def original_to_color(value, min_val, max_val, do_color: bool):
+    def original_to_color(value, min_val, max_val, do_color: bool, decimals):
         r = (value - min_val) / (max_val - min_val)
         scaled_value = 2 * (r - 0.5)
         color = "cyan" if scaled_value > 0 else "orange"
         prefix = (
             f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}" if do_color else ""
         )
-        return f"{prefix}{value:.3f}"
+        # return f"{prefix}{value:.{decimals}}"
+        return f"{prefix}{round(value, decimals)}"
 
     # Apply color coding to each cell in the DataFrame
     df_colored = df.copy()
     for col in df.columns[1:]:
         df_colored[col] = df[col].apply(
             lambda x: original_to_color(
-                x, df[col].min(), df[col].max(), col in color_columns
+                x, df[col].min(), df[col].max(), col in color_columns, decimals
             )
         )
 
@@ -77,9 +77,16 @@ CONFIGURATIONS = {
         "color_columns": ["ECE"],
         "rename": True,
     },
+    "discarding_matcher_tradeoff": {
+        "path": Path("eval_writeup/discarding_matcher_tradeoff_pivot.csv"),
+        "color_columns": ["2.5", "5.0", "10.0"],
+        "column_order": ["2.5", "5.0", "10.0"],
+        "sort_by": "2.5",
+        "decimals": 2,
+    },
 }
 if __name__ == "__main__":
-    cfg_name = "base_hash"
+    cfg_name = "discarding_matcher_tradeoff"
     make_table(**CONFIGURATIONS[cfg_name])
 
 """

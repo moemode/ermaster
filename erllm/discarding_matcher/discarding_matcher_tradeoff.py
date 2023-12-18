@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # print(result_df)
 
     # Values for F1 decrease thresholds
-    f1_decrease_thresholds = [-0.05, -0.1, -0.15]
+    f1_decrease_thresholds = [-0.025, -0.05, -0.1]
     aboveth_entries = []
     # Iterate through each unique dataset
     for dataset in decrease_df["Dataset"].unique():
