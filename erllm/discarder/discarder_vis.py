@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import math
 from erllm import DATASET_NAMES, EVAL_FOLDER_PATH, FIGURE_FOLDER_PATH
-from erllm.utils import rename_datasets, setup_plt
+from erllm.utils import my_setup_plt, rename_datasets
 
 
 def plot_ds(
@@ -98,7 +98,7 @@ measure_relation = {
 
 
 CONFIGURATIONS = {
-    "joc_on_nine": {
+    "joc_on_all": {
         "selected_sims": ["jaccard", "overlap", "cosine_sim"],
         "datasets": DATASET_NAMES,
         "save_to": FIGURE_FOLDER_PATH / "discarder",
@@ -116,15 +116,36 @@ CONFIGURATIONS = {
 }
 
 if __name__ == "__main__":
-    setup_plt()
-    # sns.set_theme()
-    # sns.set_context("paper")
+    my_setup_plt()
+    """
+    sns.set_context(
+        "paper",
+        rc={
+            "font.size": 12,
+            "axes.labelsize": 12,
+            "axes.xticklabelsize": 12,
+            "axes.yticklabelsize": 12,
+            "legend.fontsize": 12,
+            "axes.titlesize": 20,
+            "figure.titlesize": 20,
+        },
+    )"""
+
+    sns.set_style("darkgrid")
     cfg = CONFIGURATIONS["joc_on_characteristic"]
     save_to = cfg["save_to"]
     save_to.mkdir(parents=True, exist_ok=True)
     df = pd.read_csv(f"{EVAL_FOLDER_PATH}/discarder_stats.csv")
     df = df[df["dataset"].isin(cfg["datasets"])]
     df = df[df["measure"].isin(cfg["selected_sims"])]
+    df["measure"].replace(
+        {
+            "jaccard": "Set Jaccard",
+            "overlap": "Set Overlap",
+            "cosine_sim": "Emb. Cosine",
+        },
+        inplace=True,
+    )
     df = rename_datasets(df)
     for dataset, dataset_subset in df.groupby("dataset"):
         for rname, r in RELATIONS.items():
