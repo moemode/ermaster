@@ -132,7 +132,7 @@ if __name__ == "__main__":
     )"""
 
     sns.set_style("darkgrid")
-    cfg = CONFIGURATIONS["joc_on_characteristic"]
+    cfg = CONFIGURATIONS["joc_on_all"]
     save_to = cfg["save_to"]
     save_to.mkdir(parents=True, exist_ok=True)
     df = pd.read_csv(f"{EVAL_FOLDER_PATH}/discarder_stats.csv")
