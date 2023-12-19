@@ -51,20 +51,40 @@ def calibration_data(
     ece = compute_calibration(truths, predictions, probabilities, num_bins=10)[
         "expected_calibration_error"
     ]
+    ece_t = compute_calibration(
+        truths[truths == True],
+        predictions[truths == True],
+        probabilities[truths == True],
+        num_bins=10,
+    )["expected_calibration_error"]
+    ece_f = compute_calibration(
+        truths[truths == False],
+        predictions[truths == False],
+        probabilities[truths == False],
+        num_bins=10,
+    )["expected_calibration_error"]
     probs_for_truth = np.where(predictions == truths, probabilities, 1 - probabilities)
     average_calibration_error = np.mean(1 - probs_for_truth)
+    average_calibration_error_t = np.mean(1 - probs_for_truth[truths == True])
+    average_calibration_error_f = np.mean(1 - probs_for_truth[truths == False])
     return {
         "Brier Score": brier,
         "ECE": round(100 * ece, 2),
         "ACE": round(100 * average_calibration_error, 2),
+        "ACE-T": round(100 * average_calibration_error_t, 2),
+        "ACE-F": round(100 * average_calibration_error_f, 2),
+        "ECE-T": round(100 * ece_t, 2),
+        "ECE-F": round(100 * ece_f, 2),
     }
 
 
 CONFIGURATIONS = {
+    """
     "3.5-hash": {
         "paths": (RUNS_FOLDER_PATH / "35_hash").glob("*.json"),
         "outpath_prefix": "hash",
     },
+    """
     "3.5-base": {
         "paths": (RUNS_FOLDER_PATH / "35_base").glob("*.json"),
         "outpath_prefix": "base",

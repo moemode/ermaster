@@ -6,9 +6,7 @@ import pandas as pd
 from writeup_utils import rename_datasets
 
 # Read in the CSV file into a DataFrame
-df = pd.read_csv(
-    "eval_writeup/base.csv"
-)  # Replace "your_file.csv" with the path to your CSV file
+df = pd.read_csv("eval/llm_matcher/base.csv")
 
 """
 df = df[
@@ -48,13 +46,13 @@ df["F1_Relative_Difference"] = (df["EST_F1"] - df["F1"]) / df["F1"]
 result_df = df[
     [
         "Dataset",
-        # "Accuracy_Absolute_Difference",
+        # "Accuracy_Difference",
         "Accuracy_Relative_Difference",
-        # "Precision_Absolute_Difference",
+        # "Precision_Difference",
         "Precision_Relative_Difference",
-        # "Recall_Absolute_Difference",
+        # "Recall_Difference",
         "Recall_Relative_Difference",
-        # "F1_Absolute_Difference",
+        # "F1_Difference",
         "F1_Relative_Difference",
     ]
 ]
@@ -63,6 +61,13 @@ result_df = df[
 numeric_columns = result_df.select_dtypes(include="number").columns
 result_df = result_df.round(4)
 result_df[numeric_columns] = result_df[numeric_columns] * 100
+# Save the pivoted DataFrame to a LaTeX file
+result_df.to_latex(
+    "eval_writeup/estimated_performance.ltx",
+    escape=True,
+    float_format="%.2f",
+    index=False,
+)
 # Display the updated DataFrame
 print(result_df)
 # df.to_csv("eval_writeup/base_selected.csv", index=False)

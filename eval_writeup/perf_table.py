@@ -82,11 +82,11 @@ CONFIGURATIONS = {
         "path": Path("eval_writeup/base_vs_hash.csv"),
     },
     "base_calibration": {
-        "column_order": ["ECE", "Brier Score"],
+        "column_order": ["ECE", "ACE", "ACE-T", "ACE-F", "Brier Score"],
         "sort_by": "ECE",
         "path": Path("eval/calibration/base_calibration.csv"),
         "color_columns": ["ECE", "Brier Score"],
-        "reverse_color_columns": ["ECE", "Brier Score"],
+        "reverse_color_columns": ["ECE", "ACE", "ACE-T", "ACE-F", "Brier Score"],
         "sort_ascending": True,
         "rename": True,
     },
