@@ -64,6 +64,8 @@ def calibration_data(truths, predictions, probabilities):
     ece = compute_calibration(truths, predictions, probabilities, num_bins=10)[
         "expected_calibration_error"
     ]
+    probs_for_truth = np.where(predictions == truths, probabilities, 1 - probabilities)
+    average_calibration_error = np.mean(1 - probs_for_truth)
     # create an estimated confusion matrix from predictions and probabilities
     est_tn = np.sum((~predictions) * probabilities)
     est_fp = np.sum((~predictions) * (1 - probabilities))
@@ -81,6 +83,7 @@ def calibration_data(truths, predictions, probabilities):
     return {
         "Brier Score": brier,
         "ECE": ece,
+        "ACE": average_calibration_error,
         "EST_TN": est_tn,
         "EST_FP": est_fp,
         "EST_FN": est_fn,
