@@ -13,9 +13,11 @@ def make_table(
     path,
     sort_by,
     column_order,
+    reverse_color_columns: Iterable = None,
     color_columns: Iterable = None,
     rename=False,
     decimals=3,
+    sort_ascending=False,
 ):
     # Read CSV data into a DataFrame
     df = pd.read_csv(path)
@@ -24,15 +26,19 @@ def make_table(
         df = rename_datasets(df, preserve_sampled=False)
 
     # Sort DataFrame by F1 column in descending order
-    df = df.sort_values(by=sort_by, ascending=False)
+    df = df.sort_values(by=sort_by, ascending=sort_ascending)
 
     # Reorder columns
     df = df[["Dataset"] + column_order]
 
-    def original_to_color(value, min_val, max_val, do_color: bool, decimals):
+    def original_to_color(
+        value, min_val, max_val, do_color: bool, decimals, reverse_coloring: bool
+    ):
+        high_color = "orange" if reverse_coloring else "cyan"
+        low_color = "cyan" if reverse_coloring else "orange"
         r = (value - min_val) / (max_val - min_val)
         scaled_value = 2 * (r - 0.5)
-        color = "cyan" if scaled_value > 0 else "orange"
+        color = high_color if scaled_value > 0 else low_color
         prefix = (
             f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}" if do_color else ""
         )
@@ -44,7 +50,12 @@ def make_table(
     for col in df.columns[1:]:
         df_colored[col] = df[col].apply(
             lambda x: original_to_color(
-                x, df[col].min(), df[col].max(), col in color_columns, decimals
+                x,
+                df[col].min(),
+                df[col].max(),
+                col in color_columns,
+                decimals,
+                col in reverse_color_columns,
             )
         )
 
@@ -74,7 +85,9 @@ CONFIGURATIONS = {
         "column_order": ["ECE", "Brier Score"],
         "sort_by": "ECE",
         "path": Path("eval/calibration/base_calibration.csv"),
-        "color_columns": ["ECE"],
+        "color_columns": ["ECE", "Brier Score"],
+        "reverse_color_columns": ["ECE", "Brier Score"],
+        "sort_ascending": True,
         "rename": True,
     },
     "discarding_matcher_tradeoff": {
@@ -86,7 +99,7 @@ CONFIGURATIONS = {
     },
 }
 if __name__ == "__main__":
-    cfg_name = "discarding_matcher_tradeoff"
+    cfg_name = "base_calibration"
     make_table(**CONFIGURATIONS[cfg_name])
 
 """

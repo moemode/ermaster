@@ -152,7 +152,7 @@ def _reliability_diagram_subplot(
     ax.plot([0, 1], [0, 1], linestyle="--", color="gray")
 
     if draw_ece:
-        ece = bin_data["expected_calibration_error"]
+        ece = 100 * bin_data["expected_calibration_error"]
         ax.text(
             0.98,
             0.02,

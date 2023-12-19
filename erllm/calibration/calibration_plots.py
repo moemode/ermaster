@@ -53,7 +53,11 @@ def calibration_data(
     ]
     probs_for_truth = np.where(predictions == truths, probabilities, 1 - probabilities)
     average_calibration_error = np.mean(1 - probs_for_truth)
-    return {"Brier Score": brier, "ECE": ece, "ACE": average_calibration_error}
+    return {
+        "Brier Score": brier,
+        "ECE": round(100 * ece, 2),
+        "ACE": round(100 * average_calibration_error, 2),
+    }
 
 
 CONFIGURATIONS = {
