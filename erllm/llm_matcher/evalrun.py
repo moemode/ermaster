@@ -31,16 +31,43 @@ class CompletedPrompt:
     truth: bool
     completion: Dict[str, Any]
     duration: float
+    entropy: float = None
+    prediction: Any = None
+    probability: float = None
 
     @classmethod
-    def from_json(cls, json_data: Dict[str, Any]) -> "CompletedPrompt":
+    def from_json(cls, sample: Dict[str, Any]) -> "CompletedPrompt":
+        prompt_string, truth, completion = sample["p"], sample["t"], sample["c"]
+        id0, id1 = sample["id0"], sample["id1"]
+        topprobs_first = completion["logprobs"]["top_logprobs"][0]
+        # Define Yes/No tokens
+        yn_tokens = ["Yes", "No", " Yes", " No"]
+        # Initialize dictionary for Yes/No probabilities
+        yn_probs = {}
+        total_probability = 0
+        # Sum the probabilities of Yes/No tokens
+        for t in yn_tokens:
+            yn_probs[t] = np.exp(topprobs_first.get(t, -1000))
+            total_probability += yn_probs[t]
+        p_yes = (yn_probs["Yes"] + yn_probs[" Yes"]) / total_probability
+        p_no = (yn_probs["No"] + yn_probs[" No"]) / total_probability
+        # Find the token with the maximum probability
+        # max_prob_token = max(yn_probs, key=yn_probs.get)
+        # Calculate the ratio of the max_prob_token probability to the total probability
+        # probability = yn_probs[max_prob_token] / total_probability
+        entropy = bernoulli_entropy(p_yes / (p_yes + p_no))
+        prediction = p_yes > p_no
+        probability = p_yes if p_yes > p_no else p_no
         return cls(
-            id0=json_data["id0"],
-            id1=json_data["id1"],
-            prompt_string=json_data["p"],
-            truth=json_data["t"],
-            completion=json_data["c"],
-            duration=json_data["d"],
+            id0=sample["id0"],
+            id1=sample["id1"],
+            prompt_string=prompt_string,
+            truth=truth,
+            completion=completion,
+            duration=sample["d"],  #
+            entropy=entropy,
+            prediction=prediction,
+            probability=probability,
         )
 
 
@@ -114,7 +141,9 @@ def read_run_raw(run: Path) -> Dict[tuple, CompletedPrompt]:
     return prompt_dict
 
 
-def read_run(run: Path):
+def read_run(
+    run: Path,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[tuple[str, str]]]:
     """
     Read a JSON run file, process the completed prompts, and return relevant information for evaluation.
 
@@ -124,7 +153,6 @@ def read_run(run: Path):
     Returns:
         Tuple: A tuple containing arrays of truths, predictions, entropies, probabilities, and pairs.
     """
-    Path("eval").mkdir(parents=True, exist_ok=True)
     pairs = []
     truths = []
     predictions = []
@@ -133,7 +161,7 @@ def read_run(run: Path):
     with open(run, "r") as file:
         data = json.load(file)
     for sample in data:
-        prompt, truth, completion = sample["p"], sample["t"], sample["c"]
+        _, truth, completion = sample["p"], sample["t"], sample["c"]
         pairs.append((sample["id0"], sample["id1"]))
         topprobs_first = completion["logprobs"]["top_logprobs"][0]
         # Define Yes/No tokens
@@ -141,7 +169,6 @@ def read_run(run: Path):
         # Initialize dictionary for Yes/No probabilities
         yn_probs = {}
         total_probability = 0
-        max_prob_token = None
         # Sum the probabilities of Yes/No tokens
         for t in yn_tokens:
             yn_probs[t] = np.exp(topprobs_first.get(t, -1000))
