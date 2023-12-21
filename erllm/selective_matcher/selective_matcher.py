@@ -34,10 +34,11 @@ def selective_matcher(
             for pair_id, cp in completions.items()
             if cp.probability > threshold
         }
-        if not above_th:
-            return data
-        truth_preds = [(cp.truth, cp.prediction) for cp in above_th.values()]
-        truths, predictions = zip(*truth_preds)
+        if above_th:
+            truth_preds = [(cp.truth, cp.prediction) for cp in above_th.values()]
+            truths, predictions = zip(*truth_preds)
+        else:
+            truths, predictions = [], []
         prec, rec, f1, acc = classification_metrics(truths, predictions)
         N = len(completions)
         N_rem = len(above_th)
@@ -98,4 +99,4 @@ if __name__ == "__main__":
             raise ValueError(
                 f"No matching similarity file in {CONFIGURATIONS['base']['similarities']} found for {path}"
             )
-        print(selective_matcher(0.7, path, simPath))
+        print(selective_matcher(path, [0.3, 0.5, 0.7]))

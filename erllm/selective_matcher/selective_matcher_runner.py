@@ -23,8 +23,8 @@ if __name__ == "__main__":
     results = []
     # Create values in the range 0.0 to 1.0 with an increment of 0.05
     inc = 0.01
-    threshold_values = np.arange(0.0, 1 + inc, inc)
-
+    threshold_values = np.arange(0.5, 1 + inc, inc)
+    results = []
     for path in cfg["runfiles"].glob("*force-gpt*.json"):
         dataset_name = path.stem.split("-")[0]
         # Call discarding_matcher and store the results in the dataframe
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         # make into dataframe, add column with dataset name
         for r in dataset_results:
             r["Dataset"] = dataset_name
-        print(dataset_results)
+        results.extend(dataset_results)
     results_df = pd.DataFrame(results)
     # Print or further process the results dataframe
     print(results_df)
