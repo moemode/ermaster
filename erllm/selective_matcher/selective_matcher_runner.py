@@ -23,7 +23,7 @@ if __name__ == "__main__":
     results = []
     # Create values in the range 0.0 to 1.0 with an increment of 0.05
     inc = 0.01
-    threshold_values = np.arange(0.5, 1 + inc, inc)
+    threshold_values = np.arange(0.500, 1 + inc, inc)
     results = []
     for path in cfg["runfiles"].glob("*force-gpt*.json"):
         dataset_name = path.stem.split("-")[0]

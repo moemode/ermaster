@@ -56,6 +56,52 @@ def selective_matcher(
     return data
 
 
+def selective_matcher_cov(
+    runFile: Path, coverages: Iterable[float]
+) -> List[Dict[str, Any]]:
+    """
+    Evaluate the performance of a discarding matcher based on a given threshold.
+
+    Parameters:
+        threshold (float): The similarity threshold for discarding pairs.
+        runFile (Path): Path to the run JSON file containing completion information.
+        Created by llm_matcher/gpt.py.
+        similaritiesFile (Path): Path to the CSV file containing pair similarities.
+        Created by discarder/discarder.py.
+        sim_function (str, optional): The similarity function to use. Default is "overlap".
+
+    Returns:
+        tuple: A tuple containing accuracy, precision, recall, F1 score,
+               remaining cost, cost reduction percentage, remaining duration,
+               and duration reduction percentage.
+    """
+    completions: Dict[tuple, CompletedPrompt] = read_run_raw(runFile)
+    completed_prompts = completions.values()
+    # sort completed_prompts descendingly in order of confidence
+    completed_prompts = sorted(
+        completed_prompts, key=lambda cp: cp.probability, reverse=True
+    )
+    data = []
+    for cov in coverages:
+        # Filter rows based on the specified threshold for the "overlap" column
+        covered = completed_prompts[: int(cov * len(completed_prompts))]
+        threshold = covered[-1].probability
+        truth_preds = [(cp.truth, cp.prediction) for cp in covered]
+        truths, predictions = zip(*truth_preds)
+        prec, rec, f1, acc = classification_metrics(truths, predictions)
+        data.append(
+            {
+                "threshold": threshold,
+                "accuracy": acc,
+                "precision": prec,
+                "recall": rec,
+                "f1": f1,
+                "coverage": cov,
+            }
+        )
+    return data
+
+
 def find_matching_csv(
     run_file: Path, similarity_files: Iterable[Path]
 ) -> Optional[Path]:

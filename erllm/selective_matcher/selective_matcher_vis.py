@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from erllm import EVAL_FOLDER_PATH, FIGURE_FOLDER_PATH
-from erllm.utils import rename_datasets
+from erllm.utils import my_setup_plt, rename_datasets
 
 
 def setup_plt():
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     for cfg in CONFIGURATIONS.keys():
         selected_metrics = CONFIGURATIONS[cfg]["selected_metrics"]
         postfix = CONFIGURATIONS[cfg]["postfix"]
-        setup_plt()
+        my_setup_plt()
         df = pd.read_csv(INPATH)
         id_vars = ["Dataset", "coverage", "threshold"]
         # Filter the dataframe to only contain the selected metrics and id_vars
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         df_melted["excluded"] = 1 - df_melted["coverage"]
         # Create the relplot
         g = sns.relplot(
-            x="excluded",
+            x="threshold",
             y="Value",
             hue="Metric",
             col="Dataset",
