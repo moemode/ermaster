@@ -85,9 +85,12 @@ def selective_matcher_cov(
     for cov in coverages:
         # Filter rows based on the specified threshold for the "overlap" column
         covered = completed_prompts[: int(cov * len(completed_prompts))]
-        threshold = covered[-1].probability
-        truth_preds = [(cp.truth, cp.prediction) for cp in covered]
-        truths, predictions = zip(*truth_preds)
+        threshold = covered[-1].probability if covered else 1.0
+        if covered:
+            truth_preds = [(cp.truth, cp.prediction) for cp in covered]
+            truths, predictions = zip(*truth_preds)
+        else:
+            truths, predictions = [], []
         prec, rec, f1, acc = classification_metrics(truths, predictions)
         data.append(
             {
