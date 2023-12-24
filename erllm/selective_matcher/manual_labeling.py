@@ -4,7 +4,7 @@ k most uncertain negative, and k random predictions from a given set.
 It applies these labeling strategies to predictions on different datasets, 
 calculates various classification metrics, and saves the results for comparison.
 """
-from typing import Tuple
+from typing import Dict, Tuple
 import pandas as pd
 from sklearn.metrics import f1_score, recall_score
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH
@@ -63,26 +63,60 @@ def label_k_most_uncertain_negative(
 
 
 def label_k_random(
-    truths: np.ndarray, predictions: np.ndarray, k: int
-) -> Tuple[float, float, float, float]:
+    truths: np.ndarray, predictions: np.ndarray, k: int, tries: int
+) -> Dict[str, np.floating]:
     """
     Label k random predictions and calculate classification metrics.
 
     Parameters:
         truths (np.ndarray): Ground truth labels.
+            The array containing the ground truth labels for the predictions.
         predictions (np.ndarray): Model predictions.
+            The array containing the predicted labels.
         k (int): Number of random predictions to label.
+            The number of random predictions to label and evaluate.
+        tries (int, optional): Number of tries to perform the labeling and evaluation process.
 
     Returns:
-        Tuple[float, float, float, float]: Precision, Recall, F1-score, and Accuracy.
+        dict: A dictionary containing the calculated classification metrics.
+            The dictionary contains the following keys:
+            - "Precision_Random": Mean precision of the random predictions.
+            - "Recall_Random": Mean recall of the random predictions.
+            - "F1_Random": Mean F1 score of the random predictions.
+            - "Accuracy_Random": Mean accuracy of the random predictions.
+            - "Precision_Random_std": Standard deviation of precision for the random predictions.
+            - "Recall_Random_std": Standard deviation of recall for the random predictions.
+            - "F1_Random_std": Standard deviation of F1 score for the random predictions.
+            - "Accuracy_Random_std": Standard deviation of accuracy for the random predictions.
     """
-    random_indices = np.random.choice(len(predictions), k, replace=False)
-    predictions[random_indices] = truths[random_indices]
-    return classification_metrics(truths, predictions)
+    precisions, recalls, f1s, accuracies = [], [], [], []
+    for i in range(tries):
+        random_indices = np.random.choice(len(predictions), k, replace=False)
+        predictions[random_indices] = truths[random_indices]
+        prec, rec, f1, acc = classification_metrics(truths, predictions)
+        precisions.append(prec)
+        recalls.append(rec)
+        f1s.append(f1)
+        accuracies.append(acc)
+    return {
+        "Precision_Random": np.mean(precisions),
+        "Recall_Random": np.mean(recalls),
+        "F1_Random": np.mean(f1s),
+        "Accuracy_Random": np.mean(accuracies),
+        "Precision_Random_std": np.std(precisions),
+        "Recall_Random_std": np.std(recalls),
+        "F1_Random_std": np.std(f1s),
+        "Accuracy_Random_std": np.std(accuracies),
+    }
 
 
 CONFIGURATIONS = {
-    "base": {"runfolder": RUNS_FOLDER_PATH / "35_base", "outfile_name": "base.csv"},
+    "base": {
+        "runfolder": RUNS_FOLDER_PATH / "35_base",
+        "outfile_name": "base.csv",
+        "tries": 30,
+        "fraction": 0.05,
+    },
 }
 
 MLABELING_FOLDER = EVAL_FOLDER_PATH / "manual_labeling"
@@ -97,7 +131,7 @@ if __name__ == "__main__":
         truths, predictions, _, probabilities, _ = read_run(path)
         f1 = f1_score(truths, predictions)
         rec = recall_score(truths, predictions)
-        k = int(round(0.05 * len(truths)))
+        k = int(round(cfg["fraction"] * len(truths)))
         # Labeling most uncertain
         (
             prec_uncertain,
@@ -105,11 +139,6 @@ if __name__ == "__main__":
             f1_uncertain,
             acc_uncertain,
         ) = label_k_most_uncertain(truths, predictions, probabilities, k)
-
-        # Labeling randomly
-        prec_random, rec_random, f1_random, acc_random = label_k_random(
-            truths, predictions, k
-        )
 
         # Create a dictionary with the results for the individual dataset
         result_dict = {
@@ -120,10 +149,7 @@ if __name__ == "__main__":
             "Recall_Uncertain": rec_uncertain,
             "F1_Uncertain": f1_uncertain,
             "Accuracy_Uncertain": acc_uncertain,
-            "Precision_Random": prec_random,
-            "Recall_Random": rec_random,
-            "F1_Random": f1_random,
-            "Accuracy_Random": acc_random,
+            **label_k_random(truths, predictions, k, cfg["tries"]),
         }
 
         # Append the dictionary to the results list
@@ -140,6 +166,7 @@ if __name__ == "__main__":
                 "F1",
                 "F1_Uncertain",
                 "F1_Random",
+                "F1_Random_std",
             ]
         ]
     )
