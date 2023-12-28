@@ -17,6 +17,7 @@ CONFIGURATIONS = {
     "base": {
         "runfiles": RUNS_FOLDER_PATH / "35_base",
         "similarities": SIMILARITIES_FOLDER_PATH,
+        "sim_function": "overlap",
     },
 }
 
@@ -25,40 +26,18 @@ if __name__ == "__main__":
     # Create values in the range 0.0 to 1.0 with an increment of 0.05
     inc = 0.01
     threshold_values = np.arange(0.0, 1 + inc, inc)
+    cfg = CONFIGURATIONS["base"]
     for threshold in threshold_values:
-        for path in CONFIGURATIONS["base"]["runfiles"].glob("*force-gpt*.json"):
-            dataset_name = path.stem.split("-")[0]
+        for path in cfg["runfiles"].glob("*force-gpt*.json"):
             simPath = find_matching_csv(
                 path, Path(CONFIGURATIONS["base"]["similarities"]).glob("*-allsim.csv")
             )
             if not simPath:
                 raise ValueError(
-                    f"No matching similarity file in {CONFIGURATIONS['base']['similarities']} found for {path}"
+                    f"No matching similarity file in {cfg['similarities']} found for {path}"
                 )
-            # Call discarding_matcher and store the results in the dataframe
-            (
-                acc,
-                prec,
-                rec,
-                f1,
-                cost,
-                cost_rel,
-                duration,
-                duration_rel,
-            ) = discarding_matcher(threshold, path, simPath)
             results.append(
-                {
-                    "Dataset": dataset_name,
-                    "Threshold": threshold,
-                    "Accuracy": acc,
-                    "Precision": prec,
-                    "Recall": rec,
-                    "F1": f1,
-                    "Cost": cost,
-                    "Cost Relative": cost_rel,
-                    "Duration": duration,
-                    "Duration Relative": duration_rel,
-                }
+                discarding_matcher(threshold, path, simPath, cfg["sim_function"])
             )
     results_df = pd.DataFrame(results)
     # Print or further process the results dataframe

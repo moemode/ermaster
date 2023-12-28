@@ -31,11 +31,13 @@ def discarding_matcher(
                remaining cost, cost reduction percentage, remaining duration,
                and duration reduction percentage.
     """
+    dataset_name = runFile.stem.split("-")[0]
     truths, predictions, _, _, pair_ids = read_run(runFile)
     completions = read_run_raw(runFile)
     prompts = list(map(lambda cp: cp.prompt_string, completions.values()))
-    cost_full = str_cost(prompts, 1, "gpt-3.5-turbo-instruct")
-    duration_full = sum(map(lambda cp: cp.duration, completions.values()))
+    # cost of running basic matcher without discarder
+    cost_llm_matcher = str_cost(prompts, 1, "gpt-3.5-turbo-instruct")
+    duration_llm_matcher = sum(map(lambda cp: cp.duration, completions.values()))
     similarities = pd.read_csv(similaritiesFile)
     # ensure all pairs have a similarity value
     sim_pairs = set(zip(similarities["table1.id"], similarities["table2.id"]))
@@ -51,10 +53,16 @@ def discarding_matcher(
         completions[pair_id] for pair_id in discarded_pairs if pair_id in pair_ids
     ]
     discarded_prompts = list(map(lambda cp: cp.prompt_string, discarded))
-    cost_remaining = cost_full - str_cost(
-        discarded_prompts, 1, "gpt-3.5-turbo-instruct"
-    )
-    duration_remaining = duration_full - sum(map(lambda cp: cp.duration, discarded))
+    # subtract cost which discarded pairs took for LLM completion
+    cost = cost_llm_matcher - str_cost(discarded_prompts, 1, "gpt-3.5-turbo-instruct")
+    # subtract time which discarded pairs took for LLM completion
+    llm_duration = duration_llm_matcher - sum(map(lambda cp: cp.duration, discarded))
+    duration = llm_duration
+    # if duration taken for similarity computation are available add these to duration_remaining
+    sim_duration = -1
+    if sim_function + "_dur" in similarities.columns:
+        sim_duration = sum(similarities[sim_function + "_dur"])
+        duration += sim_duration
     # Get indices of discarded pairs in pairs
     discarded_pairs_indices = [
         i for i, pair in enumerate(pair_ids) if pair in discarded_pairs
@@ -64,16 +72,22 @@ def discarding_matcher(
     rec = recall_score(truths, predictions)
     f1 = f1_score(truths, predictions)
     acc = accuracy_score(truths, predictions)
-    return (
-        acc,
-        prec,
-        rec,
-        f1,
-        cost_remaining,
-        cost_remaining / cost_full,
-        duration_remaining,
-        duration_remaining / duration_full,
-    )
+    return {
+        "Dataset": dataset_name,
+        "Threshold": threshold,
+        "Accuracy": acc,
+        "Precision": prec,
+        "Recall": rec,
+        "F1": f1,
+        "Cost": cost,
+        "Cost Relative": cost / cost_llm_matcher,
+        "Duration": duration,
+        "Duration Relative": duration / duration_llm_matcher,
+        "LLM Duration": llm_duration,
+        "Sim Duration": sim_duration,
+        "Sim Function": sim_function,
+        "LLM Matcher Duration": duration_llm_matcher,
+    }
 
 
 def find_matching_csv(

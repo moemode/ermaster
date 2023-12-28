@@ -14,6 +14,7 @@ import pandas as pd
 from erllm import DATASET_FOLDER_PATH, ORIGINAL_DATASET_NAMES, SIMILARITIES_FOLDER_PATH
 from erllm.dataset.load_ds import load_dataset
 from erllm.dataset.entity import OrderedEntity
+from erllm.utils import measure_execution_time
 
 
 def euclidean(vector1, vector2) -> float:
@@ -58,25 +59,27 @@ def set_similarities(
     use_tqdm: bool = False,
 ) -> pd.DataFrame:
     """
-    Calculate set-based similarities between pairs of entities and return the results as a pandas DataFrame.
+    Calculate set-based similarities between pairs of entities and the time taken for computing each.
+    Returns the results as a pandas DataFrame.
 
     Args:
         pairs (List[Tuple[bool, OrderedEntity, OrderedEntity]]): A list of tuples, each containing three elements:
             1. A boolean value representing the label for the entity pair.
             2. An OrderedEntity object representing the first entity.
             3. An OrderedEntity object representing the second entity.
+        similarity_functions (Optional): A list of tuples, each containing two elements:
+            1. A string representing the name of the similarity function.
+            2. A function representing the similarity function.
+            Defaults to SET_SIM_FUNCTIONS.
+        use_tqdm (bool, optional): Whether to use tqdm for progress tracking. Defaults to False.
 
     Returns:
         pd.DataFrame: A DataFrame containing similarity scores for each entity pair with the following format:
-
-        |  table1.id  |  table2.id  |  label  |  jaccard  |  overlap  |  mongeelkan  |  genjaccard  |
-        |------------|------------|--------|----------|----------|-------------|-------------|
-        |    3505    |    30346   |   0    |  0.280000|  0.538462|   0.767434  |   0.544994  |
-        |    5343    |    47894   |   0    |  0.477273|  0.700000|   0.877984  |   0.620952  |
-        |    ...     |    ...     |  ...   |   ...    |   ...    |    ...      |    ...      |
-
-    The function calculates the similarity between pairs of entities. It assumes that the first entity in each pair
-    is the entity from the first dataset, and the second entity in each pair is the entity from the second dataset.
+            - "table1.id": The ID of the first entity.
+            - "table2.id": The ID of the second entity.
+            - "label": The label for the entity pair.
+            - *sim_names e.g. "overlap": Similarity scores calculated using different similarity functions.
+            - *dur_column_names e.g. "overlap_dur": Time taken to compute each similarity score.
     """
     sim_names, sim_function = zip(*similarity_functions)
     similarity_scores = []
@@ -89,10 +92,12 @@ def set_similarities(
         t0 = e0.tokens()
         t1 = e1.tokens()
         # Calculate similarity scores using different similarity functions
-        sim_scores = (f(t0, t1) for f in sim_function)
+        sim_time_scores = (measure_execution_time(f, t0, t1) for f in sim_function)
+        sim_times, sim_scores = zip(*sim_time_scores)
         # Append the similarity scores to the result list
-        similarity_scores.append((e0.id, e1.id, label, *sim_scores))
-    columns = ["table1.id", "table2.id", "label", *sim_names]
+        similarity_scores.append((e0.id, e1.id, label, *sim_scores, *sim_times))
+    dur_column_names = [f"{name}_dur" for name in sim_names]
+    columns = ["table1.id", "table2.id", "label", *sim_names, *dur_column_names]
     df = pd.DataFrame(similarity_scores, columns=columns)
     return df
 
@@ -242,7 +247,7 @@ if __name__ == "__main__":
     root_folder = DATASET_FOLDER_PATH
     sim_folder = SIMILARITIES_FOLDER_PATH
     for dataset, folder in [(dataset, root_folder / dataset) for dataset in datasets]:
-        set_sim = SET_SIM_FUNCTIONS
+        set_sim = FAST_SET_SIM_FUNCTIONS
         if dataset in ["textual_company", "dbpedia10k", "dbpedia10k_harder"]:
             set_sim = FAST_SET_SIM_FUNCTIONS
         dataset_similarities(dataset, folder, sim_folder, set_sim)
