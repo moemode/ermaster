@@ -45,6 +45,16 @@ df["F1_Decrease_Threshold"] = pd.Categorical(
 pivot_df = df.pivot_table(
     index="Dataset",
     columns="F1_Decrease_Threshold",
+    values="Time Decrease",
+    aggfunc="first",
+)
+
+pivot_df.to_csv("eval_writeup/discarding_matcher_tradeoff_pivot_time.csv")
+
+# Pivot the DataFrame based on "F1_Decrease_Threshold" and show "Cost Decrease"
+pivot_df = df.pivot_table(
+    index="Dataset",
+    columns="F1_Decrease_Threshold",
     values="Cost Decrease",
     aggfunc="first",
 )

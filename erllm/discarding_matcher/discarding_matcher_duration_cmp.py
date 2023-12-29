@@ -15,6 +15,7 @@ if __name__ == "__main__":
         .agg({"Sim Duration": "first", "LLM Matcher Duration": "first"})
         .reset_index()
     )
+    result["Factor"] = result["LLM Matcher Duration"] / result["Sim Duration"]
     result = rename_datasets(result, preserve_sampled=False)
     result.to_csv(
         EVAL_WRITEUP_FOLDER_PATH / "discarding_matcher_duration_cmp.csv", index=False

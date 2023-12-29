@@ -13,8 +13,8 @@ def make_table(
     path,
     sort_by,
     column_order,
-    reverse_color_columns: Iterable = None,
-    color_columns: Iterable = None,
+    reverse_color_columns: Iterable = [],
+    color_columns: Iterable = [],
     rename=False,
     decimals=3,
     sort_ascending=False,
@@ -97,9 +97,16 @@ CONFIGURATIONS = {
         "sort_by": "2.5",
         "decimals": 2,
     },
+    "discarding_matcher_tradeoff_time": {
+        "path": Path("eval_writeup/discarding_matcher_tradeoff_pivot_time.csv"),
+        "color_columns": ["2.5", "5.0", "10.0"],
+        "column_order": ["2.5", "5.0", "10.0"],
+        "sort_by": "2.5",
+        "decimals": 2,
+    },
 }
 if __name__ == "__main__":
-    cfg_name = "base_calibration"
+    cfg_name = "discarding_matcher_tradeoff_time"
     make_table(**CONFIGURATIONS[cfg_name])
 
 """
