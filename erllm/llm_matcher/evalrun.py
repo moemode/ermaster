@@ -3,7 +3,7 @@ Methods for reading run files, deriving classification decisions, and calculatin
 """
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from attr import dataclass
 import numpy as np
 from sklearn.metrics import (
@@ -15,9 +15,11 @@ from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
 )
+from erllm import RUNS_FOLDER_PATH
 from erllm.utils import (
     NumpyEncoder,
     bernoulli_entropy,
+    contains_word,
     negative_predictive_value,
 )
 from erllm.calibration.reliability_diagrams import *
@@ -36,21 +38,99 @@ class CompletedPrompt:
     probability: float = None
 
     @classmethod
-    def from_json(cls, sample: Dict[str, Any]) -> "CompletedPrompt":
-        prompt_string, truth, completion = sample["p"], sample["t"], sample["c"]
-        id0, id1 = sample["id0"], sample["id1"]
-        topprobs_first = completion["logprobs"]["top_logprobs"][0]
-        # Define Yes/No tokens
+    def completions_api_extract_ynprobs(
+        cls, completion_top_logprobs: Dict[str, Any]
+    ) -> Tuple[float, float]:
+        """
+        Extract the Yes/No probabilities from the top_logprobs in a completion returned by the completions API.
+        If the total sum is zero, indicating no valid probabilities, the method returns equal probabilities for 'Yes' and 'No'.
+
+        Parameters:
+            completion_top_logprobs (Dict[str, Any]): Log probabilities for first token in the completion.
+                Example: {'Yes': -0.009458794, 'No': -4.665709, ' Yes': -14.915709, 'NO': -15.212584, '"Yes': -15.712584}
+        Returns:
+            Tuple[float, float]: A tuple containing the probabilities of match vs non-match.
+        """
         yn_tokens = ["Yes", "No", " Yes", " No"]
         # Initialize dictionary for Yes/No probabilities
         yn_probs = {}
         total_probability = 0
         # Sum the probabilities of Yes/No tokens
         for t in yn_tokens:
-            yn_probs[t] = np.exp(topprobs_first.get(t, -1000))
+            yn_probs[t] = np.exp(completion_top_logprobs.get(t, -1000))
             total_probability += yn_probs[t]
         p_yes = (yn_probs["Yes"] + yn_probs[" Yes"]) / total_probability
         p_no = (yn_probs["No"] + yn_probs[" No"]) / total_probability
+        return p_yes, p_no
+
+    @classmethod
+    def chat_api_extract_ynprobs(
+        cls, chat_top_logprobs: Dict[str, Any]
+    ) -> Tuple[float, float]:
+        """
+        Extract the yes / no probabilities from the top_logprobs in a completion returned by the newer chat API.
+
+        Parameters:
+            chat_top_logprobs (Dict[str, Any]): Completion returned by the chat API.
+                Example:[{'token': 'Yes', 'logprob': -0.009458794, 'bytes': [89, 101, 115]},
+                {'token': 'No', 'logprob': -4.665709, 'bytes': [78, 111]},
+                {'token': ' Yes', 'logprob': -14.915709, 'bytes': [32, 89, 101, 115]},
+                {'token': 'YES', 'logprob': -15.212584, 'bytes': [89, 69, 83]},
+                {'token': '"Yes', 'logprob': -15.712584, 'bytes': [34, 89, 101, 115]}]
+
+        Returns:
+            Tuple[float, float]: A tuple containing the probabilities of match vs non-match.
+
+        """
+        # Extracting token and logprob pairs from chat_top_logprobs
+        token_logprob_pairs = [
+            (item["token"], float(item["logprob"])) for item in chat_top_logprobs
+        ]
+        top_probs_dict = {
+            token: np.exp(logprob) for token, logprob in token_logprob_pairs
+        }
+        yes_tokens = [
+            t for t in top_probs_dict.keys() if contains_word(t.lower(), "yes")
+        ]
+        no_tokens = [t for t in top_probs_dict.keys() if contains_word(t.lower(), "no")]
+        p_yes_unnorm = sum([top_probs_dict[t] for t in yes_tokens])
+        p_no_unnorm = sum([top_probs_dict[t] for t in no_tokens])
+        p_total = p_yes_unnorm + p_no_unnorm
+        if p_total == 0:
+            return 0.5, 0.5
+        p_yes = p_yes_unnorm / p_total
+        p_no = p_no_unnorm / p_total
+        # convert to dictionary
+        return p_yes, p_no
+
+    @classmethod
+    def from_json(cls, sample: Dict[str, Any]) -> "CompletedPrompt":
+        prompt_string, truth, completion = sample["p"], sample["t"], sample["c"]
+        # new api: chat, old api: completions, chat api has different structure
+        is_chat_api = "content" in completion["logprobs"]
+        if is_chat_api:
+            p_yes, p_no = CompletedPrompt.chat_api_extract_ynprobs(
+                completion["logprobs"]["content"][0]["top_logprobs"]
+            )
+        else:
+            p_yes, p_no = CompletedPrompt.completions_api_extract_ynprobs(
+                completion["logprobs"]["top_logprobs"][0]
+            )
+            """
+            # legacy completions api structure of choice object
+            topprobs_first = completion["logprobs"]["top_logprobs"][0]
+            # Define Yes/No tokens
+            yn_tokens = ["Yes", "No", " Yes", " No"]
+            # Initialize dictionary for Yes/No probabilities
+            yn_probs = {}
+            total_probability = 0
+            # Sum the probabilities of Yes/No tokens
+            for t in yn_tokens:
+                yn_probs[t] = np.exp(topprobs_first.get(t, -1000))
+                total_probability += yn_probs[t]
+            p_yes = (yn_probs["Yes"] + yn_probs[" Yes"]) / total_probability
+            p_no = (yn_probs["No"] + yn_probs[" No"]) / total_probability
+            """
         # Find the token with the maximum probability
         # max_prob_token = max(yn_probs, key=yn_probs.get)
         # Calculate the ratio of the max_prob_token probability to the total probability
@@ -250,3 +330,10 @@ def eval(run: Path, save_to: Path):
         json.dump(results, f, indent=2, cls=NumpyEncoder)
     print(results)
     return results
+
+
+if __name__ == "__main__":
+    read_run_raw(
+        RUNS_FOLDER_PATH
+        / "4_base/structured_fodors_zagats_1250-general_complex_force-gpt_4_0613-1max_token_0.json"
+    )

@@ -2,10 +2,11 @@ import json
 import os
 from pathlib import Path
 from timeit import default_timer as timer
-from typing import Dict, Iterable, Optional
+from typing import Callable, Dict, Iterable, Optional
 import openai
 
 from erllm import PROMPTS_FOLDER_PATH, RUNS_FOLDER_PATH, SAMPLED_DATASET_NAMES
+from erllm.llm_matcher.gpt_chat import get_chat_completions
 from erllm.llm_matcher.prompts import Prompt, prompt_dict_to_prompts
 from erllm.utils import (
     num_tokens_from_string,
@@ -106,7 +107,7 @@ def fitting_prefix(start: int, prompts: list[Prompt], model_params: Dict):
         batch_tokens += new_tokens
 
 
-def get_completions_batch(prompts: list[Prompt], model_params):
+def get_completions_batch(prompts: list[Prompt], model_params: Dict) -> Iterable[Dict]:
     """
     Generate OpenAI completions by splitting prompts into batches.
     Makes one call to the OpenAI API for each batch.
@@ -152,6 +153,9 @@ def run_test(
     model_params: Dict,
     description: Optional[str] = None,
     save_to_folder: Path = RUNS_FOLDER_PATH,
+    completion_function: Callable[
+        [list[Prompt], Dict], Iterable[Dict]
+    ] = get_completions_batch,
 ):
     """
     Run a test using prompts from a file and save the results.
@@ -176,11 +180,12 @@ def run_test(
         Path(f"{save_to_folder}/{prompt_file.stem}-{modelstr}-{description}.json")
     )
     with open(run_path, "w") as f:
-        write_json_iter(get_completions_batch(prompts, model_params), f, len(prompts))
+        write_json_iter(completion_function(prompts, model_params), f, len(prompts))
 
 
 CONFIGURATIONS = {
     "gpt35-on-base": {
+        "completions_function": get_completions_batch,
         "model": "gpt-3.5-turbo-instruct",
         "prompt_paths": map(
             lambda d: PROMPTS_FOLDER_PATH / f"{d}-general_complex_force.json",
@@ -197,6 +202,7 @@ CONFIGURATIONS = {
         "save_to_folder": RUNS_FOLDER_PATH / "35_base",
     },
     "gpt35-on-hash": {
+        "completions_function": get_completions_batch,
         "model": "gpt-3.5-turbo-instruct",
         "prompt_paths": map(
             lambda d: PROMPTS_FOLDER_PATH / f"{d}-general_complex_force_hash.json",
@@ -212,10 +218,38 @@ CONFIGURATIONS = {
         "description": "1max_token",
         "save_to_folder": RUNS_FOLDER_PATH / "35_hash",
     },
+    "gpt4-on-base": {
+        "completions_function": get_chat_completions,
+        "model": "gpt-4-0613",
+        # "prompt_paths": map(
+        #     lambda d: PROMPTS_FOLDER_PATH / f"{d}-general_complex_force.json",
+        #     SAMPLED_DATASET_NAMES,
+        # ),
+        "prompt_paths": [
+            PROMPTS_FOLDER_PATH
+            / "structured_fodors_zagats_1250-general_complex_force.json"
+        ],
+        "model_params": dict(
+            model="gpt-4-0613",
+            max_tokens=1,
+            top_logprobs=5,
+            logprobs=True,
+            temperature=0,
+            seed=0,
+        ),
+        "description": "1max_token",
+        "save_to_folder": RUNS_FOLDER_PATH / "4_base",
+    },
 }
 
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["gpt35-on-hash"]
+    cfg = CONFIGURATIONS["gpt4-on-base"]
     for p in cfg["prompt_paths"]:
-        run_test(p, cfg["model_params"], cfg["description"], cfg["save_to_folder"])
+        run_test(
+            p,
+            cfg["model_params"],
+            cfg["description"],
+            cfg["save_to_folder"],
+            cfg["completions_function"],
+        )

@@ -13,6 +13,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_sc
 import tiktoken
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import re
 
 
 def write_json_iter(it: Iterable, fh: TextIOWrapper, N=None):
@@ -344,3 +345,20 @@ def measure_execution_time(func, *args, **kwargs):
     end_time = timeit.default_timer()
     duration = end_time - start_time
     return duration, result
+
+
+def timed(func):
+    def wrapper(*args, **kwargs):
+        start_time = timeit.default_timer()
+        result = func(*args, **kwargs)
+        return timeit.default_timer() - start_time, result
+
+    return wrapper
+
+
+def contains_word(input_string, word):
+    # Define the pattern using word boundaries (\b) to ensure it's a whole word
+    pattern = rf"\b{re.escape(word)}\b"
+    # Use re.search to check if the pattern is present in the input string
+    match = re.search(pattern, input_string, flags=re.IGNORECASE)
+    return bool(match)
