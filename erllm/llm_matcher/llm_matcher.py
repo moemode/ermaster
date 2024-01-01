@@ -50,6 +50,7 @@ if __name__ == "__main__":
         "hash": "35_hash/*force_hash-gpt*.json",
         # move the files from 35_base and 35_hash into 35_base_hash if you want this
         "base_hash": "35_base_hash/*.json",
+        "gpt4-base": "4_base/*force-gpt*.json",
     }
     for cfg in CONFIGURATIONS.keys():
         eval_dir(
