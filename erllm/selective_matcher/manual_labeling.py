@@ -8,7 +8,7 @@ from typing import Dict, Tuple
 import pandas as pd
 from sklearn.metrics import f1_score, recall_score
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH
-from erllm.llm_matcher.evalrun import read_run
+from erllm.llm_matcher.evalrun import read_run_deprecated
 import numpy as np
 from erllm.utils import classification_metrics
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     # iterate over datasets
     for path in cfg["runfolder"].glob("*force-gpt*.json"):
         dataset_name = path.stem.split("-")[0]
-        truths, predictions, _, probabilities, _ = read_run(path)
+        truths, predictions, _, probabilities, _ = read_run_deprecated(path)
         f1 = f1_score(truths, predictions)
         rec = recall_score(truths, predictions)
         k = int(round(cfg["fraction"] * len(truths)))

@@ -9,7 +9,7 @@ from sklearn.metrics import (
 import pandas as pd
 from erllm import RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 from erllm.llm_matcher.cost import str_cost
-from erllm.llm_matcher.evalrun import read_run, read_run_raw
+from erllm.llm_matcher.evalrun import read_run_deprecated, read_run_raw
 
 
 def discarding_matcher(
@@ -32,7 +32,7 @@ def discarding_matcher(
                and duration reduction percentage.
     """
     dataset_name = runFile.stem.split("-")[0]
-    truths, predictions, _, _, pair_ids = read_run(runFile)
+    truths, predictions, _, _, pair_ids = read_run_deprecated(runFile)
     completions = read_run_raw(runFile)
     prompts = list(map(lambda cp: cp.prompt_string, completions.values()))
     # cost of running basic matcher without discarder

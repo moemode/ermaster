@@ -253,7 +253,7 @@ def read_run_ref(
     )
 
 
-def read_run(
+def read_run_deprecated(
     run: Path,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[tuple[int, int]]]:
     """

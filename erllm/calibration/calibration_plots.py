@@ -4,7 +4,7 @@ It generates visualizations of reliability diagrams and saves the calibration me
 """
 from typing import Dict
 from erllm import EVAL_FOLDER_PATH, FIGURE_FOLDER_PATH, RUNS_FOLDER_PATH
-from erllm.llm_matcher.evalrun import read_run
+from erllm.llm_matcher.evalrun import read_run_deprecated
 from sklearn.metrics import brier_score_loss
 import matplotlib.pyplot as plt
 from erllm.calibration.reliability_diagrams import (
@@ -101,7 +101,7 @@ if __name__ == "__main__":
         results = dict()
 
         for path in inpaths:
-            truths, predictions, _, probabilities, _ = read_run(path)
+            truths, predictions, _, probabilities, _ = read_run_deprecated(path)
             dataset_name = (
                 path.stem.split("-")[0]
                 .replace("structured_", "")
