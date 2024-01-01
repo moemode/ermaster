@@ -116,25 +116,6 @@ class CompletedPrompt:
             p_yes, p_no = CompletedPrompt.completions_api_extract_ynprobs(
                 completion["logprobs"]["top_logprobs"][0]
             )
-            """
-            # legacy completions api structure of choice object
-            topprobs_first = completion["logprobs"]["top_logprobs"][0]
-            # Define Yes/No tokens
-            yn_tokens = ["Yes", "No", " Yes", " No"]
-            # Initialize dictionary for Yes/No probabilities
-            yn_probs = {}
-            total_probability = 0
-            # Sum the probabilities of Yes/No tokens
-            for t in yn_tokens:
-                yn_probs[t] = np.exp(topprobs_first.get(t, -1000))
-                total_probability += yn_probs[t]
-            p_yes = (yn_probs["Yes"] + yn_probs[" Yes"]) / total_probability
-            p_no = (yn_probs["No"] + yn_probs[" No"]) / total_probability
-            """
-        # Find the token with the maximum probability
-        # max_prob_token = max(yn_probs, key=yn_probs.get)
-        # Calculate the ratio of the max_prob_token probability to the total probability
-        # probability = yn_probs[max_prob_token] / total_probability
         entropy = bernoulli_entropy(p_yes / (p_yes + p_no))
         prediction = p_yes > p_no
         probability = p_yes if p_yes > p_no else p_no
