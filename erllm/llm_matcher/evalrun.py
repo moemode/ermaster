@@ -3,7 +3,7 @@ Methods for reading run files, deriving classification decisions, and calculatin
 """
 import json
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 from attr import dataclass
 import numpy as np
 from sklearn.metrics import (
@@ -32,7 +32,7 @@ class CompletedPrompt:
     prompt_string: str
     truth: bool
     completion: Dict[str, Any]
-    duration: float
+    duration: Optional[float]
     entropy: float = None
     prediction: Any = None
     probability: float = None
@@ -144,7 +144,7 @@ class CompletedPrompt:
             prompt_string=prompt_string,
             truth=truth,
             completion=completion,
-            duration=sample["d"],  #
+            duration=sample.get("d", None),
             entropy=entropy,
             prediction=prediction,
             probability=probability,
@@ -202,7 +202,7 @@ def calibration_data(truths, predictions, probabilities):
     }
 
 
-def read_run_raw(run: Path) -> Dict[tuple, CompletedPrompt]:
+def read_run_raw(run: Path) -> Dict[tuple[str, str], CompletedPrompt]:
     """
     Read a JSON run file and create a dictionary mapping (id0, id1) tuples to CompletedPrompt objects.
 
@@ -221,9 +221,41 @@ def read_run_raw(run: Path) -> Dict[tuple, CompletedPrompt]:
     return prompt_dict
 
 
+def read_run_ref(
+    run: Path,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[tuple[int, int]]]:
+    """
+    Read a JSON run file, process the completed prompts, and return relevant information for evaluation.
+
+    Parameters:
+        run (Path): Path to the JSON run file.
+
+    Returns:
+        Tuple: A tuple containing arrays of truths, predictions, entropies, probabilities, and pairs.
+    """
+    pairs = []
+    truths = []
+    predictions = []
+    entropies = []
+    probabilities = []
+    for ids, completion in read_run_raw(run).items():
+        pairs.append(ids)
+        truths.append(completion.truth)
+        predictions.append(completion.prediction)
+        entropies.append(completion.entropy)
+        probabilities.append(completion.probability)
+    return (
+        np.array(truths),
+        np.array(predictions),
+        np.array(entropies),
+        np.array(probabilities),
+        pairs,
+    )
+
+
 def read_run(
     run: Path,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[tuple[str, str]]]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[tuple[int, int]]]:
     """
     Read a JSON run file, process the completed prompts, and return relevant information for evaluation.
 
@@ -282,7 +314,7 @@ def eval(run: Path, save_to: Path):
     Returns:
         Dict: Evaluation results.
     """
-    truths, predictions, entropies, probabilities, _ = read_run(run)
+    truths, predictions, entropies, probabilities, _ = read_run_ref(run)
     truths = truths.astype(bool)
     prec = precision_score(truths, predictions)
     rec = recall_score(truths, predictions)

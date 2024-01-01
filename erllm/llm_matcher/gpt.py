@@ -221,14 +221,10 @@ CONFIGURATIONS = {
     "gpt4-on-base": {
         "completions_function": get_chat_completions,
         "model": "gpt-4-0613",
-        # "prompt_paths": map(
-        #     lambda d: PROMPTS_FOLDER_PATH / f"{d}-general_complex_force.json",
-        #     SAMPLED_DATASET_NAMES,
-        # ),
-        "prompt_paths": [
-            PROMPTS_FOLDER_PATH
-            / "structured_fodors_zagats_1250-general_complex_force.json"
-        ],
+        "prompt_paths": map(
+            lambda d: PROMPTS_FOLDER_PATH / f"{d}-general_complex_force.json",
+            SAMPLED_DATASET_NAMES,
+        ),
         "model_params": dict(
             model="gpt-4-0613",
             max_tokens=1,
