@@ -221,7 +221,7 @@ def read_run_raw(run: Path) -> Dict[tuple[str, str], CompletedPrompt]:
     return prompt_dict
 
 
-def read_run_ref(
+def read_run(
     run: Path,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[tuple[int, int]]]:
     """
@@ -314,7 +314,7 @@ def eval(run: Path, save_to: Path):
     Returns:
         Dict: Evaluation results.
     """
-    truths, predictions, entropies, probabilities, _ = read_run_ref(run)
+    truths, predictions, entropies, probabilities, _ = read_run(run)
     truths = truths.astype(bool)
     prec = precision_score(truths, predictions)
     rec = recall_score(truths, predictions)
