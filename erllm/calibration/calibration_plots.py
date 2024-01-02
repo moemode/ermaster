@@ -4,7 +4,6 @@ It generates visualizations of reliability diagrams and saves the calibration me
 """
 from typing import Dict
 from erllm import EVAL_FOLDER_PATH, FIGURE_FOLDER_PATH, RUNS_FOLDER_PATH
-from erllm.llm_matcher.evalrun import read_run_deprecated
 from sklearn.metrics import brier_score_loss
 import matplotlib.pyplot as plt
 from erllm.calibration.reliability_diagrams import (
@@ -13,6 +12,8 @@ from erllm.calibration.reliability_diagrams import (
 )
 import numpy as np
 import pandas as pd
+
+from erllm.llm_matcher.evalrun import read_run
 
 
 def setup_plt():
@@ -89,6 +90,10 @@ CONFIGURATIONS = {
         "paths": (RUNS_FOLDER_PATH / "35_base").glob("*.json"),
         "outpath_prefix": "base",
     },
+    "4-base": {
+        "paths": (RUNS_FOLDER_PATH / "4_base").glob("*.json"),
+        "outpath_prefix": "4-base",
+    },
 }
 
 CALIBRATION_PATH = EVAL_FOLDER_PATH / "calibration"
@@ -99,9 +104,8 @@ if __name__ == "__main__":
         inpaths, prefix = config["paths"], config["outpath_prefix"]
         dfdata = []
         results = dict()
-
         for path in inpaths:
-            truths, predictions, _, probabilities, _ = read_run_deprecated(path)
+            truths, predictions, _, probabilities, _ = read_run(path)
             dataset_name = (
                 path.stem.split("-")[0]
                 .replace("structured_", "")
@@ -114,16 +118,11 @@ if __name__ == "__main__":
                 "pred_labels": predictions,
                 "confidences": probabilities,
             }
-
-        # Create a DataFrame from the results list
         df = pd.DataFrame(dfdata)
         df.to_csv(
             EVAL_FOLDER_PATH / "calibration" / f"{prefix}_calibration.csv", index=False
         )
-
-        # Display the DataFrame
         print(df)
-
         setup_plt()
         CALIBRATION_FIGURE_PATH = FIGURE_FOLDER_PATH / "calibration"
         CALIBRATION_FIGURE_PATH.mkdir(parents=True, exist_ok=True)

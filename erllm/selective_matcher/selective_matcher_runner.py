@@ -27,10 +27,17 @@ CONFIGURATIONS = {
         "selective_matcher": selective_matcher_cov,
         "param_range": np.arange(0.0, 1 + 0.01, 0.01),
     },
+    "gpt-4-base-cov": {
+        "runfiles": RUNS_FOLDER_PATH / "4_base",
+        "similarities": SIMILARITIES_FOLDER_PATH,
+        "outpath": EVAL_FOLDER_PATH / "selective_matcher" / "4_base_covs.csv",
+        "selective_matcher": selective_matcher_cov,
+        "param_range": np.arange(0.0, 1 + 0.01, 0.01),
+    },
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["base-cov"]
+    cfg = CONFIGURATIONS["gpt-4-base-cov"]
     cfg["outpath"].parent.mkdir(parents=True, exist_ok=True)
     results = []
     # Create values in the range 0.0 to 1.0 with an increment of 0.05

@@ -71,14 +71,17 @@ CONFIGURATIONS = {
         "plot_cfgs": PLOT_METRICS,
         "save_to": FIGURE_FOLDER_PATH / "selective_matcher" / "base-cov",
     },
+    "gpt-4-base-cov": {
+        "inpath": EVAL_FOLDER_PATH / "selective_matcher" / "4_base_covs.csv",
+        "plot_cfgs": PLOT_METRICS,
+        "save_to": FIGURE_FOLDER_PATH / "selective_matcher" / "gpt-4-base-cov",
+    },
 }
 
 
-INPATH = EVAL_FOLDER_PATH / "selective_matcher" / "35_base.csv"
-
 if __name__ == "__main__":
     for cfg_name, cfg in CONFIGURATIONS.items():
-        if cfg_name != "base-cov":
+        if cfg_name.startswith("base"):
             continue
         for postfix, selected_metrics in cfg["plot_cfgs"].items():
             my_setup_plt()

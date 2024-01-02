@@ -115,7 +115,7 @@ CONFIGURATIONS = {
         "runfolder": RUNS_FOLDER_PATH / "35_base",
         "outfile_name": "base.csv",
         "tries": 30,
-        "fraction": 0.05,
+        "fraction": 0.10,
     },
 }
 
