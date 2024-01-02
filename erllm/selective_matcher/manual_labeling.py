@@ -8,8 +8,8 @@ from typing import Dict, Tuple
 import pandas as pd
 from sklearn.metrics import f1_score, recall_score
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH
-from erllm.llm_matcher.evalrun import read_run_deprecated
 import numpy as np
+from erllm.llm_matcher.evalrun import read_run
 from erllm.utils import classification_metrics
 
 
@@ -28,6 +28,9 @@ def label_k_most_uncertain(
     Returns:
         Tuple[float, float, float, float]: Precision, Recall, F1-score, and Accuracy.
     """
+    truths = truths.copy()
+    predictions = predictions.copy()
+    probabilities = probabilities.copy()
     # Get the indices sorted ascendingly by associated probabilities
     sorted_indices = np.argsort(probabilities)
     # Permute truths, predictions, and probabilities
@@ -54,6 +57,9 @@ def label_k_most_uncertain_negative(
     Returns:
         Tuple[float, float, float, float]: Precision, Recall, F1-score, and Accuracy.
     """
+    truths = truths.copy()
+    predictions = predictions.copy()
+    probabilities = probabilities.copy()
     # Get the indices of false predictions with the smallest probabilities
     false_indices = np.where(predictions == False)[0]
     sorted_false_indices = false_indices[np.argsort(probabilities[false_indices])]
@@ -89,6 +95,8 @@ def label_k_random(
             - "F1_Random_std": Standard deviation of F1 score for the random predictions.
             - "Accuracy_Random_std": Standard deviation of accuracy for the random predictions.
     """
+    truths = truths.copy()
+    predictions = predictions.copy()
     precisions, recalls, f1s, accuracies = [], [], [], []
     for i in range(tries):
         random_indices = np.random.choice(len(predictions), k, replace=False)
@@ -115,7 +123,13 @@ CONFIGURATIONS = {
         "runfolder": RUNS_FOLDER_PATH / "35_base",
         "outfile_name": "base.csv",
         "tries": 30,
-        "fraction": 0.10,
+        "fractions": [0, 0.05, 0.1, 0.15, 0.2],
+    },
+    "gpt-4-base": {
+        "runfolder": RUNS_FOLDER_PATH / "4_base",
+        "outfile_name": "4-base.csv",
+        "tries": 30,
+        "fractions": [0, 0.05, 0.1, 0.15, 0.2],
     },
 }
 
@@ -124,45 +138,45 @@ MLABELING_FOLDER = EVAL_FOLDER_PATH / "manual_labeling"
 if __name__ == "__main__":
     MLABELING_FOLDER.mkdir(parents=True, exist_ok=True)
     results = []
-    cfg = CONFIGURATIONS["base"]
+    cfg = CONFIGURATIONS["gpt-4-base"]
     # iterate over datasets
     for path in cfg["runfolder"].glob("*force-gpt*.json"):
         dataset_name = path.stem.split("-")[0]
-        truths, predictions, _, probabilities, _ = read_run_deprecated(path)
+        truths, predictions, _, probabilities, _ = read_run(path)
         f1 = f1_score(truths, predictions)
         rec = recall_score(truths, predictions)
-        k = int(round(cfg["fraction"] * len(truths)))
-        # Labeling most uncertain
-        (
-            prec_uncertain,
-            rec_uncertain,
-            f1_uncertain,
-            acc_uncertain,
-        ) = label_k_most_uncertain(truths, predictions, probabilities, k)
-
-        # Create a dictionary with the results for the individual dataset
-        result_dict = {
-            "Dataset": dataset_name,
-            "F1": f1,
-            "Recall": rec,
-            "Precision_Uncertain": prec_uncertain,
-            "Recall_Uncertain": rec_uncertain,
-            "F1_Uncertain": f1_uncertain,
-            "Accuracy_Uncertain": acc_uncertain,
-            **label_k_random(truths, predictions, k, cfg["tries"]),
-        }
-
-        # Append the dictionary to the results list
-        results.append(result_dict)
-
+        orig_predictions = predictions.copy()
+        for f in cfg["fractions"]:
+            k = int(round(f * len(truths)))
+            # Labeling most uncertain
+            (
+                prec_uncertain,
+                rec_uncertain,
+                f1_uncertain,
+                acc_uncertain,
+            ) = label_k_most_uncertain(truths, predictions, probabilities, k)
+            # Create a dictionary with the results for the individual dataset
+            result_dict = {
+                "Dataset": dataset_name,
+                "F1": f1,
+                "Fraction": f,
+                "Recall": rec,
+                "Precision_Uncertain": prec_uncertain,
+                "Recall_Uncertain": rec_uncertain,
+                "F1_Uncertain": f1_uncertain,
+                "Accuracy_Uncertain": acc_uncertain,
+                **label_k_random(truths, predictions, k, cfg["tries"]),
+            }
+            assert all(predictions == orig_predictions)
+            # Append the dictionary to the results list
+            results.append(result_dict)
     # Create a dataframe from the list of dictionaries
     df_results = pd.DataFrame(results)
-
-    # Display or save the dataframe as needed
     print(
         df_results[
             [
                 "Dataset",
+                "Fraction",
                 "F1",
                 "F1_Uncertain",
                 "F1_Random",
