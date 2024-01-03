@@ -10,7 +10,7 @@ from sklearn.metrics import f1_score, recall_score
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH
 import numpy as np
 from erllm.llm_matcher.evalrun import read_run
-from erllm.utils import classification_metrics
+from erllm.utils import classification_metrics, rename_datasets
 
 
 def label_k_most_uncertain(
@@ -123,7 +123,7 @@ CONFIGURATIONS = {
         "runfolder": RUNS_FOLDER_PATH / "35_base",
         "outfile_name": "base.csv",
         "tries": 30,
-        "fractions": [0, 0.05, 0.1, 0.15, 0.2],
+        "fractions": [0.05, 0.1, 0.15],
     },
     "gpt-4-base": {
         "runfolder": RUNS_FOLDER_PATH / "4_base",
@@ -138,7 +138,7 @@ MLABELING_FOLDER = EVAL_FOLDER_PATH / "manual_labeling"
 if __name__ == "__main__":
     MLABELING_FOLDER.mkdir(parents=True, exist_ok=True)
     results = []
-    cfg = CONFIGURATIONS["gpt-4-base"]
+    cfg = CONFIGURATIONS["base"]
     # iterate over datasets
     for path in cfg["runfolder"].glob("*force-gpt*.json"):
         dataset_name = path.stem.split("-")[0]
@@ -172,16 +172,22 @@ if __name__ == "__main__":
             results.append(result_dict)
     # Create a dataframe from the list of dictionaries
     df_results = pd.DataFrame(results)
-    print(
-        df_results[
-            [
-                "Dataset",
-                "Fraction",
-                "F1",
-                "F1_Uncertain",
-                "F1_Random",
-                "F1_Random_std",
-            ]
+    df_results = rename_datasets(df_results, False)
+    df_resutlts_reduced = df_results[
+        [
+            "Dataset",
+            "Fraction",
+            "F1_Uncertain",
+            "F1_Random",
+            "F1",
+            # "F1_Random_std",
         ]
-    )
+    ]
+
     df_results.to_csv(MLABELING_FOLDER / cfg["outfile_name"], index=False)
+    df_resutlts_reduced.to_latex(
+        f"eval_writeup/mlabeling-{cfg['outfile_name']}.ltx",
+        escape=True,
+        float_format="%.3f",
+        index=False,
+    )
