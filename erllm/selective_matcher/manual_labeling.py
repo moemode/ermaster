@@ -129,7 +129,7 @@ CONFIGURATIONS = {
         "runfolder": RUNS_FOLDER_PATH / "4_base",
         "outfile_name": "4-base.csv",
         "tries": 30,
-        "fractions": [0, 0.05, 0.1, 0.15, 0.2],
+        "fractions": [0.05, 0.1, 0.15],
     },
 }
 
@@ -138,7 +138,7 @@ MLABELING_FOLDER = EVAL_FOLDER_PATH / "manual_labeling"
 if __name__ == "__main__":
     MLABELING_FOLDER.mkdir(parents=True, exist_ok=True)
     results = []
-    cfg = CONFIGURATIONS["base"]
+    cfg = CONFIGURATIONS["gpt-4-base"]
     # iterate over datasets
     for path in cfg["runfolder"].glob("*force-gpt*.json"):
         dataset_name = path.stem.split("-")[0]
@@ -148,6 +148,7 @@ if __name__ == "__main__":
         orig_predictions = predictions.copy()
         for f in cfg["fractions"]:
             k = int(round(f * len(truths)))
+            res = label_k_random(truths, predictions, k, cfg["tries"])
             # Labeling most uncertain
             (
                 prec_uncertain,
@@ -165,7 +166,8 @@ if __name__ == "__main__":
                 "Recall_Uncertain": rec_uncertain,
                 "F1_Uncertain": f1_uncertain,
                 "Accuracy_Uncertain": acc_uncertain,
-                **label_k_random(truths, predictions, k, cfg["tries"]),
+                **res
+                # **label_k_random(truths, predictions, k, cfg["tries"]),
             }
             assert all(predictions == orig_predictions)
             # Append the dictionary to the results list

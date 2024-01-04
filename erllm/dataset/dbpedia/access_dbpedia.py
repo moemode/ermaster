@@ -1,3 +1,6 @@
+"""
+Access the DBPedia SQLite database after it has been created by load_dbpedia.py.
+"""
 import sqlite3
 import json
 from typing import Any, List

@@ -3,7 +3,7 @@ Install the conda environment.
 ```console
 conda env create -f environment.yml
 conda activate erllm
-# avoid sentence-transformer install cuda stuff, pytorch is installed in yml
+# avoid cuda coming with sentence-transformer, pytorch is already installed by environment.yml
 (erllm) pip install --no-deps sentence-transformers
 (erllm) python erllm_setup.py
 ```
@@ -33,7 +33,7 @@ The datasets are under `data/benchmark_datasets/existingDatasets`.
 ## Module dataset
 | Module            | Purpose                      |
 | --------------- | ------------------------- |
-| [dataset/entity.py](erllm/dataset/load_ds.py)   | Representation of entities involving initialization, generating string or token representations.
+| [dataset/entity.py](erllm/dataset/entity.py)   | Representation of entities involving initialization, generating string or token representations.
 | [dataset/load_ds.py](erllm/dataset/load_ds.py)   | Code for reading datasets from csv into dataframes or list of profile pairs.|
 | [dataset/sample_ds.py](erllm/dataset/sample_ds.py)   | Downsample datasets.|
 | [dataset/stats_ds.py](erllm/dataset/stats_ds.py)   | Get number of instances, positive and negatives in datasets.|
