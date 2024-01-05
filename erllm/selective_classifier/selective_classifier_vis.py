@@ -62,27 +62,25 @@ PLOT_METRICS = {
 
 CONFIGURATIONS = {
     "base": {
-        "inpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base.csv",
+        "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "35_base.csv",
         "plot_cfgs": PLOT_METRICS,
-        "save_to": FIGURE_FOLDER_PATH / "selective_matcher" / "base",
+        "save_to": FIGURE_FOLDER_PATH / "selective_classifier" / "base",
     },
     "base-cov": {
-        "inpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base_covs.csv",
+        "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "35_base_covs.csv",
         "plot_cfgs": PLOT_METRICS,
-        "save_to": FIGURE_FOLDER_PATH / "selective_matcher" / "base-cov",
+        "save_to": FIGURE_FOLDER_PATH / "selective_classifier" / "base-cov",
     },
     "gpt-4-base-cov": {
-        "inpath": EVAL_FOLDER_PATH / "selective_matcher" / "4_base_covs.csv",
+        "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "4_base_covs.csv",
         "plot_cfgs": PLOT_METRICS,
-        "save_to": FIGURE_FOLDER_PATH / "selective_matcher" / "gpt-4-base-cov",
+        "save_to": FIGURE_FOLDER_PATH / "selective_classifier" / "gpt-4-base-cov",
     },
 }
 
 
 if __name__ == "__main__":
     for cfg_name, cfg in CONFIGURATIONS.items():
-        if cfg_name.startswith("base"):
-            continue
         for postfix, selected_metrics in cfg["plot_cfgs"].items():
             my_setup_plt()
             df = pd.read_csv(cfg["inpath"])

@@ -16,19 +16,21 @@ PLOT_METRICS = {
 
 CONFIGURATIONS = {
     "base": {
-        "inpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base.csv",
+        "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "35_base.csv",
         "plot_cfgs": PLOT_METRICS,
-        "save_to": FIGURE_FOLDER_PATH / "selective_matcher" / "base",
+        "save_to": FIGURE_FOLDER_PATH / "selective_classifier" / "base",
     },
     "base-cov": {
-        "inpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base_covs.csv",
+        "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "35_base_covs.csv",
         "plot_cfgs": PLOT_METRICS,
-        "save_to": EVAL_WRITEUP_FOLDER_PATH / "selective_matcher_tradeoff_35_base.ltx",
+        "save_to": EVAL_WRITEUP_FOLDER_PATH
+        / "selective_classifier_tradeoff_35_base.ltx",
     },
     "gpt-4-base-cov": {
-        "inpath": EVAL_FOLDER_PATH / "selective_matcher" / "4_base_covs.csv",
+        "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "4_base_covs.csv",
         "plot_cfgs": PLOT_METRICS,
-        "save_to": EVAL_WRITEUP_FOLDER_PATH / "selective_matcher_tradeoff_4_base.ltx",
+        "save_to": EVAL_WRITEUP_FOLDER_PATH
+        / "selective_classifier_tradeoff_4_base.ltx",
     },
 }
 

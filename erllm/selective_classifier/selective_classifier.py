@@ -1,12 +1,12 @@
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List
 
-from erllm import RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
+from erllm import RUNS_FOLDER_PATH
 from erllm.llm_matcher.evalrun import CompletedPrompt, read_run_raw
 from erllm.utils import classification_metrics
 
 
-def selective_matcher(
+def selective_classifier(
     runFile: Path, thresholds: Iterable[float]
 ) -> List[Dict[str, Any]]:
     """
@@ -56,7 +56,7 @@ def selective_matcher(
     return data
 
 
-def selective_matcher_cov(
+def selective_classifier_cov(
     runFile: Path, coverages: Iterable[float]
 ) -> List[Dict[str, Any]]:
     """
@@ -105,47 +105,15 @@ def selective_matcher_cov(
     return data
 
 
-def find_matching_csv(
-    run_file: Path, similarity_files: Iterable[Path]
-) -> Optional[Path]:
-    """
-    Find the matching similarity CSV file for a given run JSON file based on dataset name.
-    Works only if the dataset name is the first part of the run JSON file name
-    and contained in the similarity CSV file name.
-
-    Parameters:
-        run_file (Path): The path to the run JSON file.
-        similarity_files (Iterable[Path]): Iterable of paths to similarity CSV files.
-
-    Returns:
-        Optional[Path]: The path to the matching similarity CSV file, or None if not found.
-    """
-    ds_name = run_file.stem.split("-")[0]
-    ds_name = ds_name.replace("_1250", "")
-    matching_csv = next(
-        (csv_file for csv_file in similarity_files if ds_name in csv_file.stem),
-        None,
-    )
-    return matching_csv
-
-
 if __name__ == "__main__":
     # example run for debugging
     CONFIGURATIONS = {
         "base": {
             "runfiles": RUNS_FOLDER_PATH / "35_base",
-            "similarities": SIMILARITIES_FOLDER_PATH,
         },
     }
     for path in CONFIGURATIONS["base"]["runfiles"].glob(
         "*dblp_scholar*force-gpt*.json"
     ):
         dataset_name = path.stem.split("-")[0]
-        simPath = find_matching_csv(
-            path, Path(CONFIGURATIONS["base"]["similarities"]).glob("*-allsim.csv")
-        )
-        if not simPath:
-            raise ValueError(
-                f"No matching similarity file in {CONFIGURATIONS['base']['similarities']} found for {path}"
-            )
-        print(selective_matcher(path, [0.3, 0.5, 0.7]))
+        print(selective_classifier(path, [0.3, 0.5, 0.7]))
