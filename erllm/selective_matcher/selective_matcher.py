@@ -28,7 +28,7 @@ def selective_matcher(
     completions: Dict[tuple, CompletedPrompt] = read_run_raw(runFile)
     data = []
     for threshold in thresholds:
-        # Filter rows based on the specified threshold for the "overlap" column
+        # Filter rows based on the specified threshold for the confidence
         above_th: Dict[tuple, CompletedPrompt] = {
             pair_id: cp
             for pair_id, cp in completions.items()
