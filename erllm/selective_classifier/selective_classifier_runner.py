@@ -40,8 +40,6 @@ if __name__ == "__main__":
     cfg = CONFIGURATIONS["gpt-4-base-cov"]
     cfg["outpath"].parent.mkdir(parents=True, exist_ok=True)
     results = []
-    # Create values in the range 0.0 to 1.0 with an increment of 0.05
-    results = []
     for path in cfg["runfiles"].glob("*force-gpt*.json"):
         dataset_name = path.stem.split("-")[0]
         # Call discarding_matcher and store the results in the dataframe
