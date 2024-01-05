@@ -14,8 +14,11 @@ from erllm.utils import classification_metrics, rename_datasets
 
 
 def label_k_most_uncertain(
-    truths: np.ndarray, predictions: np.ndarray, probabilities: np.ndarray, k: int
-) -> Tuple[float, float, float, float]:
+    truths_orig: np.ndarray,
+    predictions_orig: np.ndarray,
+    probabilities_orig: np.ndarray,
+    k: int,
+) -> Tuple[float, float, float, float, int]:
     """
     Label the k most uncertain predictions and calculate classification metrics.
 
@@ -28,9 +31,9 @@ def label_k_most_uncertain(
     Returns:
         Tuple[float, float, float, float]: Precision, Recall, F1-score, and Accuracy.
     """
-    truths = truths.copy()
-    predictions = predictions.copy()
-    probabilities = probabilities.copy()
+    truths = truths_orig.copy()
+    predictions = predictions_orig.copy()
+    probabilities = probabilities_orig.copy()
     # Get the indices sorted ascendingly by associated probabilities
     sorted_indices = np.argsort(probabilities)
     # Permute truths, predictions, and probabilities
@@ -39,7 +42,8 @@ def label_k_most_uncertain(
     probabilities = probabilities[sorted_indices]
     # Set the first k entries of predictions to truths
     predictions[:k] = truths[:k]
-    return classification_metrics(truths, predictions)
+    n_corrected = np.sum(predictions != predictions_orig)
+    return *classification_metrics(truths, predictions), n_corrected
 
 
 def label_k_most_uncertain_negative(
@@ -69,7 +73,7 @@ def label_k_most_uncertain_negative(
 
 
 def label_k_random(
-    truths: np.ndarray, predictions: np.ndarray, k: int, tries: int
+    truths_orig: np.ndarray, predictions_orig: np.ndarray, k: int, tries: int
 ) -> Dict[str, np.floating]:
     """
     Label k random predictions and calculate classification metrics.
@@ -95,8 +99,8 @@ def label_k_random(
             - "F1_Random_std": Standard deviation of F1 score for the random predictions.
             - "Accuracy_Random_std": Standard deviation of accuracy for the random predictions.
     """
-    truths = truths.copy()
-    predictions = predictions.copy()
+    truths = truths_orig.copy()
+    predictions = predictions_orig.copy()
     precisions, recalls, f1s, accuracies = [], [], [], []
     for i in range(tries):
         random_indices = np.random.choice(len(predictions), k, replace=False)
@@ -113,6 +117,7 @@ def label_k_random(
         "Accuracy_Random": np.mean(accuracies),
         "Precision_Random_std": np.std(precisions),
         "Recall_Random_std": np.std(recalls),
+        "N_corrected_Random": np.sum(predictions != predictions_orig),
         "F1_Random_std": np.std(f1s),
         "Accuracy_Random_std": np.std(accuracies),
     }
@@ -138,7 +143,7 @@ MLABELING_FOLDER = EVAL_FOLDER_PATH / "manual_labeling"
 if __name__ == "__main__":
     MLABELING_FOLDER.mkdir(parents=True, exist_ok=True)
     results = []
-    cfg = CONFIGURATIONS["gpt-4-base"]
+    cfg = CONFIGURATIONS["base"]
     # iterate over datasets
     for path in cfg["runfolder"].glob("*force-gpt*.json"):
         dataset_name = path.stem.split("-")[0]
@@ -155,6 +160,7 @@ if __name__ == "__main__":
                 rec_uncertain,
                 f1_uncertain,
                 acc_uncertain,
+                n_corrected,
             ) = label_k_most_uncertain(truths, predictions, probabilities, k)
             # Create a dictionary with the results for the individual dataset
             result_dict = {
@@ -166,6 +172,7 @@ if __name__ == "__main__":
                 "Recall_Uncertain": rec_uncertain,
                 "F1_Uncertain": f1_uncertain,
                 "Accuracy_Uncertain": acc_uncertain,
+                "N_corrected_Uncertain": n_corrected,
                 **res
                 # **label_k_random(truths, predictions, k, cfg["tries"]),
             }
@@ -179,9 +186,11 @@ if __name__ == "__main__":
         [
             "Dataset",
             "Fraction",
-            "F1_Uncertain",
-            "F1_Random",
-            "F1",
+            "Precision_Uncertain",
+            "Precision_Random",
+            "N_corrected_Uncertain",
+            "N_corrected_Random",
+            # "F1",
             # "F1_Random_std",
         ]
     ]
