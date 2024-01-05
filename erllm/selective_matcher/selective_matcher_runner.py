@@ -23,11 +23,11 @@ CONFIGURATIONS = {
         "param_range": np.arange(0.0, 0.15 + 0.01, 0.01),
         "random_tries": 30,
     },
-    "base-cov": {
+    "base-5-perc": {
         "runfiles": RUNS_FOLDER_PATH / "35_base",
-        "outpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base_covs.csv",
-        "selective_matcher": selective_classifier_cov,
-        "param_range": np.arange(0.0, 1 + 0.01, 0.01),
+        "outpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base_5_perc.csv",
+        "param_range": [0.05],
+        "random_tries": 30,
     },
     "gpt-4-base-cov": {
         "runfiles": RUNS_FOLDER_PATH / "4_base",
@@ -38,7 +38,7 @@ CONFIGURATIONS = {
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["base"]
+    cfg = CONFIGURATIONS["base-5-perc"]
     cfg["outpath"].parent.mkdir(parents=True, exist_ok=True)
     results = []
     for path in cfg["runfiles"].glob("*force-gpt*.json"):
