@@ -20,13 +20,13 @@ CONFIGURATIONS = {
     "base": {
         "runfiles": RUNS_FOLDER_PATH / "35_base",
         "outpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base.csv",
-        "param_range": np.arange(0.0, 0.15 + 0.01, 0.01),
+        "param_range": np.arange(0.0, 0.20 + 0.01, 0.01),
         "random_tries": 30,
     },
-    "base-5-perc": {
+    "base-selected": {
         "runfiles": RUNS_FOLDER_PATH / "35_base",
-        "outpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base_5_perc.csv",
-        "param_range": [0.05],
+        "outpath": EVAL_FOLDER_PATH / "selective_matcher" / "35_base_selected.csv",
+        "param_range": [0.05, 0.1, 0.15],
         "random_tries": 30,
     },
     "gpt-4-base-cov": {
@@ -38,7 +38,7 @@ CONFIGURATIONS = {
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["base-5-perc"]
+    cfg = CONFIGURATIONS["base"]
     cfg["outpath"].parent.mkdir(parents=True, exist_ok=True)
     results = []
     for path in cfg["runfiles"].glob("*force-gpt*.json"):
@@ -51,12 +51,15 @@ if __name__ == "__main__":
             sm_result = eval_selective_matcher(truths, predictions, probabilities, k)
             r_result["Dataset"] = dataset_name
             r_result["Method"] = "Random"
+            r_result["Fraction"] = f
+            r_result["N_labeled"] = k
             sm_result["Dataset"] = dataset_name
             sm_result["Method"] = "SM"
+            sm_result["Fraction"] = f
+            sm_result["N_labeled"] = k
             dataset_results.append(r_result)
             dataset_results.append(sm_result)
         results.extend(dataset_results)
     results_df = pd.DataFrame(results)
-    # Print or further process the results dataframe
     print(results_df)
     results_df.to_csv(cfg["outpath"], index=False)
