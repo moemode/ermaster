@@ -40,7 +40,7 @@ if __name__ == "__main__":
     cfg = CONFIGURATIONS["base"]
     fractions = cfg["fractions"]
     df = pd.read_csv(cfg["inpath"])
-    df = df[df["Method"] == "SM"]
+    df = df[df["Method"] == "Random"]
     df = df[df["Fraction"].isin(fractions)]
     df = rename_datasets(df, preserve_sampled=False)
     # keep Dataset, F1, Fraction
@@ -91,9 +91,9 @@ if __name__ == "__main__":
         {
             "Dataset": "Dataset",
             0.0: "LLM Matcher",
-            0.05: "SM (5%)",
-            0.1: "SM (10%)",
-            0.15: "SM (15%)",
+            0.05: "Random (5%)",
+            0.1: "Random (10%)",
+            0.15: "Random (15%)",
         }
     )
     print(table_df)
