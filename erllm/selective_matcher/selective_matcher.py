@@ -100,7 +100,10 @@ def eval_label_k_random(
         metrics.append(
             eval_corrected_prediction(truths, predictions, corrected_predictions)
         )
-    return dict(zip(eval_corrected_prediction.ret_dict_keys, np.mean(metrics, axis=0)))
+    sd_ret_dict_keys = [k + " SD" for k in eval_corrected_prediction.ret_dict_keys]
+    sds = zip(sd_ret_dict_keys, np.std(metrics, axis=0))
+    means = zip(eval_corrected_prediction.ret_dict_keys, np.mean(metrics, axis=0))
+    return dict(list(sds) + list(means))
 
 
 def eval_selective_matcher(
