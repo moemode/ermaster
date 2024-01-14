@@ -183,7 +183,7 @@ def calibration_data(truths, predictions, probabilities):
     }
 
 
-def read_run_raw(run: Path) -> Dict[tuple[str, str], CompletedPrompt]:
+def read_run_raw(run: Path) -> Dict[tuple[int, int], CompletedPrompt]:
     """
     Read a JSON run file and create a dictionary mapping (id0, id1) tuples to CompletedPrompt objects.
 
