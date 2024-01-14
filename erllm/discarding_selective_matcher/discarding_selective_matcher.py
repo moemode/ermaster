@@ -1,6 +1,7 @@
 from pathlib import Path
-from typing import Set, Tuple
+from typing import Dict, Set, Tuple
 import pandas as pd
+from sklearn.metrics import f1_score
 from erllm import RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 from erllm.discarding_matcher.discarding_matcher import find_matching_csv
 from erllm.llm_matcher.evalrun import CompletedPrompt, read_run_raw
@@ -12,7 +13,12 @@ def discarding_selective_matcher(
     runFile: Path,
     similaritiesFile: Path,
     sim_function="overlap",
-):
+) -> Tuple[
+    Dict[Tuple[int, int], bool],
+    Set[Tuple[int, int]],
+    Set[Tuple[int, int]],
+    Set[Tuple[int, int]],
+]:
     completions = read_run_raw(runFile)
     dataset_pair_ids: Set[Tuple[int, int]] = set(completions.keys())
     sims = get_similarities(dataset_pair_ids, similaritiesFile)
@@ -23,8 +29,9 @@ def discarding_selective_matcher(
     kept_completions = {
         pair_id: cp for pair_id, cp in completions.items() if pair_id in kept_pairs
     }
+    n_label = int(len(dataset_pair_ids) * label_fraction)
     predictions, llm_pairs, human_label_pairs = selective_matcher(
-        label_fraction, kept_completions
+        n_label, kept_completions
     )
     predictions.update({pair_id: False for pair_id in discarded_pairs})
     assert len(predictions) == len(dataset_pair_ids)
@@ -42,7 +49,6 @@ def get_similarities(
     sim_pairs = set(zip(similarities["table1.id"], similarities["table2.id"]))
     if not set(dataset_ids).issubset(sim_pairs):
         raise ValueError("Similarity file misses values for some pairs.")
-    # Filter rows to only include those with IDs present in dataset_ids
     similarities = similarities[
         similarities.apply(
             lambda row: (row["table1.id"], row["table2.id"]) in dataset_ids, axis=1
@@ -67,12 +73,11 @@ def discarder(similarities: pd.DataFrame, n_discard: int, sim_function="overlap"
 
 
 def selective_matcher(
-    label_fraction: float, completions: dict[Tuple[int, int], CompletedPrompt]
+    n_label: int, completions: dict[Tuple[int, int], CompletedPrompt]
 ) -> Tuple[dict[Tuple[int, int], bool], Set[Tuple[int, int]], Set[Tuple[int, int]]]:
     predictions: dict[Tuple[int, int], bool] = {
         id_pair: cp.prediction for id_pair, cp in completions.items()
     }
-    n_label = int(len(completions) * label_fraction)
     # get the n_label id pairs with smallest confidence
     sorted_completions = sorted(completions.values(), key=lambda cp: cp.probability)
     least_confident_ids = set((cp.id0, cp.id1) for cp in sorted_completions[:n_label])
@@ -80,6 +85,30 @@ def selective_matcher(
     for id_pair in least_confident_ids:
         predictions[id_pair] = completions[id_pair].truth
     return predictions, llm_ids, least_confident_ids
+
+
+def eval_discarding_selective_matcher(
+    discard_fraction: float,
+    label_fraction: float,
+    runFile: Path,
+    similaritiesFile: Path,
+    sim_function="overlap",
+) -> float:
+    completions = read_run_raw(runFile)
+    (
+        predictions,
+        discarded_pairs,
+        llm_pairs,
+        human_label_pairs,
+    ) = discarding_selective_matcher(
+        discard_fraction, label_fraction, runFile, similaritiesFile, sim_function
+    )
+    predictions_list = []
+    truths_list = []
+    for id_pair, cp in completions.items():
+        predictions_list.append(predictions[id_pair])
+        truths_list.append(cp.truth)
+    return f1_score(truths_list, predictions_list)
 
 
 if __name__ == "__main__":
@@ -101,4 +130,4 @@ if __name__ == "__main__":
             raise ValueError(
                 f"No matching similarity file in {CONFIGURATIONS['base']['similarities']} found for {path}"
             )
-        print(discarding_selective_matcher(0.3, 0.1, path, simPath))
+        print(eval_discarding_selective_matcher(0.3, 0.1, path, simPath))
