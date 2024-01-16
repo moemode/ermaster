@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Iterable
 import pandas as pd
 import itertools
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
@@ -17,25 +18,25 @@ CONFIGURATIONS = {
     },
 }
 
-if __name__ == "__main__":
-    cfg_name = "base"
-    cfg = CONFIGURATIONS[cfg_name]
-    cfg["outfile"].parent.mkdir(parents=True, exist_ok=True)
+
+def discarding_selective_matcher_runner(
+    runfiles: Iterable[Path],
+    similarity_files: Iterable[Path],
+    label_fractions: Iterable[float],
+    discard_fractions: Iterable[float],
+    outfile: Path,
+):
     results = []
-    for path in cfg["runfiles"].glob("*.json"):
+    for path in runfiles:
         for label_fraction, discard_fraction in itertools.product(
-            cfg["label_fractions"], cfg["discard_fractions"]
+            label_fractions, discard_fractions
         ):
             if label_fraction + discard_fraction > 1:
                 continue
             dataset_name = path.stem.split("-")[0]
-            simPath = find_matching_csv(
-                path, Path(cfg["similarities"]).glob("*-allsim.csv")
-            )
+            simPath = find_matching_csv(path, similarity_files)
             if not simPath:
-                raise ValueError(
-                    f"No matching similarity file in {cfg['similarities']} found for {path}"
-                )
+                raise ValueError(f"No matching similarity file found for {path}")
 
             r = eval_discarding_selective_matcher(
                 discard_fraction, label_fraction, path, simPath
@@ -45,4 +46,17 @@ if __name__ == "__main__":
             r["Discard Fraction"] = discard_fraction
             results.append(r)
     df = pd.DataFrame(results)
-    df.to_csv(cfg["outfile"], index=False)
+    df.to_csv(outfile, index=False)
+
+
+if __name__ == "__main__":
+    cfg_name = "base"
+    cfg = CONFIGURATIONS[cfg_name]
+    cfg["outfile"].parent.mkdir(parents=True, exist_ok=True)
+    discarding_selective_matcher_runner(
+        list(cfg["runfiles"].glob("*.json")),
+        list(Path(cfg["similarities"]).glob("*-allsim.csv")),
+        cfg["label_fractions"],
+        cfg["discard_fractions"],
+        cfg["outfile"],
+    )
