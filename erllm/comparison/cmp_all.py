@@ -54,7 +54,7 @@ if __name__ == "__main__":
     )
     sm_result["Method"] = "SM"
     dm_result = discarding_matcher_cov_runner(
-        runfiles, cfg["discard_fractions"], cfg["dm_outfile"]
+        runfiles, simfiles, cfg["discard_fractions"], "overlap", cfg["dm_outfile"]
     )
     dm_result["Method"] = "DM"
     # concat result dataframes
