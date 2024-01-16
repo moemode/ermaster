@@ -4,6 +4,8 @@ It calculates various performance metrics such as accuracy, precision, recall, F
 The results are stored in a pandas DataFrame and saved as a CSV file.
 """
 
+from pathlib import Path
+from typing import Iterable, Optional
 import numpy as np
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH
@@ -36,6 +38,29 @@ CONFIGURATIONS = {
         "param_range": np.arange(0.0, 1 + 0.01, 0.01),
     },
 }
+
+
+def selective_matcher_runner(
+    runfiles: Iterable[Path],
+    label_fractions: Iterable[float],
+    outfile: Optional[Path] = None,
+) -> pd.DataFrame:
+    results = []
+    for path in runfiles:
+        for label_fraction in label_fractions:
+            dataset_name = path.stem.split("-")[0]
+            truths, predictions, _, probabilities, _ = read_run(path)
+            k = int(round(label_fraction * len(truths)))
+            r = eval_selective_matcher(truths, predictions, probabilities, k)
+            r["Dataset"] = dataset_name
+            r["Label Fraction"] = label_fraction
+            r["N_labeled"] = k
+            results.append(r)
+    df = pd.DataFrame(results)
+    if outfile:
+        df.to_csv(outfile, index=False)
+    return df
+
 
 if __name__ == "__main__":
     cfg = CONFIGURATIONS["base"]

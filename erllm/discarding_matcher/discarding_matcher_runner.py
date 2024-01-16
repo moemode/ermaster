@@ -5,13 +5,40 @@ The results are stored in a pandas DataFrame and saved as a CSV file.
 """
 
 from pathlib import Path
+from typing import Iterable, Optional
 import numpy as np
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 from erllm.discarding_matcher.discarding_matcher import (
+    discarding_matcher_cov,
     find_matching_csv,
     discarding_matcher,
 )
+
+
+def discarding_matcher_cov_runner(
+    runfiles: Iterable[Path],
+    simfiles: Iterable[Path],
+    discard_fractions: Iterable[float],
+    sim_function="overlap",
+    outfile: Optional[Path] = None,
+) -> pd.DataFrame:
+    results = []
+    for path in runfiles:
+        dataset_name = path.stem.split("-")[0]
+        simPath = find_matching_csv(path, simfiles)
+        if not simPath:
+            raise ValueError(f"No matching similarity file found for {path}")
+        for f in discard_fractions:
+            r = discarding_matcher_cov(f, path, simPath, sim_function)
+            r["Dataset"] = dataset_name
+            r["Discard Fraction"] = f
+            results.append(r)
+    df = pd.DataFrame(results)
+    if outfile:
+        df.to_csv(outfile, index=False)
+    return df
+
 
 CONFIGURATIONS = {
     "base": {
@@ -20,6 +47,7 @@ CONFIGURATIONS = {
         "sim_function": "overlap",
     },
 }
+
 
 if __name__ == "__main__":
     results = []

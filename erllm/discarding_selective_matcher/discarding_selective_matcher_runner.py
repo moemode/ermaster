@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Optional
 import pandas as pd
 import itertools
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
@@ -24,7 +24,7 @@ def discarding_selective_matcher_runner(
     similarity_files: Iterable[Path],
     label_fractions: Iterable[float],
     discard_fractions: Iterable[float],
-    outfile: Path,
+    outfile: Optional[Path] = None,
 ):
     results = []
     for path in runfiles:
@@ -46,7 +46,9 @@ def discarding_selective_matcher_runner(
             r["Discard Fraction"] = discard_fraction
             results.append(r)
     df = pd.DataFrame(results)
-    df.to_csv(outfile, index=False)
+    if outfile:
+        df.to_csv(outfile, index=False)
+    return df
 
 
 if __name__ == "__main__":
