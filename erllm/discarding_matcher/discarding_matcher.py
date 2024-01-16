@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable, Optional, Set, Tuple
+from typing import Iterable, Optional
 from sklearn.metrics import (
     precision_score,
     recall_score,
@@ -91,7 +91,7 @@ def discarding_matcher(
 
 
 def discarding_matcher_n(
-    n_discard: int, runFile: Path, similarities: pd.DataFrame, sim_function="overlap"
+    n_discard: int, runFile: Path, similaritiesFile: Path, sim_function="overlap"
 ):
     """
     Evaluate the performance of a discarding matcher based on a given threshold.
@@ -116,6 +116,16 @@ def discarding_matcher_n(
     # cost of running basic matcher without discarder
     cost_llm_matcher = str_cost(prompts, 1, "gpt-3.5-turbo-instruct")
     duration_llm_matcher = sum(map(lambda cp: cp.duration, completions.values()))
+    similarities = pd.read_csv(similaritiesFile)
+    similarities = similarities[
+        similarities.apply(
+            lambda row: (row["table1.id"], row["table2.id"]) in pair_ids, axis=1
+        )
+    ]
+    if not len(similarities) == len(pair_ids):
+        raise ValueError(
+            f"Similarity file has {len(similarities)} rows, but {len(pair_ids)} pairs were expected."
+        )
     # ensure all pairs have a similarity value
     sim_pairs = set(zip(similarities["table1.id"], similarities["table2.id"]))
     if not set(pair_ids).issubset(sim_pairs):
@@ -189,19 +199,8 @@ def discarding_matcher_cov(
                and duration reduction percentage.
     """
     completions = read_run_raw(runFile)
-    dataset_pair_ids: Set[Tuple[int, int]] = set(completions.keys())
-    similarities = pd.read_csv(similaritiesFile)
-    similarities = similarities[
-        similarities.apply(
-            lambda row: (row["table1.id"], row["table2.id"]) in dataset_pair_ids, axis=1
-        )
-    ]
-    if not len(similarities) == len(dataset_pair_ids):
-        raise ValueError(
-            f"Similarity file has {len(similarities)} rows, but {len(dataset_pair_ids)} pairs were expected."
-        )
     n_discard = int(coverage * len(completions))
-    return discarding_matcher_n(n_discard, runFile, similarities, sim_function)
+    return discarding_matcher_n(n_discard, runFile, similaritiesFile, sim_function)
 
 
 def find_matching_csv(
