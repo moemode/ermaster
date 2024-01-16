@@ -97,7 +97,7 @@ def selective_matcher(
     # get the n_label id pairs with smallest confidence
     sorted_completions = sorted(completions.values(), key=lambda cp: cp.probability)
     least_confident_ids = set((cp.id0, cp.id1) for cp in sorted_completions[:n_label])
-    threshold = sorted_completions[n_label - 1].probability
+    threshold = sorted_completions[n_label - 1].probability if n_label > 0 else 0
     llm_ids = set(completions.keys()) - least_confident_ids
     for id_pair in least_confident_ids:
         predictions[id_pair] = completions[id_pair].truth

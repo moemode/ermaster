@@ -1,5 +1,7 @@
 from pathlib import Path
 from typing import Iterable, Optional
+from tqdm import tqdm
+import numpy as np
 import pandas as pd
 import itertools
 from erllm import EVAL_FOLDER_PATH, RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
@@ -13,8 +15,15 @@ CONFIGURATIONS = {
         "runfiles": RUNS_FOLDER_PATH / "35_base",
         "similarities": SIMILARITIES_FOLDER_PATH,
         "label_fractions": [0, 0.05, 0.1, 0.15, 0.2],
-        "discard_fractions": [0, 0.5, 0.8, 0.9],
+        "discard_fractions": [0, 0.5, 0.7, 0.8],
         "outfolder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "basic_cmp",
+    },
+    "grid": {
+        "runfiles": RUNS_FOLDER_PATH / "35_base",
+        "similarities": SIMILARITIES_FOLDER_PATH,
+        "label_fractions": np.arange(0.0, 0.25 + 0.01, 0.01),
+        "discard_fractions": np.arange(0.0, 1 + 0.01, 0.01),
+        "outfolder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "grid",
     },
 }
 
@@ -28,9 +37,8 @@ def discarding_selective_matcher_runner(
 ):
     results = []
     for path in runfiles:
-        for label_fraction, discard_fraction in itertools.product(
-            label_fractions, discard_fractions
-        ):
+        params = list(itertools.product(label_fractions, discard_fractions))
+        for label_fraction, discard_fraction in tqdm(params):
             if label_fraction + discard_fraction > 1:
                 continue
             dataset_name = path.stem.split("-")[0]
@@ -52,7 +60,7 @@ def discarding_selective_matcher_runner(
 
 
 if __name__ == "__main__":
-    cfg_name = "basic-cmp"
+    cfg_name = "grid"
     cfg = CONFIGURATIONS[cfg_name]
     cfg["outfolder"].mkdir(parents=True, exist_ok=True)
     result = discarding_selective_matcher_runner(
