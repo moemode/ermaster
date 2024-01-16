@@ -26,11 +26,11 @@ def discarding_matcher_cov_runner(
     results = []
     for path in runfiles:
         dataset_name = path.stem.split("-")[0]
-        simPath = find_matching_csv(path, simfiles)
-        if not simPath:
+        simpath = find_matching_csv(path, simfiles)
+        if not simpath:
             raise ValueError(f"No matching similarity file found for {path}")
         for f in discard_fractions:
-            r = discarding_matcher_cov(f, path, simPath, sim_function)
+            r = discarding_matcher_cov(f, path, simpath, sim_function)
             r["Dataset"] = dataset_name
             r["Discard Fraction"] = f
             results.append(r)

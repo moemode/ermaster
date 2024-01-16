@@ -9,12 +9,12 @@ from erllm.discarding_selective_matcher.discarding_selective_matcher import (
 )
 
 CONFIGURATIONS = {
-    "base": {
+    "basic-cmp": {
         "runfiles": RUNS_FOLDER_PATH / "35_base",
         "similarities": SIMILARITIES_FOLDER_PATH,
-        "label_fractions": [0.05, 0.1, 0.15, 0.2],
-        "discard_fractions": [0.5, 0.8, 0.9],
-        "outfile": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "perf.csv",
+        "label_fractions": [0, 0.05, 0.1, 0.15, 0.2],
+        "discard_fractions": [0, 0.5, 0.8, 0.9],
+        "outfolder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "basic_cmp",
     },
 }
 
@@ -52,13 +52,21 @@ def discarding_selective_matcher_runner(
 
 
 if __name__ == "__main__":
-    cfg_name = "base"
+    cfg_name = "basic-cmp"
     cfg = CONFIGURATIONS[cfg_name]
-    cfg["outfile"].parent.mkdir(parents=True, exist_ok=True)
-    discarding_selective_matcher_runner(
+    cfg["outfolder"].mkdir(parents=True, exist_ok=True)
+    result = discarding_selective_matcher_runner(
         list(cfg["runfiles"].glob("*.json")),
         list(Path(cfg["similarities"]).glob("*-allsim.csv")),
         cfg["label_fractions"],
         cfg["discard_fractions"],
-        cfg["outfile"],
+    )
+    result.to_csv(cfg["outfolder"] / "result.csv", index=False)
+    # Group by Label Fraction, Discard Fraction, and Method
+    grouped_result = result.groupby(["Label Fraction", "Discard Fraction"])
+    # Calculate mean F1 for each group
+    mean_f1 = grouped_result["F1"].mean().reset_index()
+    mean_f1.to_csv(
+        cfg["outfolder"] / "mean_f1.csv",
+        index=False,
     )

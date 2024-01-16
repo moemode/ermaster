@@ -15,6 +15,18 @@ CONFIGURATIONS = {
         "similarities": SIMILARITIES_FOLDER_PATH,
         "label_fractions": [0, 0.05, 0.1, 0.15, 0.2],
         "discard_fractions": [0, 0.5, 0.8, 0.9],
+        "dsm_outfile": EVAL_FOLDER_PATH
+        / "discarding_selective_matcher"
+        / "f1_comp_0"
+        / "dsm.csv",
+        "sm_outfile": EVAL_FOLDER_PATH
+        / "discarding_selective_matcher"
+        / "f1_comp_0"
+        / "sm.csv",
+        "dm_outfile": EVAL_FOLDER_PATH
+        / "discarding_selective_matcher"
+        / "f1_comp_0"
+        / "dm.csv",
         "result_outfile": EVAL_FOLDER_PATH
         / "discarding_selective_matcher"
         / "f1_comp_0"
@@ -56,7 +68,3 @@ if __name__ == "__main__":
 
     # Calculate mean F1 for each group
     mean_f1 = grouped_result["F1"].mean().reset_index()
-    mean_f1.to_csv(
-        EVAL_FOLDER_PATH / "discarding_selective_matcher" / "f1_comp_0" / "mean_f1.csv",
-        index=False,
-    )

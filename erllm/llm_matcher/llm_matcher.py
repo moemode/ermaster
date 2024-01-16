@@ -13,7 +13,7 @@ from erllm.calibration.reliability_diagrams import *
 LLM_MATCHER_FOLDER_PATH = EVAL_FOLDER_PATH / "llm_matcher"
 
 
-def eval_dir(json_files: Iterable[Path], save_to: Path):
+def eval_dir(runfiles: Iterable[Path], save_to: Path):
     """
     Evaluate multiple run files and save the results to a CSV file.
 
@@ -22,7 +22,7 @@ def eval_dir(json_files: Iterable[Path], save_to: Path):
         fname (str): Name of the output CSV file.
     """
     all_results = []  # List to store results for each file
-    for file in json_files:
+    for file in runfiles:
         ds, prompt_type, model, description = file.parts[-1].split("-")
         save_ind_to = save_to.parent / "individual"
         save_ind_to.mkdir(parents=True, exist_ok=True)

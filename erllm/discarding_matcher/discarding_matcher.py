@@ -135,7 +135,9 @@ def discarding_matcher_n(
     # discard n_discard rows
     discarded_rows = similarities.head(n_discard)
     # get threshold of last included row
-    threshold = discarded_rows[sim_function].iloc[-1]
+    threshold = (
+        discarded_rows[sim_function].iloc[-1] if len(discarded_rows) > 0 else 0.0
+    )
     discarded_pairs = set(zip(discarded_rows["table1.id"], discarded_rows["table2.id"]))
     # discarded prompts
     discarded = [

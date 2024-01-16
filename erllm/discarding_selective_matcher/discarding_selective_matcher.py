@@ -107,11 +107,11 @@ def selective_matcher(
 def eval_discarding_selective_matcher(
     discard_fraction: float,
     label_fraction: float,
-    runFile: Path,
-    similaritiesFile: Path,
+    runfile: Path,
+    simfile: Path,
     sim_function="overlap",
 ) -> dict:
-    completions = read_run_raw(runFile)
+    completions = read_run_raw(runfile)
     (
         predictions,
         discarded_pairs,
@@ -120,7 +120,7 @@ def eval_discarding_selective_matcher(
         disc_threshold,
         conf_threshold,
     ) = discarding_selective_matcher(
-        discard_fraction, label_fraction, runFile, similaritiesFile, sim_function
+        discard_fraction, label_fraction, runfile, simfile, sim_function
     )
     predictions_list = []
     truths_list = []
