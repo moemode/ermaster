@@ -60,7 +60,7 @@ def discarding_selective_matcher_runner(
 
 
 if __name__ == "__main__":
-    cfg_name = "grid"
+    cfg_name = "basic-cmp"
     cfg = CONFIGURATIONS[cfg_name]
     cfg["outfolder"].mkdir(parents=True, exist_ok=True)
     result = discarding_selective_matcher_runner(
