@@ -14,7 +14,7 @@ CONFIGURATIONS = {
     },
     "grid": {
         "result_folder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "grid",
-        "mean_metrics": ["F1"],
+        "mean_metrics": ["F1", "Precision", "Recall", "Accuracy"],
         "max_label_fraction": 0.15,
     },
 }
