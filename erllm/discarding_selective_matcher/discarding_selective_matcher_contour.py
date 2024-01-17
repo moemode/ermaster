@@ -8,7 +8,7 @@ CONFIGURATIONS = {
         / "discarding_selective_matcher"
         / "basic_cmp",
         "label_fractions": [0, 0.05, 0.1, 0.15],
-        "mean_metrics": ["F1", "Precision", "Recall", "Accuracy"],
+        "mean_metric": "F1",
     },
     "grid": {
         "result_folder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "grid",
@@ -22,9 +22,6 @@ def format_percentages(c):
 
 
 def build_table(df: pd.DataFrame, metric: str, save_to: Path):
-    df = df.groupby(["Label Fraction", "Discard Fraction"])
-    # Calculate mean for each metric
-    df = df[metric].mean().reset_index()
     pivot_df = df.pivot(
         index="Discard Fraction", columns="Label Fraction", values=metric
     )
@@ -72,7 +69,7 @@ def build_table(df: pd.DataFrame, metric: str, save_to: Path):
 if __name__ == "__main__":
     cfg_name = "basic-cmp"
     cfg = CONFIGURATIONS[cfg_name]
-    df = pd.read_csv(cfg["result_folder"] / "result.csv")
+    df = pd.read_csv(cfg["result_folder"] / "mean_f1.csv")
     df = df[df["Label Fraction"].isin(cfg["label_fractions"])]
-    for m in cfg["mean_metrics"]:
-        build_table(df, m, cfg["result_folder"])
+    # Pivot the DataFrame
+    build_table(df, cfg["mean_metric"], cfg["result_folder"])
