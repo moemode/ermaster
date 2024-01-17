@@ -6,6 +6,7 @@ CONFIGURATIONS = {
         "result_folder": EVAL_FOLDER_PATH
         / "discarding_selective_matcher"
         / "basic_cmp",
+        "label_fractions": [0, 0.05, 0.1, 0.15],
     },
     "grid": {
         "result_folder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "grid",
@@ -22,6 +23,7 @@ if __name__ == "__main__":
     cfg_name = "basic-cmp"
     cfg = CONFIGURATIONS[cfg_name]
     df = pd.read_csv(cfg["result_folder"] / "mean_f1.csv")
+    df = df[df["Label Fraction"].isin(cfg["label_fractions"])]
     # Pivot the DataFrame
     pivot_df = df.pivot(index="Discard Fraction", columns="Label Fraction", values="F1")
     # Format MultiIndex columns and index as percentages
@@ -53,6 +55,13 @@ if __name__ == "__main__":
     ).format_index(escape="latex", formatter=format_percentages, axis=0, level=1)
     s.format(precision=2)
     # Convert styled DataFrame to LaTeX table
-    latex_table = s.to_latex(convert_css=True, hrules=True)
+    latex_table = s.to_latex(
+        cfg["result_folder"] / "f1_table.tex",
+        convert_css=True,
+        hrules=True,
+        position_float="centering",
+        # multicol_align="|c|",
+        caption="F1 scores for the discarding selective matcher with different label and discard fractions.",
+    )
     # Print or save the LaTeX table
     print(latex_table)
