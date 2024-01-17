@@ -60,7 +60,7 @@ if __name__ == "__main__":
         convert_css=True,
         hrules=True,
         position_float="centering",
-        # multicol_align="|c|",
+        multicol_align="c",
         caption="F1 scores for the discarding selective matcher with different label and discard fractions.",
     )
     # Print or save the LaTeX table
