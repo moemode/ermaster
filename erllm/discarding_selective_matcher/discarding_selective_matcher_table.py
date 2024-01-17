@@ -40,9 +40,9 @@ if __name__ == "__main__":
     ]
     s = pivot_df.style
     s.set_properties(**{"background-color": "lightgreen"}, subset=slice_first_row)
-    s.set_properties(**{"background-color": "lightred"}, subset=slice_first_cell)
-    s.set_properties(**{"background-color": "lightblue"}, subset=slice_first_col)
-    s.set_properties(**{"background-color": "lightyellow"}, subset=slice_rest)
+    s.set_properties(**{"background-color": "lightblue"}, subset=slice_first_cell)
+    s.set_properties(**{"background-color": "lightred"}, subset=slice_first_col)
+    # s.set_properties(**{"background-color": "lightyellow"}, subset=slice_rest)
     s.format_index(escape="latex", axis=1).format_index(escape="latex", axis=0)
     # Convert styled DataFrame to LaTeX table
     latex_table = s.to_latex(convert_css=True, hrules=True)
