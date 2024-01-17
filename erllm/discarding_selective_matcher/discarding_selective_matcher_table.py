@@ -13,6 +13,11 @@ CONFIGURATIONS = {
     },
 }
 
+
+def format_percentages(c):
+    return f"{c*100:.0f}\%"
+
+
 if __name__ == "__main__":
     cfg_name = "basic-cmp"
     cfg = CONFIGURATIONS[cfg_name]
@@ -43,7 +48,10 @@ if __name__ == "__main__":
     s.set_properties(**{"background-color": "lightblue"}, subset=slice_first_cell)
     s.set_properties(**{"background-color": "lightred"}, subset=slice_first_col)
     # s.set_properties(**{"background-color": "lightyellow"}, subset=slice_rest)
-    s.format_index(escape="latex", axis=1).format_index(escape="latex", axis=0)
+    s.format_index(
+        formatter=format_percentages, escape="latex", axis=1, level=1
+    ).format_index(escape="latex", formatter=format_percentages, axis=0, level=1)
+    s.format(precision=2)
     # Convert styled DataFrame to LaTeX table
     latex_table = s.to_latex(convert_css=True, hrules=True)
     # Print or save the LaTeX table
