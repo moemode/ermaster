@@ -21,7 +21,7 @@ def format_percentages(c):
     return f"{c*100:.0f}\%"
 
 
-def build_table(df: pd.DataFrame, metric: str, save_to: Path):
+def build_table(df: pd.DataFrame, metric: str, save_to: Path) -> str:
     df = df.groupby(["Label Fraction", "Discard Fraction"])
     # Calculate mean for each metric
     df = df[metric].mean().reset_index()

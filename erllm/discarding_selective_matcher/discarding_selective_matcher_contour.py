@@ -1,6 +1,8 @@
 from pathlib import Path
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
+import matplotlib.pyplot as plt
+import numpy as np
 
 CONFIGURATIONS = {
     "basic-cmp": {
@@ -8,11 +10,12 @@ CONFIGURATIONS = {
         / "discarding_selective_matcher"
         / "basic_cmp",
         "label_fractions": [0, 0.05, 0.1, 0.15],
-        "mean_metric": "F1",
+        "mean_metrics": ["F1", "Precision", "Recall", "Accuracy"],
     },
     "grid": {
         "result_folder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "grid",
-        "means": ["F1", "Precision", "Recall", "Accuracy"],
+        "mean_metrics": ["F1"],
+        "max_label_fraction": 0.15,
     },
 }
 
@@ -21,55 +24,71 @@ def format_percentages(c):
     return f"{c*100:.0f}\%"
 
 
-def build_table(df: pd.DataFrame, metric: str, save_to: Path):
-    pivot_df = df.pivot(
-        index="Discard Fraction", columns="Label Fraction", values=metric
-    )
-    # Format MultiIndex columns and index as percentages
-    pivot_df.columns = pd.MultiIndex.from_tuples(
-        [(pivot_df.columns.name, c) for c in pivot_df.columns]
-    ).sort_values()
-    pivot_df.index = pd.MultiIndex.from_tuples(
-        [(pivot_df.index.name, c) for c in pivot_df.index]
-    ).sort_values()
-    first_row = pivot_df.index[0]
-    first_col = pivot_df.columns[0]
-    second_row = pivot_df.index[1]
-    second_col = pivot_df.columns[1]
-    idx = pd.IndexSlice
-    slice_ = idx[idx[*first_row],]
-    first_cell = idx[idx[*first_row], idx[*first_col]]
-    first_row = idx[idx[*first_row], idx[second_col[0], second_col[1] :]]
-    first_col = idx[idx[second_row[0], second_row[1] :], idx[*first_col]]
-    slice_rest = idx[
-        idx[second_row[0], second_row[1] :], idx[second_col[0], second_col[1] :]
-    ]
-    s = pivot_df.style
-    s.set_properties(**{"background-color": "lightgreen"}, subset=first_row)
-    s.set_properties(**{"background-color": "lightblue"}, subset=first_cell)
-    s.set_properties(**{"background-color": "lightred"}, subset=first_col)
-    # s.set_properties(**{"background-color": "lightyellow"}, subset=slice_rest)
-    s.format_index(
-        formatter=format_percentages, escape="latex", axis=1, level=1
-    ).format_index(escape="latex", formatter=format_percentages, axis=0, level=1)
-    s.format(precision=2)
-    # Convert styled DataFrame to LaTeX table
-    latex_table = s.to_latex(
-        save_to / f"{metric.lower()}_table.tex",
-        convert_css=True,
-        hrules=True,
-        position_float="centering",
-        multicol_align="c",
-        caption="F1 scores for the discarding selective matcher with different label and discard fractions.",
-    )
-    # Print or save the LaTeX table
-    return latex_table
+def get_mean_df(df: pd.DataFrame, metric: str) -> pd.DataFrame:
+    df = df.groupby(["Label Fraction", "Discard Fraction"])
+    # Calculate mean for each metric
+    df = df[metric].mean().reset_index()
+    return df.pivot(index="Discard Fraction", columns="Label Fraction", values=metric)
+
+
+def make_contour_2d(df: pd.DataFrame, metric: str, save_to: Path) -> str:
+    pivot_df = get_mean_df(df, metric)
+    x = pivot_df.columns.to_numpy()
+    y = pivot_df.index.to_numpy()
+    X, Y = np.meshgrid(x, y)
+    plt.figure()
+    # Increase color resolution by specifying more levels
+    levels = 20  # You can adjust this value based on your preference
+    plt.figure()
+    contours = plt.contourf(X, Y, pivot_df.values, levels=levels, cmap="viridis")
+    plt.xlabel("Label Fraction")
+    plt.ylabel("Discard Fraction")
+    plt.colorbar(contours, label=metric)
+    plt.title(f"Contour Plot for {metric}")
+    file_path = save_to / f"contour_plot_{metric}.png"
+    plt.savefig(file_path)
+
+
+def make_contour_2d_im(df: pd.DataFrame, metric: str, save_to: Path) -> str:
+    pivot_df = get_mean_df(df, metric)
+    x = pivot_df.columns.to_numpy()
+    y = pivot_df.index.to_numpy()
+    X, Y = np.meshgrid(x, y)
+    plt.figure()
+    im = plt.imshow(pivot_df.values, cmap="viridis", extent=[x[0], x[-1], y[-1], y[0]])
+    plt.xlabel("Label Fraction")
+    plt.ylabel("Discard Fraction")
+    plt.colorbar(im, label=metric)
+    plt.title(f"Heatmap for {metric}")
+    plt.show()
+
+
+def make_contour_3d(df: pd.DataFrame, metric: str, save_to: Path) -> str:
+    pivot_df = get_mean_df(df, metric)
+    print(pivot_df)
+    x = pivot_df.columns.to_numpy()
+    y = pivot_df.index.to_numpy()
+    X, Y = np.meshgrid(x, y)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+    ax.plot_surface(X, Y, pivot_df.values, cmap="viridis")
+    # Customize the plot
+    ax.set_xlabel("Label Fraction")
+    ax.set_ylabel("Discard Fraction")
+    ax.set_zlabel(metric)
+    ax.set_title(f"Meshgrid for {metric}")
+    plt.show()
 
 
 if __name__ == "__main__":
-    cfg_name = "basic-cmp"
+    cfg_name = "grid"
     cfg = CONFIGURATIONS[cfg_name]
-    df = pd.read_csv(cfg["result_folder"] / "mean_f1.csv")
-    df = df[df["Label Fraction"].isin(cfg["label_fractions"])]
-    # Pivot the DataFrame
-    build_table(df, cfg["mean_metric"], cfg["result_folder"])
+    df = pd.read_csv(cfg["result_folder"] / "result.csv")
+    # filter up to max_label_fraction
+    if "max_label_fraction" in cfg:
+        df = df[df["Label Fraction"] <= cfg["max_label_fraction"]]
+    # check if cfg has label_fractions
+    if "label_fractions" in cfg:
+        df = df[df["Label Fraction"].isin(cfg["label_fractions"])]
+    for m in cfg["mean_metrics"]:
+        make_contour_2d(df, m, cfg["result_folder"])
