@@ -78,7 +78,8 @@ if __name__ == "__main__":
         # ("FN",),
         # ("TP", "FN"),
         # ("TN", "FP"),
-        ("TP", "TN", "FP", "FN"),
+        ("TP", "FP"),
+        # ("TP", "TN", "FP", "FN"),
     ]
     # Create histograms for all datasets
     for c in combinations:

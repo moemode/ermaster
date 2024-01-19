@@ -55,6 +55,40 @@ def plot_dataset(data: pd.DataFrame, dataset_name: str, postfix: str, save_to: P
     g.savefig(save_to / f"selective_{postfix}-{dataset_name}.png")
 
 
+def plot_multiple_ds(df: pd.DataFrame, save_to: Path):
+    n_datasets = df["Dataset"].nunique()
+    col_wrap = 2 if n_datasets <= 4 else 3
+    share_x = True
+    # Create the relplot
+    g = sns.relplot(
+        x="coverage",
+        y="Value",
+        hue="Metric",
+        col="Dataset",
+        col_wrap=col_wrap,
+        kind="line",
+        data=df,
+        # marker="o",
+        facet_kws={"sharex": share_x, "sharey": True},
+    )
+    # Adjust layout
+    # g.fig.subplots_adjust(top=0.9)
+    # g.fig.suptitle("Metrics vs Threshold for Different Datasets", fontsize=16)
+    if share_x:
+        # if share_x is True, then all subplots share the same x-axis -> invert only once
+        g.axes[0].invert_xaxis()
+    for item, ax in g.axes_dict.items():
+        ax.set_title(item)
+        if not share_x:
+            # if share_x is False, then each subplot has its own x-axis
+            ax.invert_xaxis()
+    # make words in legend start with capital letter
+    legend = g._legend
+    for t in legend.texts:
+        t.set_text(t.get_text().capitalize())
+    g.savefig(save_to)
+
+
 PLOT_METRICS = {
     "all": ["precision", "recall", "f1"],
     "f1": ["f1"],
@@ -65,6 +99,12 @@ CONFIGURATIONS = {
         "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "35_base.csv",
         "plot_cfgs": PLOT_METRICS,
         "save_to": FIGURE_FOLDER_PATH / "selective_classifier" / "base",
+    },
+    "base-cov-selected": {
+        "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "35_base_covs.csv",
+        "plot_cfgs": PLOT_METRICS,
+        "save_to": FIGURE_FOLDER_PATH / "selective_classifier" / "base-cov-selected",
+        "datasets": ["Dblp-Scholar", "Walmart-Amazon"],
     },
     "base-cov": {
         "inpath": EVAL_FOLDER_PATH / "selective_classifier" / "35_base_covs.csv",
@@ -81,6 +121,7 @@ CONFIGURATIONS = {
 
 if __name__ == "__main__":
     for cfg_name, cfg in CONFIGURATIONS.items():
+        cfg["save_to"].mkdir(parents=True, exist_ok=True)
         for postfix, selected_metrics in cfg["plot_cfgs"].items():
             my_setup_plt()
             df = pd.read_csv(cfg["inpath"])
@@ -93,27 +134,10 @@ if __name__ == "__main__":
             )
             df_melted = rename_datasets(df_melted, preserve_sampled=False)
             df_melted["excluded"] = 1 - df_melted["coverage"]
-            # Create the relplot
-            g = sns.relplot(
-                x="coverage",
-                y="Value",
-                hue="Metric",
-                col="Dataset",
-                col_wrap=3,
-                kind="line",
-                data=df_melted,
-                # marker="o",
-                facet_kws={"sharex": True, "sharey": True},
-            )
-            for item, ax in g.axes_dict.items():
-                ax.set_title(item)
-                ax.invert_xaxis()
-            # Adjust layout
-            # g.fig.subplots_adjust(top=0.9)
-            # g.fig.suptitle("Metrics vs Threshold for Different Datasets", fontsize=16)
+            if "datasets" in cfg:
+                df_melted = df_melted[df_melted["Dataset"].isin(cfg["datasets"])]
             p = cfg["save_to"] / f"selective_{postfix}.png"
-            p.parent.mkdir(parents=True, exist_ok=True)
-            g.savefig(p)
+            plot_multiple_ds(df_melted, p)
             # Plot each dataset
             for dataset_name, group_data in df_melted.groupby("Dataset"):
                 plot_dataset(group_data, dataset_name, postfix, cfg["save_to"])
