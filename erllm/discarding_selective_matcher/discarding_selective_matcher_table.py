@@ -63,7 +63,7 @@ def build_table(df: pd.DataFrame, metric: str, save_to: Path) -> str:
         hrules=True,
         position_float="centering",
         multicol_align="c",
-        caption="F1 scores for the discarding selective matcher with different label and discard fractions.",
+        caption=f"{metric} scores for the discarding selective matcher with different label and discard fractions.",
     )
     # Print or save the LaTeX table
     return latex_table

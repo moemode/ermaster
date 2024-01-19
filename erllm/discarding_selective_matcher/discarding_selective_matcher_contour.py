@@ -38,8 +38,9 @@ def make_contour_2d(df: pd.DataFrame, metric: str, save_to: Path) -> str:
     X, Y = np.meshgrid(x, y)
     plt.figure()
     # Increase color resolution by specifying more levels
-    levels = 20  # You can adjust this value based on your preference
+    n_levels = 20  # You can adjust this value based on your preference
     plt.figure()
+    levels = np.linspace(0, 1, n_levels + 1)
     contours = plt.contourf(X, Y, pivot_df.values, levels=levels, cmap="viridis")
     plt.xlabel("Label Fraction")
     plt.ylabel("Discard Fraction")
