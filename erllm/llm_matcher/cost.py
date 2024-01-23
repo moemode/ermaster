@@ -2,8 +2,8 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Dict, List
 import pandas as pd
-from erllm import PROMPTS_FOLDER_PATH, SAMPLED_DATASET_NAMES
-from erllm.utils import load_json_file, num_tokens_from_string
+from erllm import EVAL_FOLDER_PATH, PROMPTS_FOLDER_PATH, SAMPLED_DATASET_NAMES
+from erllm.utils import load_json_file, num_tokens_from_string, rename_datasets
 
 # Define a named tuple for input and output costs
 ModelCost = namedtuple("ModelCost", ["input", "output"])
@@ -62,7 +62,7 @@ def cost(
     outtokens_per_prompt: int,
     model: str,
     costs: Dict[str, ModelCost] = MODEL_COSTS,
-) -> float:
+) -> tuple[float, float]:
     """
     Calculate the cost of generating output tokens for a given prompt file and model.
 
@@ -73,13 +73,19 @@ def cost(
         costs (Dict[str, ModelCost], optional): Dictionary mapping model names to cost values.
 
     Returns:
-        float: Cost of generating output tokens.
+        tuple[float, float]: A tuple containing the total cost of generating output tokens and the cost per prompt.
+
+    Raises:
+        ValueError: If the specified model does not have associated costs.
     """
     if model not in costs:
         raise ValueError(f"No costs available for {model}")
     N, intokens = prompt_tokens(prompt_file, model)
     outtokens = N * outtokens_per_prompt
-    return intokens / 1000 * costs[model].input + outtokens / 1000 * costs[model].output
+    total_cost = (
+        intokens / 1000 * costs[model].input + outtokens / 1000 * costs[model].output
+    )
+    return total_cost, total_cost / N
 
 
 def str_cost(
@@ -132,8 +138,29 @@ if __name__ == "__main__":
     results = []
     for dataset, dataset_path in cfg["prompt_paths"]:
         for model in cfg["models"]:
-            dataset_cost = cost(dataset_path, cfg["outtokens_per_prompt"], model)
-            results.append({"Dataset": dataset, "Model": model, "Cost": dataset_cost})
+            dataset_cost, cost_per_pair = cost(
+                dataset_path, cfg["outtokens_per_prompt"], model
+            )
+            results.append(
+                {
+                    "Dataset": dataset,
+                    "Model": model,
+                    "Cost": dataset_cost,
+                    "Cost per Pair": cost_per_pair,
+                }
+            )
     # Create a DataFrame from the results
     df = pd.DataFrame(results)
-    print(df)
+    df = rename_datasets(df, False)
+    # get results where model = "gpt-3.5-turbo-instruct"
+    df = df[df["Model"] == "gpt-3.5-turbo-instruct"]
+    # leave out model column
+    df = df.drop(columns=["Model"])
+
+    s = df.style
+    s.format(subset=["Cost"], formatter="{:,.2f}\$", escape="latex")
+    s.format(subset=["Cost per Pair"], formatter="{:,.5f}\$", escape="latex")
+    s.hide(axis="index")
+    # generate latex table, save to file
+    s.to_latex(EVAL_FOLDER_PATH / "llm_matcher" / "costs.ltx", hrules=True)
+    print(s.to_latex())
