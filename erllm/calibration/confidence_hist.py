@@ -1,10 +1,13 @@
+import math
+from typing import Optional
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from pathlib import Path
+
 from erllm import FIGURE_FOLDER_PATH, RUNS_FOLDER_PATH
 from erllm.llm_matcher.evalrun import read_run
-from erllm.utils import my_setup_plt
+from erllm.utils import my_setup_plt, rename_datasets
 
 
 CONFIGURATIONS = {
@@ -36,6 +39,38 @@ def hist_plot(df: pd.DataFrame, save_to: Path):
     # g.fig.subplots_adjust(top=0.9)
     # g.fig.suptitle("Metrics vs Threshold for Different Datasets", fontsize=16)
     g.figure.savefig(save_to)
+    g.figure.clf()
+
+
+def plot_multiple_ds(df: pd.DataFrame, col_wrap: Optional[int], save_to: Path):
+    """
+    Generate and save a line plot for all datasets based on a specific relation.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the data to be plotted.
+        relname (str): The name of the relation to be plotted.
+        relation (dict): A dictionary specifying the x and y axes, as well as labels for the plot.
+
+    Returns:
+        None: The function saves the generated plot as a PNG file in the save_to directory.
+    """
+
+    num_datasets = len(df["Dataset"].unique())
+    if not col_wrap:
+        col_wrap = int(math.sqrt(num_datasets))
+    g = sns.displot(
+        data=df,
+        x="probabilities",
+        hue="outcome",
+        multiple="stack",
+        bins=10,
+        col="Dataset",
+        col_wrap=col_wrap,
+        facet_kws={"sharex": False, "sharey": False},
+    )
+    g.set_titles(col_template="{col_name}")
+    g.set_axis_labels("Confidence", "Count")
+    g.savefig(save_to)
 
 
 def confidence_outcome(
@@ -78,9 +113,10 @@ if __name__ == "__main__":
         # ("FN",),
         # ("TP", "FN"),
         # ("TN", "FP"),
-        ("TP", "FP"),
+        ("TP", "FN"),
         # ("TP", "TN", "FP", "FN"),
     ]
+    confidence_outcome_df = rename_datasets(confidence_outcome_df, False)
     # Create histograms for all datasets
     for c in combinations:
         df = confidence_outcome_df[confidence_outcome_df["outcome"].isin(c)]
@@ -88,22 +124,39 @@ if __name__ == "__main__":
             df,
             cfg["outfolder"] / f"confidence_histogram_all_datasets_{''.join(c)}.png",
         )
+        subset_df = confidence_outcome_df[
+            confidence_outcome_df["Dataset"].isin(["Dblp-Scholar", "Walmart-Amazon"])
+        ]
+        subset_df = subset_df[confidence_outcome_df["outcome"].isin(c)]
+        plot_multiple_ds(
+            subset_df,
+            2,
+            cfg["outfolder"] / f"confidence_histogram_selected_datasets.png",
+        )
 
     """
     # Create histograms for each individual dataset
     datasets = confidence_outcome_df["Dataset"].unique()
     for dataset in datasets:
-        plt.figure(figsize=(12, 6))
-        subset_df = confidence_outcome_df[confidence_outcome_df["Dataset"] == dataset]
-        sns.histplot(
-            data=subset_df, x="probabilities", hue="outcome", multiple="stack", bins=20
-        )
-        plt.title(
-            f"Confidence Outcome Histogram for {dataset} Dataset ({cfg_name} Configuration)"
-        )
-        plt.xlabel("Probabilities")
-        plt.ylabel("Frequency")
-        plt.legend(title="Outcome")
-        plt.savefig(cfg["outfolder"] / f"confidence_histogram_{dataset}.png")
-        plt.show()
+        for c in combinations:
+            subset_df = confidence_outcome_df[
+                confidence_outcome_df["Dataset"] == dataset
+            ]
+            subset_df = subset_df[confidence_outcome_df["outcome"].isin(c)]
+            # plt.figure(figsize=(12, 6))
+            g = sns.histplot(
+                data=subset_df,
+                x="probabilities",
+                hue="outcome",
+                multiple="stack",
+                bins=20,
+            )
+            # plt.title(
+            #     f"Confidence Outcome Histogram for {dataset} Dataset ({cfg_name} Configuration)"
+            # )
+            # plt.xlabel("Probabilities")
+            # plt.ylabel("Frequency")
+            # plt.legend(title="Outcome")
+            g.figure.savefig(cfg["outfolder"] / f"confidence_histogram_{dataset}.png")
+            g.figure.clf()
     """
