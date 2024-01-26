@@ -13,3 +13,4 @@ prompt_data
 prompts/
 runs/
 trash
+.DS_Store
