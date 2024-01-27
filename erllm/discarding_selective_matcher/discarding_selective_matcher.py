@@ -122,6 +122,8 @@ def eval_discarding_selective_matcher(
     ) = discarding_selective_matcher(
         discard_fraction, label_fraction, runfile, simfile, sim_function
     )
+    n_discarded = len(discarded_pairs)
+    discarded_fn = [completions[p].truth for p in discarded_pairs].count(True)
     predictions_list = []
     truths_list = []
     for id_pair, cp in completions.items():
