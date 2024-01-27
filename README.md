@@ -4,7 +4,7 @@ Install the conda environment.
 conda env create -f environment.yml
 conda activate erllm
 # avoid cuda coming with sentence-transformer, pytorch is already installed by environment.yml
-(erllm) pip install --no-deps sentence-transformers
+(erllm) pip install --no-deps sentence-transformers==2.2.2
 (erllm) python erllm_setup.py
 ```
 
