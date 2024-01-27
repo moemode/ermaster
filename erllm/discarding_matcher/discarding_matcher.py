@@ -58,7 +58,7 @@ def discarding_matcher(
     # subtract time which discarded pairs took for LLM completion
     llm_duration = duration_llm_matcher - sum(map(lambda cp: cp.duration, discarded))
     duration = llm_duration
-    # if duration taken for similarity computation are available add these to duration_remaining
+    # if duration taken for similarity computation are available add these to duration
     sim_duration = -1
     if sim_function + "_dur" in similarities.columns:
         sim_duration = sum(similarities[sim_function + "_dur"])

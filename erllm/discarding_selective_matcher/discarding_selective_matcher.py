@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 from erllm import RUNS_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 from erllm.discarding_matcher.discarding_matcher import find_matching_csv
+from erllm.llm_matcher.cost import str_cost
 from erllm.llm_matcher.evalrun import CompletedPrompt, read_run_raw
 
 
@@ -42,9 +43,7 @@ def discarding_selective_matcher(
     )
     predictions.update({pair_id: False for pair_id in discarded_pairs})
     assert len(predictions) == len(dataset_pair_ids)
-    assert len(discarded_pairs) + len(llm_pairs) + len(human_label_pairs) == len(
-        dataset_pair_ids
-    )
+    assert len(discarded_pairs) + len(llm_pairs) == len(dataset_pair_ids)
     return (
         predictions,
         discarded_pairs,
@@ -98,10 +97,62 @@ def selective_matcher(
     sorted_completions = sorted(completions.values(), key=lambda cp: cp.probability)
     least_confident_ids = set((cp.id0, cp.id1) for cp in sorted_completions[:n_label])
     threshold = sorted_completions[n_label - 1].probability if n_label > 0 else 0
-    llm_ids = set(completions.keys()) - least_confident_ids
+    llm_ids = set(completions.keys())
     for id_pair in least_confident_ids:
         predictions[id_pair] = completions[id_pair].truth
     return predictions, llm_ids, least_confident_ids, threshold
+
+
+def llm_cost_duration(pairs, completions, outtokens_per_prompt, model):
+    prompts = [completions[p].prompt_string for p in pairs]
+    # cost of running basic matcher without discarder
+    cost = str_cost(prompts, outtokens_per_prompt, model)
+    duration = sum([completions[p].duration for p in pairs])
+    return cost, duration
+
+
+def discarder_duration(pairs, simfile, sim_function):
+    similarities = pd.read_csv(simfile)
+    # cost of running basic matcher without discarder
+    sims_for_pairs = similarities[
+        similarities.apply(
+            lambda row: (row["table1.id"], row["table2.id"]) in pairs, axis=1
+        )
+    ]
+    assert len(sims_for_pairs) == len(pairs)
+    duration = sims_for_pairs[sim_function + "_dur"].sum()
+    return duration
+
+
+def intermediate_stats(
+    completions: Dict[tuple[int, int], CompletedPrompt],
+    discarded_pairs: Set[tuple[int, int]],
+    llm_pairs: Set[tuple[int, int]],
+    human_label_pairs: Set[tuple[int, int]],
+    simfile: Path,
+    sim_function: str,
+):
+    all_pairs = set(completions.keys())
+    n_discarded = len(discarded_pairs)
+    discarder_dur = discarder_duration(discarded_pairs, simfile, sim_function)
+    discarded_fn = [completions[p].truth for p in discarded_pairs].count(True)
+    llm_all_cost, llm_all_duration = llm_cost_duration(
+        all_pairs, completions, 1, "gpt-3.5-turbo-instruct"
+    )
+    llm_cost, llm_duration = llm_cost_duration(
+        llm_pairs, completions, 1, "gpt-3.5-turbo-instruct"
+    )
+    n_manual = len(human_label_pairs)
+    return {
+        "Discarded": n_discarded,
+        "Discarded FN": discarded_fn,
+        "Discarder Duration": discarder_dur,
+        "LLM All Cost": llm_all_cost,
+        "LLM All Duration": llm_all_duration,
+        "LLM Cost": llm_cost,
+        "LLM Duration": llm_duration,
+        "Manual": n_manual,
+    }
 
 
 def eval_discarding_selective_matcher(
@@ -122,14 +173,22 @@ def eval_discarding_selective_matcher(
     ) = discarding_selective_matcher(
         discard_fraction, label_fraction, runfile, simfile, sim_function
     )
-    n_discarded = len(discarded_pairs)
-    discarded_fn = [completions[p].truth for p in discarded_pairs].count(True)
+    intermediate = intermediate_stats(
+        completions,
+        discarded_pairs,
+        llm_pairs,
+        human_label_pairs,
+        simfile,
+        sim_function,
+    )
+    # align predictions with truths to compute classification metrics
     predictions_list = []
     truths_list = []
     for id_pair, cp in completions.items():
         predictions_list.append(predictions[id_pair])
         truths_list.append(cp.truth)
     return {
+        **intermediate,
         "Discarder Threshold": disc_threshold,
         "Confidence Threshold": conf_threshold,
         "Accuracy": accuracy_score(truths_list, predictions_list),
