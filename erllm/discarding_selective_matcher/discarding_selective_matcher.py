@@ -189,6 +189,7 @@ def eval_discarding_selective_matcher(
         truths_list.append(cp.truth)
     return {
         **intermediate,
+        "N": len(completions),
         "Discarder Threshold": disc_threshold,
         "Confidence Threshold": conf_threshold,
         "Accuracy": accuracy_score(truths_list, predictions_list),

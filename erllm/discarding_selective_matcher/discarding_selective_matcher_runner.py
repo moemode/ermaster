@@ -25,27 +25,31 @@ CONFIGURATIONS = {
         "discard_fractions": np.arange(0.0, 1 + 0.01, 0.01),
         "outfolder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "grid",
     },
+    "recommended": {
+        "runfiles": RUNS_FOLDER_PATH / "35_base",
+        "similarities": SIMILARITIES_FOLDER_PATH,
+        # tuples of discard fraction followed by label fraction
+        "params": [(0.0, 0.0), (0.8, 0.0), (0.0, 0.15), (0.8, 0.15), (0.5, 0.15)],
+        "outfolder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "recommended",
+    },
 }
 
 
 def discarding_selective_matcher_runner(
     runfiles: Iterable[Path],
     similarity_files: Iterable[Path],
-    label_fractions: Iterable[float],
-    discard_fractions: Iterable[float],
+    params: Iterable[tuple[float, float]],
     outfile: Optional[Path] = None,
 ):
     results = []
     for path in runfiles:
-        params = list(itertools.product(label_fractions, discard_fractions))
-        for label_fraction, discard_fraction in tqdm(params):
+        for discard_fraction, label_fraction in tqdm(params):
             if label_fraction + discard_fraction > 1:
                 continue
             dataset_name = path.stem.split("-")[0]
             simPath = find_matching_csv(path, similarity_files)
             if not simPath:
                 raise ValueError(f"No matching similarity file found for {path}")
-
             r = eval_discarding_selective_matcher(
                 discard_fraction, label_fraction, path, simPath
             )
@@ -60,14 +64,18 @@ def discarding_selective_matcher_runner(
 
 
 if __name__ == "__main__":
-    cfg_name = "basic-cmp"
+    cfg_name = "recommended"
     cfg = CONFIGURATIONS[cfg_name]
     cfg["outfolder"].mkdir(parents=True, exist_ok=True)
+    params = cfg.get("params")
+    if not params:
+        params = list(
+            itertools.product(cfg["discard_fractions"], cfg["label_fractions"])
+        )
     result = discarding_selective_matcher_runner(
         list(cfg["runfiles"].glob("*.json")),
         list(Path(cfg["similarities"]).glob("*-allsim.csv")),
-        cfg["label_fractions"],
-        cfg["discard_fractions"],
+        params,
     )
     result.to_csv(cfg["outfolder"] / "result.csv", index=False)
     # Group by Label Fraction, Discard Fraction, and Method
