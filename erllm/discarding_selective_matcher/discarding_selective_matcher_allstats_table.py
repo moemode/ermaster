@@ -13,8 +13,19 @@ CONFIGURATIONS = {
 }
 
 
-def format_percentages(c):
-    return f"{c*100:.0f}\%"
+def format_percentages(c, decimals=0):
+    return f"{c*100:.{decimals}f}\%"
+
+
+COLUMN_SHORTHANDS = {
+    "Discard Fraction": "Discard",
+    "Label Fraction": "Label",
+    "Discarding Error": "Disc. Error",
+    "Duration": "Time (s)",
+    "LLM Cost": "LLM Cost ($)",
+    "Recall": "Rec.",
+    "Precision": "Prec.",
+}
 
 
 def prepare_data(
@@ -84,14 +95,12 @@ def build_table(df: pd.DataFrame, save_to: Path):
         format_percentages
     )
     table_df["Label Fraction"] = table_df["Label Fraction"].apply(format_percentages)
-    table_df["Discarding Error"] = (table_df["Discarding Error"] * 100).round(2)
+    table_df["Discarding Error"] = table_df["Discarding Error"].apply(
+        format_percentages, decimals=2
+    )
     # convert Discarding Error to string map nan to '-'
     table_df["Discarding Error"] = (
-        table_df["Discarding Error"].astype(str).replace("nan", "-")
-    )
-    # if not nan add %
-    table_df["Discarding Error"] = table_df["Discarding Error"].apply(
-        lambda x: x + "\%" if x != "-" else x
+        table_df["Discarding Error"].astype(str).replace("nan\%", "-")
     )
     # add new column as first column
     table_df.insert(0, "Purpose", "Example Purpose")
@@ -103,15 +112,11 @@ def build_table(df: pd.DataFrame, save_to: Path):
     table_df["Recall"] = table_df["Recall"].round(2)
     table_df["Precision"] = table_df["Precision"].round(2)
     table_df["F1"] = table_df["F1"].round(2)
-    s = table_df.style
-    # get all rows where Label Fraction is not 0\% as slice
-    df_ = table_df[table_df["Label Fraction"] != "0\%"]
-    slice_ = pd.IndexSlice[df_.index, "Label Fraction"]
-    # make all cells in Label Fraction column yellow when they do not contain '0\%'
-    s.set_properties(**{"background-color": "lightyellow"}, subset=slice_)
+    # map column names to shorthands
+    table_df = table_df.rename(columns=COLUMN_SHORTHANDS)
+    s = highlight_cells(table_df)
     s.format(precision=2)
     s.hide()
-    # do not show index
     ltable = s.to_latex(
         save_to / f"allstats_table.tex",
         convert_css=True,
@@ -167,6 +172,16 @@ def build_table(df: pd.DataFrame, save_to: Path):
     # Print or save the LaTeX table
     return latex_table
     """
+
+
+def highlight_cells(table_df):
+    cname = COLUMN_SHORTHANDS["Label Fraction"]
+    s = table_df.style
+    df_ = table_df[table_df[cname] != "0\%"]
+    slice_ = pd.IndexSlice[df_.index, cname]
+    # make all cells in Label Fraction column yellow when they do not contain '0\%'
+    s.set_properties(**{"background-color": "lightyellow"}, subset=slice_)
+    return s
 
 
 if __name__ == "__main__":
