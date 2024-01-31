@@ -17,9 +17,9 @@ def format_percentages(c):
     return f"{c*100:.0f}\%"
 
 
-def build_table(
+def prepare_data(
     df: pd.DataFrame, order: Iterable[tuple[float, float]], save_to: Path
-) -> str:
+) -> pd.DataFrame:
     df["Discarding Error"] = df["Discarded FN"] / df["Discarded"]
     df["Duration"] = df["Discarder Duration"] + df["LLM Duration"]
     df["Speedup"] = 1 - df["Duration"] / df["LLM All Duration"]
@@ -60,10 +60,67 @@ def build_table(
     ]
     # order rows by Config ID
     result_df = result_df.sort_values("Config ID")
-
     # Save the result to a CSV file
     result_df.to_csv(save_to / "allstats.csv", index=False)
-    return "hi"
+    return result_df
+
+
+def build_table(df: pd.DataFrame, save_to: Path):
+    table_df = df[
+        [
+            "Discard Fraction",
+            "Label Fraction",
+            "Discarding Error",
+            "LLM Cost",
+            "Duration",
+            "Recall",
+            "Precision",
+            "F1",
+        ]
+    ]
+
+    # apply format_percentages to Discard Fraction and Label Fraction
+    table_df["Discard Fraction"] = table_df["Discard Fraction"].apply(
+        format_percentages
+    )
+    table_df["Label Fraction"] = table_df["Label Fraction"].apply(format_percentages)
+    table_df["Discarding Error"] = (table_df["Discarding Error"] * 100).round(2)
+    # convert Discarding Error to string map nan to '-'
+    table_df["Discarding Error"] = (
+        table_df["Discarding Error"].astype(str).replace("nan", "-")
+    )
+    # if not nan add %
+    table_df["Discarding Error"] = table_df["Discarding Error"].apply(
+        lambda x: x + "\%" if x != "-" else x
+    )
+    # add new column as first column
+    table_df.insert(0, "Purpose", "Example Purpose")
+    # Round LLM Cost to 2 decimal places
+    table_df["LLM Cost"] = table_df["LLM Cost"].round(2)
+    # Round Duration to 0 decimal places as int
+    table_df["Duration"] = table_df["Duration"].round(0).astype(int)
+    # Round Recall, Precision, and F1 to 2 decimal places
+    table_df["Recall"] = table_df["Recall"].round(2)
+    table_df["Precision"] = table_df["Precision"].round(2)
+    table_df["F1"] = table_df["F1"].round(2)
+    s = table_df.style
+    # get all rows where Label Fraction is not 0\% as slice
+    df_ = table_df[table_df["Label Fraction"] != "0\%"]
+    slice_ = pd.IndexSlice[df_.index, "Label Fraction"]
+    # make all cells in Label Fraction column yellow when they do not contain '0\%'
+    s.set_properties(**{"background-color": "lightyellow"}, subset=slice_)
+    s.format(precision=2)
+    s.hide()
+    # do not show index
+    ltable = s.to_latex(
+        save_to / f"allstats_table.tex",
+        convert_css=True,
+        hrules=True,
+        position_float="centering",
+        multicol_align="c",
+        caption=f"Test",
+    )
+    print(table_df)
     """
     # Calculate mean for each metric
     df = df[metric].mean().reset_index()
@@ -116,4 +173,5 @@ if __name__ == "__main__":
     cfg_name = "recommended"
     cfg = CONFIGURATIONS[cfg_name]
     df = pd.read_csv(cfg["result_folder"] / "result.csv")
-    build_table(df, cfg["order"], cfg["result_folder"])
+    tdf = prepare_data(df, cfg["order"], cfg["result_folder"])
+    build_table(tdf, cfg["result_folder"])
