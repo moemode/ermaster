@@ -22,7 +22,7 @@ COLUMN_SHORTHANDS = {
     "Label Fraction": "Label",
     "Discarding Error": "Disc. Error",
     "Duration": "Time (s)",
-    "LLM Cost": "LLM Cost ($)",
+    "LLM Cost": "LLM Cost (\$)",
     "Recall": "Rec.",
     "Precision": "Prec.",
 }
@@ -175,12 +175,38 @@ def build_table(df: pd.DataFrame, save_to: Path):
 
 
 def highlight_cells(table_df):
-    cname = COLUMN_SHORTHANDS["Label Fraction"]
+    cname_label_fraction = COLUMN_SHORTHANDS["Label Fraction"]
+    cname_discard_error = COLUMN_SHORTHANDS["Discarding Error"]
+    cname_llm_cost = COLUMN_SHORTHANDS["LLM Cost"]
+    cname_duration = COLUMN_SHORTHANDS["Duration"]
+
     s = table_df.style
-    df_ = table_df[table_df[cname] != "0\%"]
-    slice_ = pd.IndexSlice[df_.index, cname]
-    # make all cells in Label Fraction column yellow when they do not contain '0\%'
-    s.set_properties(**{"background-color": "lightyellow"}, subset=slice_)
+    df_label_fraction = table_df[table_df[cname_label_fraction] == "0\%"]
+    green_label_fraction = pd.IndexSlice[df_label_fraction.index, cname_label_fraction]
+    yellow_label_fraction = pd.IndexSlice[
+        table_df.index.difference(df_label_fraction.index), cname_label_fraction
+    ]
+    s.set_properties(**{"background-color": "lightgreen"}, subset=green_label_fraction)
+    s.set_properties(
+        **{"background-color": "lightyellow"}, subset=yellow_label_fraction
+    )
+
+    df_discard_error = table_df[table_df[cname_discard_error] == "-"]
+    green_discard_error = pd.IndexSlice[df_discard_error.index, cname_discard_error]
+    yellow_discard_error = pd.IndexSlice[
+        table_df.index.difference(df_discard_error.index), cname_discard_error
+    ]
+    s.set_properties(**{"background-color": "lightgreen"}, subset=green_discard_error)
+    s.set_properties(**{"background-color": "lightyellow"}, subset=yellow_discard_error)
+    # color llm cost and duration
+    max_llm_cost_value = table_df[cname_llm_cost].max()
+    df_llm_cost = table_df[table_df[cname_llm_cost] != max_llm_cost_value]
+    green_llm_cost = pd.IndexSlice[df_llm_cost.index, [cname_llm_cost, cname_duration]]
+    yellow_llm_cost = pd.IndexSlice[
+        table_df.index.difference(df_llm_cost.index), [cname_llm_cost, cname_duration]
+    ]
+    s.set_properties(**{"background-color": "lightgreen"}, subset=green_llm_cost)
+    s.set_properties(**{"background-color": "lightyellow"}, subset=yellow_llm_cost)
     return s
 
 
