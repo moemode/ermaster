@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Iterable
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
 
@@ -7,6 +8,7 @@ CONFIGURATIONS = {
         "result_folder": EVAL_FOLDER_PATH
         / "discarding_selective_matcher"
         / "recommended",
+        "order": [(0.0, 0.0), (0.8, 0.0), (0.0, 0.15), (0.8, 0.15), (0.5, 0.15)],
     },
 }
 
@@ -15,7 +17,9 @@ def format_percentages(c):
     return f"{c*100:.0f}\%"
 
 
-def build_table(df: pd.DataFrame, save_to: Path) -> str:
+def build_table(
+    df: pd.DataFrame, order: Iterable[tuple[float, float]], save_to: Path
+) -> str:
     df["Discarding Error"] = df["Discarded FN"] / df["Discarded"]
     df["Duration"] = df["Discarder Duration"] + df["LLM Duration"]
     df["Speedup"] = 1 - df["Duration"] / df["LLM All Duration"]
@@ -30,6 +34,7 @@ def build_table(df: pd.DataFrame, save_to: Path) -> str:
                 "Recall": "mean",
                 "Precision": "mean",
                 "F1": "mean",
+                "Config ID": "first",
             }
         )
         .reset_index()
@@ -53,6 +58,8 @@ def build_table(df: pd.DataFrame, save_to: Path) -> str:
     result_df["F1 Change"] = (result_df["F1"] - reference_row["F1"]) / reference_row[
         "F1"
     ]
+    # order rows by Config ID
+    result_df = result_df.sort_values("Config ID")
 
     # Save the result to a CSV file
     result_df.to_csv(save_to / "allstats.csv", index=False)
@@ -109,4 +116,4 @@ if __name__ == "__main__":
     cfg_name = "recommended"
     cfg = CONFIGURATIONS[cfg_name]
     df = pd.read_csv(cfg["result_folder"] / "result.csv")
-    build_table(df, cfg["result_folder"])
+    build_table(df, cfg["order"], cfg["result_folder"])

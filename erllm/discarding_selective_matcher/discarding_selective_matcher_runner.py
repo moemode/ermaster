@@ -43,7 +43,7 @@ def discarding_selective_matcher_runner(
 ):
     results = []
     for path in runfiles:
-        for discard_fraction, label_fraction in tqdm(params):
+        for param_num, (discard_fraction, label_fraction) in tqdm(enumerate(params)):
             if label_fraction + discard_fraction > 1:
                 continue
             dataset_name = path.stem.split("-")[0]
@@ -53,6 +53,7 @@ def discarding_selective_matcher_runner(
             r = eval_discarding_selective_matcher(
                 discard_fraction, label_fraction, path, simPath
             )
+            r["Config ID"] = param_num
             r["Dataset"] = dataset_name
             r["Label Fraction"] = label_fraction
             r["Discard Fraction"] = discard_fraction
