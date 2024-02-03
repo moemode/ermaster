@@ -98,6 +98,7 @@ def prompt_data_to_prompt_dict(
     save_to: Path = PROMPTS_FOLDER_PATH,
 ) -> None:
     """
+    Wrapper around prompt_dict.
     Convert serialized entity pairs from a JSON file to a JSON file containing full prompts.
     The function reads serialized entity pairs from a JSON file specified by 'prompt_data_fp'.
     It converts the serialized data into a dictionary representing full prompts using the 'prompt_dict' function.

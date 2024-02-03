@@ -27,6 +27,13 @@ class Entity(dict):
     def __hash__(self):
         return hash(self.id)
 
+    def to_ditto_str(self) -> str:
+        order = self.order
+        if order is None:
+            order = sorted(self.keys())
+        col_vals = (f"COL {key} VAL {self[key].lower()}" for key in order)
+        return " ".join(col_vals)
+
 
 def to_str(e: Entity, include_keys=False) -> str:
     """
