@@ -127,3 +127,13 @@ class OrderedEntity(OrderedDict):
             str: String representation of values.
         """
         return " ".join(str(value) for value in self.values())
+
+    def ffm_wrangle_string(self) -> str:
+        """
+        Get a string representation of the values according to paper
+        "Can Foundation Models Wrangle Your Data?".
+
+        Returns:
+            str: String representation of values in the format attr1 : val1 . . . attr𝑚 : val𝑚
+        """
+        return " ".join(f"{name}:{value}" for name, value in self.items())

@@ -40,12 +40,18 @@ CONFIGURATIONS = {
     "default": {
         "save_to": Path(PROMPT_DATA_FOLDER_PATH),
         "dataset_paths": [DATASET_FOLDER_PATH / dataset for dataset in DATASET_NAMES],
-    }
+        "to_str": lambda e: e.value_string(),
+    },
+    "with-attr-names": {
+        "save_to": Path(PROMPT_DATA_FOLDER_PATH) / "wattr_names",
+        "dataset_paths": [DATASET_FOLDER_PATH / dataset for dataset in DATASET_NAMES],
+        "to_str": lambda e: e.ffm_wrangle_string(),
+    },
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["default"]
-    datasets, save_to = cfg["dataset_paths"], cfg["save_to"]
+    cfg = CONFIGURATIONS["with-attr-names"]
+    datasets, save_to, to_str = cfg["dataset_paths"], cfg["save_to"], cfg["to_str"]
     save_to.mkdir(parents=True, exist_ok=True)
     for folder in datasets:
-        dataset_to_prompt_data(folder, save_to)
+        dataset_to_prompt_data(folder, save_to, to_str)
