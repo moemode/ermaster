@@ -145,6 +145,15 @@ CONFIGURATIONS = {
         "postfix": "",
         "save_to": PROMPTS_FOLDER_PATH,
     },
+    "base-wattr-names": {
+        "datasets": [
+            Path(PROMPT_DATA_FOLDER_PATH / "wattr_names" / f"{dataset}.json")
+            for dataset in SAMPLED_DATASET_NAMES
+        ],
+        "prompt_type": "general_complex_force",
+        "postfix": "",
+        "save_to": PROMPTS_FOLDER_PATH / "wattr_names",
+    },
     "hash": {
         "datasets": [
             Path(PROMPT_DATA_FOLDER_PATH / f"{dataset}.json")
@@ -157,7 +166,7 @@ CONFIGURATIONS = {
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["base"]
+    cfg = CONFIGURATIONS["base-wattr-names"]
     cfg["save_to"].mkdir(parents=True, exist_ok=True)
     for dataset in cfg["datasets"]:
         prompt_data_to_prompt_dict(

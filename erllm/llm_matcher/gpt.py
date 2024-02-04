@@ -142,6 +142,9 @@ def get_completions_batch(prompts: list[Prompt], model_params: Dict) -> Iterable
                 "t": prompt.truth,
                 "c": choice,
                 "d": time_spent,
+                "i": r["usage"]["prompt_tokens"],
+                "o": r["usage"]["completion_tokens"],
+                "tt": r["usage"]["total_tokens"],
             }
         start = end
         end = fitting_prefix(start, prompts, model_params)
@@ -201,6 +204,25 @@ CONFIGURATIONS = {
         "description": "1max_token",
         "save_to_folder": RUNS_FOLDER_PATH / "35_base",
     },
+    "gpt35-on-base-wattr-names": {
+        "completions_function": get_completions_batch,
+        "model": "gpt-3.5-turbo-instruct",
+        "prompt_paths": map(
+            lambda d: PROMPTS_FOLDER_PATH
+            / "wattr_names"
+            / f"{d}-general_complex_force.json",
+            SAMPLED_DATASET_NAMES,
+        ),
+        "model_params": dict(
+            model="gpt-3.5-turbo-instruct",
+            max_tokens=1,
+            logprobs=5,
+            temperature=0,
+            seed=0,
+        ),
+        "description": "wattr_names",
+        "save_to_folder": RUNS_FOLDER_PATH / "35_base" / "wattr_names",
+    },
     "gpt35-on-hash": {
         "completions_function": get_completions_batch,
         "model": "gpt-3.5-turbo-instruct",
@@ -240,7 +262,7 @@ CONFIGURATIONS = {
 
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["gpt4-on-base"]
+    cfg = CONFIGURATIONS["gpt35-on-base-wattr-names"]
     for p in cfg["prompt_paths"]:
         run_test(
             p,
