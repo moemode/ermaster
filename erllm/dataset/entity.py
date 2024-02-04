@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import re
+import random
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 
@@ -27,12 +28,33 @@ class Entity(dict):
     def __hash__(self):
         return hash(self.id)
 
-    def to_ditto_str(self) -> str:
+    def get_order(self) -> List[str]:
+        """
+        Get the order of the keys in the Entity.
+
+        Returns:
+            list: The order of the keys.
+        """
         order = self.order
         if order is None:
             order = sorted(self.keys())
+        return order
+
+    def to_ditto_str(self) -> str:
+        order = self.get_order()
         col_vals = (f"COL {key} VAL {self[key].lower()}" for key in order)
         return " ".join(col_vals)
+
+    def ffm_wrangle_string(self) -> str:
+        """
+        Get a string representation of the values according to paper
+        "Can Foundation Models Wrangle Your Data?".
+
+        Returns:
+            str: String representation of values in the format attr1 : val1 . . . attr𝑚 : val𝑚
+        """
+        order = self.get_order()
+        return " ".join(f"{name}:{self[name]}" for name in order)
 
 
 def to_str(e: Entity, include_keys=False) -> str:
@@ -128,7 +150,7 @@ class OrderedEntity(OrderedDict):
         """
         return " ".join(str(value) for value in self.values())
 
-    def ffm_wrangle_string(self) -> str:
+    def ffm_wrangle_string(self, random_order=False) -> str:
         """
         Get a string representation of the values according to paper
         "Can Foundation Models Wrangle Your Data?".
@@ -136,4 +158,7 @@ class OrderedEntity(OrderedDict):
         Returns:
             str: String representation of values in the format attr1 : val1 . . . attr𝑚 : val𝑚
         """
-        return " ".join(f"{name}:{value}" for name, value in self.items())
+        its = list(self.items())
+        if random_order:
+            random.shuffle(its)
+        return " ".join(f"{name}:{value}" for name, value in its)

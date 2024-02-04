@@ -154,6 +154,15 @@ CONFIGURATIONS = {
         "postfix": "",
         "save_to": PROMPTS_FOLDER_PATH / "wattr_names",
     },
+    "base-wattr-names-rndorder": {
+        "datasets": [
+            Path(PROMPT_DATA_FOLDER_PATH / "wattr_names_rnd_order" / f"{dataset}.json")
+            for dataset in filter(lambda x: "dbpedia" not in x, SAMPLED_DATASET_NAMES)
+        ],
+        "prompt_type": "general_complex_force",
+        "postfix": "",
+        "save_to": PROMPTS_FOLDER_PATH / "wattr_names_rnd_order",
+    },
     "hash": {
         "datasets": [
             Path(PROMPT_DATA_FOLDER_PATH / f"{dataset}.json")
@@ -166,7 +175,7 @@ CONFIGURATIONS = {
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["base-wattr-names"]
+    cfg = CONFIGURATIONS["base-wattr-names-rndorder"]
     cfg["save_to"].mkdir(parents=True, exist_ok=True)
     for dataset in cfg["datasets"]:
         prompt_data_to_prompt_dict(

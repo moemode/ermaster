@@ -223,6 +223,25 @@ CONFIGURATIONS = {
         "description": "wattr_names",
         "save_to_folder": RUNS_FOLDER_PATH / "35_base" / "wattr_names",
     },
+    "gpt35-on-base-wattr-names-rnd-order": {
+        "completions_function": get_completions_batch,
+        "model": "gpt-3.5-turbo-instruct",
+        "prompt_paths": map(
+            lambda d: PROMPTS_FOLDER_PATH
+            / "wattr_names_rnd_order"
+            / f"{d}-general_complex_force.json",
+            filter(lambda x: "dbpedia" not in x, SAMPLED_DATASET_NAMES),
+        ),
+        "model_params": dict(
+            model="gpt-3.5-turbo-instruct",
+            max_tokens=1,
+            logprobs=5,
+            temperature=0,
+            seed=0,
+        ),
+        "description": "wattr_names",
+        "save_to_folder": RUNS_FOLDER_PATH / "35_base" / "wattr_names_rnd_order",
+    },
     "gpt35-on-hash": {
         "completions_function": get_completions_batch,
         "model": "gpt-3.5-turbo-instruct",
@@ -262,7 +281,7 @@ CONFIGURATIONS = {
 
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["gpt35-on-base-wattr-names"]
+    cfg = CONFIGURATIONS["gpt35-on-base-wattr-names-rnd-order"]
     for p in cfg["prompt_paths"]:
         run_test(
             p,

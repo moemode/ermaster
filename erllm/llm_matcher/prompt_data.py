@@ -47,10 +47,18 @@ CONFIGURATIONS = {
         "dataset_paths": [DATASET_FOLDER_PATH / dataset for dataset in DATASET_NAMES],
         "to_str": lambda e: e.ffm_wrangle_string(),
     },
+    "with-attr-names-rnd-order": {
+        "save_to": Path(PROMPT_DATA_FOLDER_PATH) / "wattr_names_rnd_order",
+        "dataset_paths": [
+            DATASET_FOLDER_PATH / dataset
+            for dataset in filter(lambda x: "dbpedia" not in x, DATASET_NAMES)
+        ],
+        "to_str": lambda e: e.ffm_wrangle_string(random_order=True),
+    },
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["with-attr-names"]
+    cfg = CONFIGURATIONS["with-attr-names-rnd-order"]
     datasets, save_to, to_str = cfg["dataset_paths"], cfg["save_to"], cfg["to_str"]
     save_to.mkdir(parents=True, exist_ok=True)
     for folder in datasets:
