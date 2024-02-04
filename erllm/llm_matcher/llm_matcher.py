@@ -3,6 +3,7 @@ Provides functions to evaluate the performance of the LLM Mathcer on a set of ru
 It calculates various classification metrics, entropies, and calibration results. 
 The evaluation results are saved as JSON files for individual runs and aggregated into a CSV file for further analysis.
 """
+
 from pathlib import Path
 from typing import Iterable
 import pandas as pd
@@ -47,12 +48,15 @@ if __name__ == "__main__":
     LLM_MATCHER_FOLDER_PATH.mkdir(parents=True, exist_ok=True)
     CONFIGURATIONS = {
         "base": "35_base/*force-gpt*.json",
+        "base_wattr_names": "35_base/wattr_names/*force-gpt*.json",
         "hash": "35_hash/*force_hash-gpt*.json",
         # move the files from 35_base and 35_hash into 35_base_hash if you want this
         "base_hash": "35_base_hash/*.json",
         "gpt4-base": "4_base/*force-gpt*.json",
     }
     for cfg in CONFIGURATIONS.keys():
+        if cfg != "base_wattr_names":
+            continue
         eval_dir(
             Path(RUNS_FOLDER_PATH).glob(CONFIGURATIONS[cfg]),
             save_to=EVAL_FOLDER_PATH / "llm_matcher" / f"{cfg}.csv",
