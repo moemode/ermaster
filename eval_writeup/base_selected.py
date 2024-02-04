@@ -1,12 +1,23 @@
 import sys
 import os
+from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 import pandas as pd
 from writeup_utils import rename_datasets
 
+configurations = {
+    "base": {
+        "fname": "base.csv",
+    },
+    "base-wattr-names": {
+        "fname": "base_wattr_names.csv",
+    },
+}
+
+cfg = configurations["base-wattr-names"]
 # Read in the CSV file into a DataFrame
-df = pd.read_csv("eval/llm_matcher/base.csv")
+df = pd.read_csv(f"eval/llm_matcher/{cfg['fname']}")
 
 df = df[
     [
@@ -17,6 +28,7 @@ df = df[
         # "Accuracy",
     ]
 ]
+outfname = Path(cfg["fname"]).stem + "_selected.csv"
 
 df = rename_datasets(df, preserve_sampled=False)
-df.to_csv("eval_writeup/base_selected.csv", index=False)
+df.to_csv(f"eval_writeup/{outfname}", index=False)
