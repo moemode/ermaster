@@ -55,10 +55,18 @@ CONFIGURATIONS = {
         ],
         "to_str": lambda e: e.ffm_wrangle_string(random_order=True),
     },
+    "with-attr-names-embed-05": {
+        "save_to": Path(PROMPT_DATA_FOLDER_PATH) / "wattr_names_embed_05",
+        "dataset_paths": [
+            DATASET_FOLDER_PATH / dataset
+            for dataset in filter(lambda x: "dbpedia" not in x, DATASET_NAMES)
+        ],
+        "to_str": lambda e: e.embed_values(p_move=0.5, random_order=False),
+    },
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["with-attr-names-rnd-order"]
+    cfg = CONFIGURATIONS["with-attr-names-embed-05"]
     datasets, save_to, to_str = cfg["dataset_paths"], cfg["save_to"], cfg["to_str"]
     save_to.mkdir(parents=True, exist_ok=True)
     for folder in datasets:

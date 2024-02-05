@@ -162,3 +162,33 @@ class OrderedEntity(OrderedDict):
         if random_order:
             random.shuffle(its)
         return " ".join(f"{name}:{value}" for name, value in its)
+
+    def embed_values(self, p_move: float, random_order: bool) -> str:
+        """
+        Get a string representation of the values in the OrderedEntity with a chance of data corruption leading
+         to embedded values.
+        For each attribute we randomly move its value to another random attribute with p_move probability.
+
+        Args:
+            p_move (float, optional): The probability of embedding an attribute value under another attribute.
+
+        Returns:
+            str: String representation of values.
+        """
+        corrupted_copy = OrderedEntity(self.id, self.uri, list(self.items()))
+        moves = []
+        for key, _ in self.items():
+            if random.random() < p_move:
+                # Choose a random attribute to embed the value
+                allowed_target_keys = list(set(self.keys()) - {key})
+                target_key = random.choice(allowed_target_keys)
+                moves.append((key, target_key))
+        for src, _ in moves:
+            corrupted_copy[src] = ""
+        for src, dst in moves:
+            corrupted_copy[dst] += " " + self[src]
+        # in corrupted copy remove attributes which are empty
+        for key in list(corrupted_copy.keys()):
+            if corrupted_copy[key] == "":
+                del corrupted_copy[key]
+        return corrupted_copy.ffm_wrangle_string(random_order)
