@@ -16,9 +16,12 @@ configurations = {
     "base-wattr-names-rnd-order": {
         "fname": "base_wattr_names_rnd_order.csv",
     },
+    "base-wattr-names-embed-05": {
+        "fname": "base_wattr_names_embed_05.csv",
+    },
 }
 
-cfg = configurations["base-wattr-names-rnd-order"]
+cfg = configurations["base-wattr-names-embed-05"]
 # Read in the CSV file into a DataFrame
 df = pd.read_csv(f"eval/llm_matcher/{cfg['fname']}")
 
