@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
@@ -14,9 +14,19 @@
         },
         {
             "name": "Python: Module",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "erllm"
+        },
+        {
+            "name": "Add to Ditto Configs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/erllm/dataset/ditto/add_to_ditto_configs.py",
+            "args": [
+                "/home/v/coding/ditto"
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }
