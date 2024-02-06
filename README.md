@@ -96,7 +96,7 @@ Explores the similarity based discarder in isolation.
 
 
 # Datasets and their Format
-The datasets are available in the repo but we describe how they can be downloaded and put in the right place for completion.
+The datasets are available in the repo but we describe how they can be downloaded and put in the right place for completeness.
 
 ## Dataset Format
 
