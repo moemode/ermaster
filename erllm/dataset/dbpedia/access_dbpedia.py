@@ -1,9 +1,11 @@
 """
 Access the DBPedia SQLite database after it has been created by load_dbpedia.py.
 """
+
+import pandas as pd
 import sqlite3
 import json
-from typing import Any, List
+from typing import Any, List, Iterable
 from erllm import DBFILE_PATH
 from erllm.dataset.entity import Entity
 
@@ -116,3 +118,30 @@ def get_number_of_entries(table: str) -> int:
     count = cursor.fetchone()[0]
     conn.close()
     return count
+
+
+def entities_from_dbpedia_df(
+    df: pd.DataFrame,
+) -> Iterable[tuple[int, Entity, Entity]]:
+    """
+    Extracts entities from a DBpedia CSV file.
+
+    Args:
+        dbpedia_csv (Path): The path to the DBpedia CSV file.
+
+    Returns:
+        Iterable[tuple[Entity, Entity, int]]: A list of tuples containing the entities and their labels.
+    """
+    pair_ids = [
+        (row["table1.id"], row["table2.id"], row["label"]) for _, row in df.iterrows()
+    ]
+    pair_entities = []
+    for id0, id1, label in pair_ids:
+        pair_entities.append(
+            (
+                int(label),
+                get_entity_by_id(id0, "dbpedia0"),
+                get_entity_by_id(id1, "dbpedia1"),
+            )
+        )
+    return pair_entities

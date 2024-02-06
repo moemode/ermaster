@@ -4,7 +4,6 @@ import pandas as pd
 from typing import Iterable, Tuple, Set
 from pathlib import Path
 import random
-from erllm import DATA_FOLDER_PATH
 from erllm.dataset.entity import Entity, OrderedEntity
 
 LabeledPairs = Iterable[
@@ -91,30 +90,3 @@ def sample_df(df: pd.DataFrame, n_pos: int, n_neg: int, seed: int) -> pd.DataFra
     neg = df[df["label"] == 0].sample(n_neg, random_state=seed)
     # Concatenate the positive and negative samples to create the final training set
     return pd.concat([pos, neg])
-
-
-if __name__ == "__main__":
-    label_fraction = 0.15
-    dbpedia1250_csv = (
-        DATA_FOLDER_PATH
-        / "benchmark_datasets/existingDatasets/dbpedia10k_1250/test.csv"
-    )
-    dbpedia10k_csv = (
-        DATA_FOLDER_PATH / "benchmark_datasets/existingDatasets/dbpedia10k/train.csv"
-    )
-    dbpedia_ditto_folder = Path(
-        "/home/v/coding/ermaster/data/benchmark_datasets/ditto/dbpedia"
-    )
-    dbpedia_ditto_folder.mkdir(parents=True, exist_ok=True)
-    dfs = dbpedia_to_train_valid_test(dbpedia1250_csv, dbpedia10k_csv, label_fraction)
-    for df, stem in zip(dfs, ("train", "valid", "test")):
-        entities = entities_from_dbpedia_df(df)
-        ditto_file = dbpedia_ditto_folder / f"{stem}.txt"
-        pairs_to_ditto(entities, ditto_file)
-
-    """
-    df = pd.read_csv(dbpedia1250_csv)
-    labeled_pairs = list(entities_from_dbpedia_csv(df))
-    ditto_file.parent.mkdir(parents=True, exist_ok=True)
-    to_ditto(labeled_pairs, ditto_file)
-    """
