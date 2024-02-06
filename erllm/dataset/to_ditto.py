@@ -49,6 +49,7 @@ def ditto_split(
     seed: int,
 ) -> Tuple[LabeledPairs, LabeledPairs, LabeledPairs]:
     labeled_pairs = set(labeled_pairs)
+    N = len(labeled_pairs)
     pos_ratio = sum(label for label, _, _ in labeled_pairs) / len(labeled_pairs)
     N_train_valid = int(round(len(labeled_pairs) * (train_fraction + valid_fraction)))
     N_train = int(round(len(labeled_pairs) * train_fraction))
@@ -57,7 +58,7 @@ def ditto_split(
     labeled_pairs.difference_update(train)
     valid = sample(labeled_pairs, pos_ratio, N_valid, seed)
     labeled_pairs.difference_update(valid)
-    assert len(train) + len(valid) + len(labeled_pairs) == N_train_valid
+    assert len(train) + len(valid) + len(labeled_pairs) == N
     assert train.intersection(valid) == set()
     assert train.intersection(labeled_pairs) == set()
     assert valid.intersection(labeled_pairs) == set()
