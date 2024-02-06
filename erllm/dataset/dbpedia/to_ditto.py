@@ -30,7 +30,7 @@ def to_ditto(
 
 def entities_from_dbpedia_df(
     df: pd.DataFrame,
-) -> Iterable[tuple[Entity, Entity, int]]:
+) -> Iterable[tuple[int, Entity, Entity]]:
     """
     Extracts entities from a DBpedia CSV file.
 
@@ -47,9 +47,9 @@ def entities_from_dbpedia_df(
     for id0, id1, label in pair_ids:
         pair_entities.append(
             (
+                int(label),
                 get_entity_by_id(id0, "dbpedia0"),
                 get_entity_by_id(id1, "dbpedia1"),
-                label,
             )
         )
     return pair_entities

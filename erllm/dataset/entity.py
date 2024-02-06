@@ -192,3 +192,7 @@ class OrderedEntity(OrderedDict):
             if corrupted_copy[key] == "":
                 del corrupted_copy[key]
         return corrupted_copy.ffm_wrangle_string(random_order)
+
+    def to_ditto_str(self) -> str:
+        col_vals = (f"COL {key} VAL {self[key].lower()}" for (key, val) in self.items())
+        return " ".join(col_vals)
