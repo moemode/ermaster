@@ -4,7 +4,7 @@ import pkgutil
 from erllm.utils import make_markdown_table
 
 
-def discover_modules_with_submodules(root_folder) -> dict[str, str]:
+def discover_modules_with_submodules(root_folder) -> dict[pkgutil.ModuleInfo, str]:
     root_path = Path(root_folder)
     modules = list(pkgutil.walk_packages([str(root_path)]))
     packages = list(filter(lambda module_info: module_info.ispkg, modules))
@@ -13,17 +13,37 @@ def discover_modules_with_submodules(root_folder) -> dict[str, str]:
         docstring = importlib.import_module(pkg.name).__doc__
         if docstring:
             docstring = docstring.strip()
-        pkg_docstring[pkg.name] = docstring
+        pkg_docstring[pkg] = docstring
     return pkg_docstring
+
+
+def get_immediate_submodules(pkg: pkgutil.ModuleInfo):
+    loader = pkgutil.get_loader(pkg.name)
+    pkg_path = Path(loader.get_filename()).parent
+    submodules = []
+    # Iterate through the submodules of the specified package
+    for _, submodule_name, is_pkg in pkgutil.iter_modules([pkg_path]):
+        submodule_path = f"{pkg.name}.{submodule_name}"
+        # Check if the submodule is not a package itself
+        if not is_pkg:
+            submodules.append(submodule_path)
+    return submodules
 
 
 if __name__ == "__main__":
     root_folder = Path(__file__).resolve().parent.parent  # folder of file
     pkg_docstrings = discover_modules_with_submodules(root_folder)
-    pkg_docstring_tbl_array = [("Module", "Purpose")] + list(pkg_docstrings.items())
+    pkg_name_docstrings = map(
+        lambda pkg: (pkg.name, pkg_docstrings[pkg]), pkg_docstrings
+    )
+    pkg_docstring_tbl_array = [("Module", "Purpose")] + list(pkg_name_docstrings)
     mdt = make_markdown_table(pkg_docstring_tbl_array)
     with open("package_docstrings.md", "w") as f:
         f.write(mdt)
+    for pkg, docstring in pkg_docstrings.items():
+        submods = get_immediate_submodules(pkg)
+        print(f"Submodules of {pkg.name}: {submods}")
+
 
 """
 
