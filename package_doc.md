@@ -34,10 +34,10 @@
 
 | Module | Purpose |
 | --- | --- |
-| [entity.py](erllm/dataset/entity.py) |  |
-| [load_ds.py](erllm/dataset/load_ds.py) |  |
-| [sample_ds.py](erllm/dataset/sample_ds.py) |  |
-| [stats_ds.py](erllm/dataset/stats_ds.py) |  |
+| [entity.py](erllm/dataset/entity.py) | Contains Entity and OrderedEntity classes to represent entities and serialize them into strings for use in prompts. |
+| [load_ds.py](erllm/dataset/load_ds.py) | Provides functions for loading benchmark data from CSV files into pandas DataFrames or lists of tuples representing entity pairs. |
+| [sample_ds.py](erllm/dataset/sample_ds.py) | Provides a function for sampling elements from a dataset while preserving the label ratio. |
+| [stats_ds.py](erllm/dataset/stats_ds.py) | This module provides functions to compute dataset statistics like the number of pairs. |
 
 ## Package: erllm.dataset.dbpedia
 
