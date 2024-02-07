@@ -3,7 +3,7 @@
 | Module | Purpose |
 | --- | --- |
 | [erllm](#package-erllm) | Root package. Contains installation, documentation generation and helper code. |
-| [erllm.calibration](#package-erllmcalibration) | Calibration analysis on LLM predictions. |
+| [erllm.calibration](#package-erllmcalibration) | Calibration analysis on entity matching LLM predictions. |
 | [erllm.dataset](#package-erllmdataset) | Covers entity representation, dataset loading, downsampling.  The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled  datasets of matching and non-matching DBpedia entity pairs for benchmarking. |
 | [erllm.dataset.dbpedia](#package-erllmdatasetdbpedia) | Module for loading raw DBPedia data into subsampled csv files |
 | [erllm.dataset.ditto](#package-erllmdatasetditto) | Module for loading raw DBPedia data into subsampled csv files |
@@ -26,9 +26,9 @@
 
 | Module | Purpose |
 | --- | --- |
-| [calibration_plots.py](erllm/calibration/calibration_plots.py) | Performs calibration analysis on language model predictions for different datasets, calculating Brier Score and Expected Calibration Error (ECE).  It generates visualizations of reliability diagrams and saves the calibration metrics in CSV files, organized by model configurations |
-| [confidence_hist.py](erllm/calibration/confidence_hist.py) |  |
-| [reliability_diagrams.py](erllm/calibration/reliability_diagrams.py) | Third party code from https://github.com/hollance/reliability-diagrams with some small changes. Code is licensed under the MIT license: MIT License  Copyright (c) 2020 M.I. Hollemans  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. |
+| [calibration_plots.py](erllm/calibration/calibration_plots.py) | Performs calibration analysis on language model predictions for different datasets. Calculating Brier Score and Expected Calibration Error (ECE). |
+| [confidence_hist.py](erllm/calibration/confidence_hist.py) | Generate histograms of confidence scores per outcome (TP, TN, FP, FN). |
+| [reliability_diagrams.py](erllm/calibration/reliability_diagrams.py) | Third party code from https://github.com/hollance/reliability-diagrams with some small changes. Calibration computation and visualization using reliability diagrams. |
 
 ## Package: erllm.dataset
 

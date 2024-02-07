@@ -1,10 +1,13 @@
+"""
+Generate histograms of confidence scores per outcome (TP, TN, FP, FN).
+"""
+
 import math
 from typing import Optional
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from pathlib import Path
-
 from erllm import FIGURE_FOLDER_PATH, RUNS_FOLDER_PATH
 from erllm.llm_matcher.evalrun import read_run
 from erllm.utils import my_setup_plt, rename_datasets
@@ -18,7 +21,18 @@ CONFIGURATIONS = {
 }
 
 
-def hist_plot(df: pd.DataFrame, save_to: Path):
+def hist_plot(df: pd.DataFrame, save_to: Path) -> None:
+    """
+    Plot a histogram of confidences, distinguish by outcomes (e.g. TP)
+    and save to save_to.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the data.
+        save_to (Path): The path to save the plot.
+
+    Returns:
+        None
+    """
     g = sns.histplot(
         data=df,
         x="probabilities",
@@ -27,22 +41,12 @@ def hist_plot(df: pd.DataFrame, save_to: Path):
         bins=10,
         common_norm=False,
     )
-    """
-    plt.title(f"Confidence Outcome Histogram for {cfg_name} Configuration")
-    plt.xlabel("Probabilities")
-    plt.ylabel("Frequency")
-    plt.legend(title="Outcome")
-    plt.savefig(cfg["outfolder"] / f"confidence_histogram_all_datasets.png")
-    plt.show()
-    """
-    # Adjust layout
-    # g.fig.subplots_adjust(top=0.9)
-    # g.fig.suptitle("Metrics vs Threshold for Different Datasets", fontsize=16)
+
     g.figure.savefig(save_to)
     g.figure.clf()
 
 
-def plot_multiple_ds(df: pd.DataFrame, col_wrap: Optional[int], save_to: Path):
+def plot_multiple_ds(df: pd.DataFrame, col_wrap: Optional[int], save_to: Path) -> None:
     """
     Generate and save a line plot for all datasets based on a specific relation.
 
@@ -76,6 +80,18 @@ def plot_multiple_ds(df: pd.DataFrame, col_wrap: Optional[int], save_to: Path):
 def confidence_outcome(
     truths: np.ndarray, predictions: np.ndarray, probabilities: np.ndarray
 ) -> pd.DataFrame:
+    """
+    Determines the outcome (TP, TN, FP, FN) based on the truth and prediction values.
+
+    Args:
+        truths (np.ndarray): Array of true values.
+        predictions (np.ndarray): Array of predicted values.
+        probabilities (np.ndarray): Array of predicted probabilities.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the truth, prediction, probability, and outcome.
+
+    """
     result_df = pd.DataFrame()
     result_df["truths"] = truths
     result_df["predictions"] = predictions
@@ -117,7 +133,6 @@ if __name__ == "__main__":
         # ("TP", "TN", "FP", "FN"),
     ]
     confidence_outcome_df = rename_datasets(confidence_outcome_df, False)
-    # Create histograms for all datasets
     for c in combinations:
         df = confidence_outcome_df[confidence_outcome_df["outcome"].isin(c)]
         hist_plot(
@@ -128,6 +143,7 @@ if __name__ == "__main__":
             confidence_outcome_df["Dataset"].isin(["Dblp-Scholar", "Walmart-Amazon"])
         ]
         subset_df = subset_df[confidence_outcome_df["outcome"].isin(c)]
+        # create a plot per dataset
         plot_multiple_ds(
             subset_df,
             2,

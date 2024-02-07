@@ -1,5 +1,9 @@
 """
 Third party code from https://github.com/hollance/reliability-diagrams with some small changes.
+Calibration computation and visualization using reliability diagrams.
+"""
+
+"""
 Code is licensed under the MIT license:
 MIT License
 

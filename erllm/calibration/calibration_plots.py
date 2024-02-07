@@ -1,7 +1,8 @@
 """
-Performs calibration analysis on language model predictions for different datasets, calculating Brier Score and Expected Calibration Error (ECE). 
-It generates visualizations of reliability diagrams and saves the calibration metrics in CSV files, organized by model configurations
+Performs calibration analysis on language model predictions for different datasets.
+Calculating Brier Score and Expected Calibration Error (ECE). 
 """
+
 from typing import Dict
 from erllm import EVAL_FOLDER_PATH, FIGURE_FOLDER_PATH, RUNS_FOLDER_PATH
 from sklearn.metrics import brier_score_loss

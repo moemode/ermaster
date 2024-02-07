@@ -1,3 +1,3 @@
 """
-Calibration analysis on LLM predictions.
+Calibration analysis on entity matching LLM predictions.
 """
