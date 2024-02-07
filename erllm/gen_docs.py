@@ -60,6 +60,15 @@ def get_docstring(module_name: str) -> str:
 
 
 def package_table(pkgs: List[pkgutil.ModuleInfo]) -> str:
+    """
+    Generate a table of package names and their corresponding docstrings.
+
+    Args:
+        pkgs (List[pkgutil.ModuleInfo]): A list of package information objects.
+
+    Returns:
+        str: The generated table as a string.
+    """
     pkg_name_docstrings = map(
         lambda pkg: (pkg.name, get_docstring(pkg.name).strip().replace("\n", " ")), pkgs
     )
@@ -85,6 +94,15 @@ def layout_package_table(pkg_name_docstrings: Iterable[Tuple[str, str]]) -> str:
 
 
 def subfile_table(pkg: pkgutil.ModuleInfo) -> str:
+    """
+    Generate a table of subfiles for a given package.
+
+    Args:
+        pkg (pkgutil.ModuleInfo): The package to generate the table for.
+
+    Returns:
+        str: The generated table of subfiles.
+    """
     submods = get_direct_subfiles(pkg)
     submod_docstrings = map(
         lambda submod: (
@@ -133,7 +151,11 @@ def get_doc(all_pkgs_table: str, file_tables: Dict[pkgutil.ModuleInfo, str]):
     return d
 
 
+OUTFILE = "package_doc.md"
 if __name__ == "__main__":
+    """
+    Generate documentation for erllm package.
+    """
     root_folder = Path(__file__).resolve().parent.parent  # folder of file
     pkgs = discover_packages(root_folder)
     all_pkgs_table = package_table(pkgs)
@@ -141,53 +163,5 @@ if __name__ == "__main__":
     for pkg in pkgs:
         file_tables[pkg] = subfile_table(pkg)
     doc = get_doc(all_pkgs_table, file_tables)
-    with open("package_docstrings.md", "w") as f:
+    with open(OUTFILE, "w") as f:
         f.write(doc)
-"""
-
-def discover_modules_with_submodules_old(root_folder):
-    root_module_name = "erllm"
-    root_path = Path(root_folder)
-    modules = list(pkgutil.walk_packages([str(root_path)]))
-    root_module: pkgutil.ModuleInfo = next(
-        filter(lambda module_info: module_info.name == root_module_name, modules)
-    )
-    root_module_path = (
-        root_module.module_finder.path + "/" + root_module.name.replace(".", "/")
-    )
-    module_docstrings = {}
-    module_docstrings[root_module.name] = importlib.import_module(
-        root_module.name
-    ).__doc__
-    submodules = list(pkgutil.walk_packages([root_module.module_finder.path]))
-    packages = list(filter(lambda module_info: module_info.ispkg, submodules))
-    packages.insert(0, root_module)
-    for subpkg in packages:
-        print("Subpackage:", subpkg.name)
-        print("Docstring:", importlib.import_module(subpkg.name).__doc__)
-
-        
-        
-def discover_modules(root_folder):
-    root_path = pathlib.Path(root_folder)
-
-    for module_info in pkgutil.walk_packages([str(root_path)]):
-        module_name = module_info.name
-        module_path = root_path / module_name.replace(".", "/")
-
-        try:
-            module = importlib.import_module(module_name)
-            docstring = module.__doc__
-
-            print(f"Module: {module_name}")
-            print(f"Docstring: {docstring}")
-            print("-" * 50)
-
-        except ImportError as e:
-            print(f"Error importing module {module_name}: {e}")
-
-
-if __name__ == "__main__":
-    root_folder = "."  # Change this to the root folder of your module
-    discover_modules(root_folder)
-"""
