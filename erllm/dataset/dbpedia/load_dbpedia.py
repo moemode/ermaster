@@ -1,7 +1,10 @@
 """
 Reads raw data from specified paths and loads it into SQLite tables. 
 The primary tables store DBpedia entities with key-value pairs, and an additional table stores matching pairs.
+Execute directly to populate the database.
+"""
 
+"""
 Raw File Structure:
 
 - The files `cleanDBPedia1out`, `cleanDBPedia2out` contain the entities.
@@ -22,7 +25,6 @@ Table Structure:
 
 - Matches Table (e.g., dbpedia_matches):
   - Columns: id0 (INTEGER), id1 (INTEGER)
-Note: The file is intended to be executed directly to populate the database.
 """
 
 from pathlib import Path
