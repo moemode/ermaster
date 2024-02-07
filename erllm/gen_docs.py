@@ -1,7 +1,8 @@
 from pathlib import Path
 import importlib
 import pkgutil
-from erllm.utils import make_markdown_table
+
+from erllm.utils import make_markdown_table2
 
 
 def discover_modules_with_submodules(root_folder) -> dict[pkgutil.ModuleInfo, str]:
@@ -12,7 +13,8 @@ def discover_modules_with_submodules(root_folder) -> dict[pkgutil.ModuleInfo, st
     for pkg in packages:
         docstring = importlib.import_module(pkg.name).__doc__
         if docstring:
-            docstring = docstring.strip()
+            # remove all newlines and replace with a single space
+            docstring = docstring.strip().replace("\n", " ")
         pkg_docstring[pkg] = docstring
     return pkg_docstring
 
@@ -37,7 +39,7 @@ if __name__ == "__main__":
         lambda pkg: (pkg.name, pkg_docstrings[pkg]), pkg_docstrings
     )
     pkg_docstring_tbl_array = [("Module", "Purpose")] + list(pkg_name_docstrings)
-    mdt = make_markdown_table(pkg_docstring_tbl_array)
+    mdt = make_markdown_table2(pkg_docstring_tbl_array)
     with open("package_docstrings.md", "w") as f:
         f.write(mdt)
     for pkg, docstring in pkg_docstrings.items():

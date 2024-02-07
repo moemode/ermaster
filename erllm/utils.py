@@ -364,6 +364,25 @@ def contains_word(input_string, word):
     return bool(match)
 
 
+def make_markdown_table2(array):
+    """the same input as above"""
+
+    nl = "\n"
+
+    markdown = nl
+    markdown += f"| {' | '.join(array[0])} |"
+
+    markdown += nl
+    markdown += f"| {' | '.join(['---']*len(array[0]))} |"
+
+    markdown += nl
+    for entry in array[1:]:
+        entry = map(lambda s: "" if not s else s, entry)
+        markdown += f"| {' | '.join(entry)} |{nl}"
+
+    return markdown
+
+
 def make_markdown_table(array, align: str = None):
     """
     Taken from https://gist.github.com/OsKaR31415/955b166f4a286ed427f667cb21d57bfd.
