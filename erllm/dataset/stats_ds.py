@@ -1,3 +1,7 @@
+"""
+This module provides functions to compute dataset statistics like the number of pairs.
+"""
+
 from pathlib import Path
 import pandas as pd
 from erllm import DATASET_FOLDER_PATH, DATASET_NAMES, EVAL_WRITEUP_FOLDER_PATH

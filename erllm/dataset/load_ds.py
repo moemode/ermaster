@@ -1,3 +1,7 @@
+"""
+Provides functions for loading benchmark data from CSV files into pandas DataFrames or lists of tuples representing entity pairs.
+"""
+
 from pathlib import Path
 import pandas as pd
 from typing import List, Tuple

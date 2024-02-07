@@ -1,3 +1,7 @@
+"""
+Provides a function for sampling elements from a dataset while preserving the label ratio.
+"""
+
 from pathlib import Path
 import pandas as pd
 from erllm import DATASET_FOLDER_PATH, ORIGINAL_DATASET_NAMES
