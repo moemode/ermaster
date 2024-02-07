@@ -1,3 +1,7 @@
+"""
+Contains Entity and OrderedEntity classes to represent entities and serialize them into strings for use in prompts.
+"""
+
 from collections import OrderedDict
 import re
 import random
@@ -25,7 +29,13 @@ class Entity(dict):
         if order and len(order) != len(self.keys()):
             raise ValueError("order must contain all keys")
 
-    def __hash__(self):
+    def __hash__(self) -> int:
+        """
+        Calculates the hash value of the entity based on its ID.
+
+        Returns:
+            int: The hash value of the entity.
+        """
         return hash(self.id)
 
     def get_order(self) -> List[str]:
@@ -41,6 +51,12 @@ class Entity(dict):
         return order
 
     def to_ditto_str(self) -> str:
+        """
+        Converts the entity object to a string representation in the format required by Ditto.
+
+        Returns:
+            str: The string representation of the entity.
+        """
         order = self.get_order()
         col_vals = (f"COL {key} VAL {self[key].lower()}" for key in order)
         return " ".join(col_vals)
@@ -120,6 +136,12 @@ class OrderedEntity(OrderedDict):
         self.uri = uri
 
     def __hash__(self) -> int:
+        """
+        Calculate the hash value of the entity based on its ID.
+
+        Returns:
+            int: The hash value of the entity.
+        """
         return hash(self.id)
 
     def tokens(self, include_keys=False, return_set=True) -> Set[str] | List[str]:
@@ -194,5 +216,11 @@ class OrderedEntity(OrderedDict):
         return corrupted_copy.ffm_wrangle_string(random_order)
 
     def to_ditto_str(self) -> str:
+        """
+        Converts the entity object to a string representation in the format required by Ditto.
+
+        Returns:
+            str: The string representation of the entity.
+        """
         col_vals = (f"COL {key} VAL {self[key].lower()}" for (key, val) in self.items())
         return " ".join(col_vals)
