@@ -1,5 +1,6 @@
 """
-Contains helpers and installer.
+Root package.
+Contains installation, documentation generation and helper code.
 """
 
 from pathlib import Path

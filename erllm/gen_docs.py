@@ -1,3 +1,7 @@
+"""
+Generate a package overview table and a table for each package's subfiles in a markdown file.
+"""
+
 from pathlib import Path
 import importlib
 import pkgutil

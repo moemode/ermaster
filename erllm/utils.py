@@ -1,3 +1,7 @@
+"""
+Utility functions for various tasks including file operations, mathematical calculations, and data manipulation.
+"""
+
 import timeit
 from io import TextIOWrapper
 import json
@@ -5,7 +9,7 @@ import math
 import random
 import time
 from pathlib import Path
-from typing import Callable, Dict, Iterable
+from typing import Any, Callable, Dict, Iterable, List, Tuple
 import numpy as np
 import openai
 import pandas as pd
@@ -289,7 +293,19 @@ def classification_metrics(
     return prec, rec, f1, acc
 
 
-def rename_datasets(df, preserve_sampled=True):
+def rename_datasets(df: pd.DataFrame, preserve_sampled=True) -> pd.DataFrame:
+    """
+    Renames the 'Dataset' column in the given DataFrame by removing prefixes,
+    replacing underscores with hyphens, and applying specific replacements.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the 'Dataset' column.
+        preserve_sampled (bool, optional): Whether to preserve the 'Sampled' suffix
+            for values containing '-1250'. Defaults to True.
+
+    Returns:
+        pd.DataFrame: The DataFrame with the 'Dataset' column renamed.
+    """
     # Check if "Dataset" column exists, else use "dataset"
     column_name = "Dataset" if "Dataset" in df.columns else "dataset"
     # Remove prefixes from the selected column
@@ -339,7 +355,18 @@ def my_setup_plt():
     plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
-def measure_execution_time(func, *args, **kwargs):
+def measure_execution_time(func, *args, **kwargs) -> Tuple[float, Any]:
+    """
+    Measures the execution time of a function.
+
+    Args:
+        func: The function to be executed.
+        *args: Positional arguments to be passed to the function.
+        **kwargs: Keyword arguments to be passed to the function.
+
+    Returns:
+        A tuple containing the execution time in seconds and the result of the function.
+    """
     start_time = timeit.default_timer()
     result = func(*args, **kwargs)
     end_time = timeit.default_timer()
@@ -347,7 +374,17 @@ def measure_execution_time(func, *args, **kwargs):
     return duration, result
 
 
-def timed(func):
+def timed(func: Callable) -> Callable:
+    """
+    A decorator that measures the execution time of a function.
+
+    Args:
+        func (Callable): The function to be timed.
+
+    Returns:
+        Callable: The wrapped function that returns the execution time and the result of the original function.
+    """
+
     def wrapper(*args, **kwargs):
         start_time = timeit.default_timer()
         result = func(*args, **kwargs)
@@ -356,7 +393,17 @@ def timed(func):
     return wrapper
 
 
-def contains_word(input_string, word):
+def contains_word(input_string: str, word: str) -> bool:
+    """
+    Check if a word is present in a given input string.
+
+    Args:
+        input_string (str): The input string to search for the word.
+        word (str): The word to search for in the input string.
+
+    Returns:
+        bool: True if the word is found, False otherwise.
+    """
     # Define the pattern using word boundaries (\b) to ensure it's a whole word
     pattern = rf"\b{re.escape(word)}\b"
     # Use re.search to check if the pattern is present in the input string
@@ -364,7 +411,7 @@ def contains_word(input_string, word):
     return bool(match)
 
 
-def make_markdown_table(array: Iterable[Iterable[str]]) -> str:
+def make_markdown_table(array: List[List[str]]) -> str:
     """
     Generates a Markdown table string from a 2D list.
     Taken from https://gist.github.com/m0neysha/219bad4b02d2008e0154.
@@ -375,11 +422,6 @@ def make_markdown_table(array: Iterable[Iterable[str]]) -> str:
 
     Returns:
         str: String to be used in a Markdown file.
-
-    Example Input:
-        [["Name", "Age", "Height"],
-         ["Jake", "20", "5'10"],
-         ["Mary", "21", "5'7"]]
     """
     nl = "\n"
     markdown = nl
@@ -391,61 +433,3 @@ def make_markdown_table(array: Iterable[Iterable[str]]) -> str:
         entry = map(lambda s: "" if not s else s, entry)
         markdown += f"| {' | '.join(entry)} |{nl}"
     return markdown
-
-
-def make_markdown_table_depr(array, align: str = None):
-    """
-    Taken from https://gist.github.com/OsKaR31415/955b166f4a286ed427f667cb21d57bfd.
-    Args:
-        array: The array to make into a table. Mush be a rectangular array
-               (constant width and height).
-        align: The alignment of the cells : 'left', 'center' or 'right'.
-    """
-    # make sure every elements are strings
-    array = [[str(elt) for elt in line] for line in array]
-    # get the width of each column
-    widths = [max(len(line[i]) for line in array) for i in range(len(array[0]))]
-    # make every width at least 3 colmuns, because the separator needs it
-    widths = [max(w, 3) for w in widths]
-    # center text according to the widths
-    array = [[elt.center(w) for elt, w in zip(line, widths)] for line in array]
-
-    # separate the header and the body
-    array_head, *array_body = array
-
-    header = "| " + " | ".join(array_head) + " |"
-
-    # alignment of the cells
-    align = str(align).lower()  # make sure `align` is a lowercase string
-    if align == "none":
-        # we are just setting the position of the : in the table.
-        # here there are none
-        border_left = "| "
-        border_center = " | "
-        border_right = " |"
-    elif align == "center":
-        border_left = "|:"
-        border_center = ":|:"
-        border_right = ":|"
-    elif align == "left":
-        border_left = "|:"
-        border_center = " |:"
-        border_right = " |"
-    elif align == "right":
-        border_left = "| "
-        border_center = ":| "
-        border_right = ":|"
-    else:
-        raise ValueError("align must be 'left', 'right' or 'center'.")
-    separator = (
-        border_left + border_center.join(["-" * w for w in widths]) + border_right
-    )
-
-    # body of the table
-    body = [""] * len(array)  # empty string list that we fill after
-    for idx, line in enumerate(array[1:]):
-        # for each line, change the body at the correct index
-        body[idx] = "| " + " | ".join(line) + " |"
-    body = "\n".join(body)
-
-    return header + "\n" + separator + "\n" + body

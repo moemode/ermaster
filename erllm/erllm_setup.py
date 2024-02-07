@@ -1,13 +1,16 @@
 """
-Generates a .pth file with the absolute path to the parent folder of erllm and adds it to the site-packages directory of the current Python interpreter. 
-This makes erllm behave as if it were a installed third-party packages. 
-Yet it also supports code changes without reinstall.
+Add .pth file to the site-packages directory of the current Python interpreter to make erllm discoverable.
 """
 
 from pathlib import Path
 import site
 
 if __name__ == "__main__":
+    """
+    Generates a .pth file with the absolute path to the parent folder of erllm and adds it to the site-packages directory of the current Python interpreter.
+    This makes erllm behave as if it were a installed third-party packages.
+    Yet it also supports code changes without reinstall.
+    """
     # Get the absolute path of the erllm folder
     script_folder = Path(__file__).resolve().parent.parent
     # Specify the content for the .pth file as the absolute path of the script's folder

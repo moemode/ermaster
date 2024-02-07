@@ -2,7 +2,7 @@
 
 | Module | Purpose |
 | --- | --- |
-| [erllm](#package-erllm) | Contains helpers and installer. |
+| [erllm](#package-erllm) | Root package. Contains installation, documentation generation and helper code. |
 | [erllm.calibration](#package-erllmcalibration) | Calibration analysis on LLM predictions. |
 | [erllm.dataset](#package-erllmdataset) | Covers entity representation, dataset loading, downsampling.  The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled  datasets of matching and non-matching DBpedia entity pairs for benchmarking. |
 | [erllm.dataset.dbpedia](#package-erllmdatasetdbpedia) | Module for loading raw DBPedia data into subsampled csv files |
@@ -18,9 +18,9 @@
 
 | Module | Purpose |
 | --- | --- |
-| [erllm_setup.py](erllm/erllm_setup.py) | Generates a .pth file with the absolute path to the parent folder of erllm and adds it to the site-packages directory of the current Python interpreter.  This makes erllm behave as if it were a installed third-party packages.  Yet it also supports code changes without reinstall. |
-| [gen_docs.py](erllm/gen_docs.py) |  |
-| [utils.py](erllm/utils.py) |  |
+| [erllm_setup.py](erllm/erllm_setup.py) | Add .pth file to the site-packages directory of the current Python interpreter to make erllm discoverable. |
+| [gen_docs.py](erllm/gen_docs.py) | Generate a package overview table and a table for each package's subfiles in a markdown file. |
+| [utils.py](erllm/utils.py) | Utility functions for various tasks including file operations, mathematical calculations, and data manipulation. |
 
 ## Package: erllm.calibration
 
