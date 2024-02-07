@@ -5,7 +5,7 @@ import math
 import random
 import time
 from pathlib import Path
-from typing import Callable, Dict, Iterable
+from typing import Callable, Dict, Iterable, List
 import numpy as np
 import openai
 import pandas as pd
@@ -364,26 +364,36 @@ def contains_word(input_string, word):
     return bool(match)
 
 
-def make_markdown_table2(array):
-    """the same input as above"""
+def make_markdown_table(array: List[List[str]]) -> str:
+    """
+    Generates a Markdown table string from a 2D list.
+    Taken from https://gist.github.com/m0neysha/219bad4b02d2008e0154.
 
+    Args:
+        array (List[List[str]]): Python list with rows of the table as lists.
+            The first element should represent the header.
+
+    Returns:
+        str: String to be used in a Markdown file.
+
+    Example Input:
+        [["Name", "Age", "Height"],
+         ["Jake", "20", "5'10"],
+         ["Mary", "21", "5'7"]]
+    """
     nl = "\n"
-
     markdown = nl
     markdown += f"| {' | '.join(array[0])} |"
-
     markdown += nl
     markdown += f"| {' | '.join(['---']*len(array[0]))} |"
-
     markdown += nl
     for entry in array[1:]:
         entry = map(lambda s: "" if not s else s, entry)
         markdown += f"| {' | '.join(entry)} |{nl}"
-
     return markdown
 
 
-def make_markdown_table(array, align: str = None):
+def make_markdown_table_depr(array, align: str = None):
     """
     Taken from https://gist.github.com/OsKaR31415/955b166f4a286ed427f667cb21d57bfd.
     Args:

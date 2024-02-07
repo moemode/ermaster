@@ -1,8 +1,8 @@
 from pathlib import Path
 import importlib
 import pkgutil
-from typing import Dict, List
-from erllm.utils import make_markdown_table2
+from typing import Dict, List, OrderedDict
+from erllm.utils import make_markdown_table
 
 
 def discover_packages(root_folder) -> List[pkgutil.ModuleInfo]:
@@ -29,6 +29,24 @@ def get_docstring(module_name: str) -> str:
     return "" if not ds else ds
 
 
+def package_table(pkg_name_docstrings):
+    all_pkgs_array = [("Module", "Purpose")]
+    for pkg_name, docstring in pkg_name_docstrings:
+        pkg_cell = f"[{pkg_name}](#package-{pkg_name.replace('.', '')})"
+        all_pkgs_array.append((pkg_cell, docstring))
+    all_pkgs_table = make_markdown_table(all_pkgs_array)
+    return all_pkgs_table
+
+
+def submodule_table(pkg, submod_docstrings):
+    pkg_array = [("Module", "Purpose")]
+    for submod, docstring in submod_docstrings:
+        submod_name = submod.split(".")[-1] + ".py"
+        submod_path = submod.replace(".", "/") + ".py"
+        pkg_array.append((f"[{submod_name}]({submod_path})", docstring))
+    return make_markdown_table(pkg_array)
+
+
 if __name__ == "__main__":
     root_folder = Path(__file__).resolve().parent.parent  # folder of file
     pkgs = discover_packages(root_folder)
@@ -36,13 +54,10 @@ if __name__ == "__main__":
     for pkg in pkgs:
         pkg_docstring[pkg] = get_docstring(pkg.name).strip().replace("\n", " ")
     pkg_name_docstrings = map(lambda pkg: (pkg.name, pkg_docstring[pkg]), pkgs)
-    all_pkgs_array = [("Module", "Purpose")] + list(pkg_name_docstrings)
-    all_pkgs_table = make_markdown_table2(all_pkgs_array)
-    with open("package_docstrings.md", "w") as f:
-        f.write(all_pkgs_table)
+    all_pkgs_table = package_table(pkg_name_docstrings)
     pkg_submods: Dict[pkgutil.ModuleInfo, List[str]] = {}
     submods: List[str] = []
-    pkg_tables = []
+    pkg_tables = OrderedDict()
     for pkg in pkgs:
         submods = get_immediate_submodules(pkg)
         submod_docstrings = list(
@@ -54,13 +69,14 @@ if __name__ == "__main__":
                 submods,
             )
         )
-        pkg_array = [("Module", "Purpose")] + submod_docstrings
-        pkg_table = make_markdown_table2(pkg_array)
-        pkg_tables.append(pkg_table)
+        pkg_table = submodule_table(pkg, submod_docstrings)
+        pkg_tables[pkg] = pkg_table
         print(submod_docstrings)
     with open("package_docstrings.md", "w") as f:
+        f.write("# Package Overview\n")
         f.write(all_pkgs_table)
-        for pkg_table in pkg_tables:
+        for pkg, pkg_table in pkg_tables.items():
+            f.write("\n## Package: " + pkg.name + "\n")
             f.write(pkg_table)
 
 """
