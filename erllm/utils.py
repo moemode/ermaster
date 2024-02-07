@@ -5,7 +5,7 @@ import math
 import random
 import time
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List
+from typing import Callable, Dict, Iterable
 import numpy as np
 import openai
 import pandas as pd
@@ -364,7 +364,7 @@ def contains_word(input_string, word):
     return bool(match)
 
 
-def make_markdown_table(array: List[List[str]]) -> str:
+def make_markdown_table(array: Iterable[Iterable[str]]) -> str:
     """
     Generates a Markdown table string from a 2D list.
     Taken from https://gist.github.com/m0neysha/219bad4b02d2008e0154.
