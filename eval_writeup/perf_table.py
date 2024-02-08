@@ -93,6 +93,12 @@ CONFIGURATIONS = {
         "path": Path("eval_writeup/base_wattr_names_embed_05_selected.csv"),
         "color_columns": ["F1", "Precision", "Recall"],
     },
+    "base_attr_embed_one_ppair": {
+        "column_order": ["F1", "Precision", "Recall"],
+        "sort_by": "F1",
+        "path": Path("eval_writeup/base_wattr_names_embed_one_ppair_selected.csv"),
+        "color_columns": ["F1", "Precision", "Recall"],
+    },
     "base_hash": {
         "column_order": ["F1_Diff", "Precision_Diff", "Recall_Diff"],
         "color_columns": ["F1_Diff", "Precision_Diff", "Recall_Diff"],
@@ -125,7 +131,7 @@ CONFIGURATIONS = {
 }
 if __name__ == "__main__":
     cfg_name = "discarding_matcher_tradeoff_time"
-    cfg_name = "base_attr_embed_05"
+    cfg_name = "base_attr_embed_one_ppair"
     make_table(**CONFIGURATIONS[cfg_name])
 
 """

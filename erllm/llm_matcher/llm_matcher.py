@@ -51,13 +51,14 @@ if __name__ == "__main__":
         "base_wattr_names": "35_base/wattr_names/*force-gpt*.json",
         "base_wattr_names_rnd_order": "35_base/wattr_names_rnd_order/*force-gpt*.json",
         "base_wattr_names_embed_05": "35_base/wattr_names_embed_05/*force-gpt*.json",
+        "base_wattr_names_embed_one_ppair": "35_base/wattr_names_embed_one_ppair/*force-gpt*.json",
         "hash": "35_hash/*force_hash-gpt*.json",
         # move the files from 35_base and 35_hash into 35_base_hash if you want this
         "base_hash": "35_base_hash/*.json",
         "gpt4-base": "4_base/*force-gpt*.json",
     }
     for cfg in CONFIGURATIONS.keys():
-        if cfg != "base_wattr_names_embed_05":
+        if cfg != "base_wattr_names_embed_one_ppair":
             continue
         eval_dir(
             Path(RUNS_FOLDER_PATH).glob(CONFIGURATIONS[cfg]),

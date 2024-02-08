@@ -172,6 +172,19 @@ CONFIGURATIONS = {
         "postfix": "",
         "save_to": PROMPTS_FOLDER_PATH / "wattr_names_embed_05",
     },
+    "base-wattr-names-embed-one-ppair": {
+        "datasets": [
+            Path(
+                PROMPT_DATA_FOLDER_PATH
+                / "wattr_names_embed_one_ppair"
+                / f"{dataset}.json"
+            )
+            for dataset in filter(lambda x: "dbpedia" not in x, SAMPLED_DATASET_NAMES)
+        ],
+        "prompt_type": "general_complex_force",
+        "postfix": "",
+        "save_to": PROMPTS_FOLDER_PATH / "wattr_names_embed_one_ppair",
+    },
     "hash": {
         "datasets": [
             Path(PROMPT_DATA_FOLDER_PATH / f"{dataset}.json")
@@ -184,7 +197,7 @@ CONFIGURATIONS = {
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["base-wattr-names-embed-05"]
+    cfg = CONFIGURATIONS["base-wattr-names-embed-one-ppair"]
     cfg["save_to"].mkdir(parents=True, exist_ok=True)
     for dataset in cfg["datasets"]:
         prompt_data_to_prompt_dict(
