@@ -4,6 +4,7 @@ Contains Entity and OrderedEntity classes to represent entities and serialize th
 
 from collections import OrderedDict
 import re
+import numpy as np
 import random
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
@@ -185,7 +186,7 @@ class OrderedEntity(OrderedDict):
             random.shuffle(its)
         return " ".join(f"{name}:{value}" for name, value in its)
 
-    def embed_values(self, p_move: float, random_order: bool) -> str:
+    def embed_values_k(self, k: int, random_order: bool) -> str:
         """
         Get a string representation of the values in the OrderedEntity with a chance of data corruption leading
          to embedded values.
@@ -199,12 +200,15 @@ class OrderedEntity(OrderedDict):
         """
         corrupted_copy = OrderedEntity(self.id, self.uri, list(self.items()))
         moves = []
-        for key, _ in self.items():
-            if random.random() < p_move:
-                # Choose a random attribute to embed the value
-                allowed_target_keys = list(set(self.keys()) - {key})
-                target_key = random.choice(allowed_target_keys)
-                moves.append((key, target_key))
+        # choose k random source attributes from keys
+        if k > len(self.keys()):
+            raise ValueError("k must be less than or equal to the number of attributes")
+        src_keys = random.sample(list(self.keys()), k)
+        for key in src_keys:
+            # Choose a random attribute to embed the value
+            allowed_target_keys = list(set(self.keys()) - {key})
+            target_key = random.choice(allowed_target_keys)
+            moves.append((key, target_key))
         for src, _ in moves:
             corrupted_copy[src] = ""
         for src, dst in moves:
@@ -214,6 +218,27 @@ class OrderedEntity(OrderedDict):
             if corrupted_copy[key] == "":
                 del corrupted_copy[key]
         return corrupted_copy.ffm_wrangle_string(random_order)
+
+    def embed_values_p(self, p_move: float, random_order: bool) -> str:
+        """
+        Get a string representation of the values in the OrderedEntity with a chance of data corruption leading
+         to embedded values.
+        For each attribute we randomly move its value to another random attribute with p_move probability.
+
+        Args:
+            p_move (float, optional): The probability of embedding an attribute value under another attribute.
+
+        Returns:
+            str: String representation of values.
+        """
+        n_attr = len(self.keys())
+        k = np.random.binomial(n_attr, p_move)
+        return self.embed_values_k(k, random_order)
+
+    def embed_values_avg_freq(self, avg_freq: float, random_order: bool) -> str:
+        n_attr = len(self.keys())
+        p_move = avg_freq / n_attr
+        return self.embed_values_p(p_move, random_order)
 
     def to_ditto_str(self) -> str:
         """
