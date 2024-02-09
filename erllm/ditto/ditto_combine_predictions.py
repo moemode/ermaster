@@ -6,8 +6,25 @@ calculate the precision, recall, and F1 score for the total dataset.
 from pathlib import Path
 import pandas as pd
 from erllm import DATA_FOLDER_PATH, EVAL_FOLDER_PATH
-from erllm.dataset.ditto.ditto_stats import ditto_stats
 from erllm.utils import f1, precision, recall
+
+
+def ditto_stats(ditto_task_file: Path):
+    """
+    Calculate statistics for a given Ditto task file.
+
+    Parameters:
+    ditto_task_file (Path): The path to the Ditto task file.
+
+    Returns:
+    tuple: A tuple containing the number of total samples, number of positive samples, and number of negative samples.
+    """
+    # open file and count number of non-empty lines
+    with open(ditto_task_file, "r", encoding="utf-8") as file:
+        lines = tuple(filter(lambda l: len(l) != 0, file.readlines()))
+    n_lines = len(lines)
+    n_pos = len(tuple(filter(lambda x: x.strip().split("\t")[-1] == "1", lines)))
+    return n_lines, n_pos, n_lines - n_pos
 
 
 if __name__ == "__main__":
