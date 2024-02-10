@@ -219,6 +219,11 @@ class OrderedEntity(OrderedDict):
                 del corrupted_copy[key]
         return corrupted_copy.ffm_wrangle_string(random_order)
 
+    def embed_values_freq(self, freq: float, random_order: bool) -> str:
+        n_attr = len(self.keys())
+        k = int(round(freq * n_attr))
+        return self.embed_values_k(k, random_order)
+
     def embed_values_p(self, p_move: float, random_order: bool) -> str:
         """
         Get a string representation of the values in the OrderedEntity with a chance of data corruption leading
@@ -235,9 +240,71 @@ class OrderedEntity(OrderedDict):
         k = np.random.binomial(n_attr, p_move)
         return self.embed_values_k(k, random_order)
 
+    def misfield_str_freq(self, freq: float, random_order: bool) -> str:
+        """
+        Get a string representation of the values in the OrderedEntity with a chance of data corruption leading
+         to misfielded values.
+        For each attribute we randomly move its value to another random attribute with p_move probability.
+
+        Args:
+            p_move (float, optional): The probability of embedding an attribute value under another attribute.
+
+        Returns:
+            str: String representation of values.
+        """
+        n_attr = len(self.keys())
+        k = int(round(freq * n_attr))
+        misfielded = self.misfield(k)
+        return ffm_wrangle_string(misfielded, random_order)
+
+    def misfield_str(self, k: int, random_order: bool) -> str:
+        """
+        Get a string representation of the values in the OrderedEntity with a chance of data corruption leading
+         to misfielded values.
+        For each attribute we randomly move its value to another random attribute with p_move probability.
+
+        Args:
+            p_move (float, optional): The probability of embedding an attribute value under another attribute.
+
+        Returns:
+            str: String representation of values.
+        """
+        if k <= 1:
+            raise ValueError("k must be greater than 1")
+        if k > len(self.keys()):
+            raise ValueError("k must be less than or equal to the number of attributes")
+        misfielded = self.misfield(k)
+        return ffm_wrangle_string(misfielded, random_order)
+
+    def misfield(self, k: int) -> OrderedDict:
+        original_kvs = OrderedDict(self.items())
+        keys = list(original_kvs.keys())
+        mapping = {}
+        misfield_src_attributes = random.sample(keys, k)
+        misfield_target_attributes = set(misfield_src_attributes.copy())
+        for i, src in enumerate(misfield_src_attributes):
+            # avoid situation in which last remaining src attribute must be mapped to itself
+            if (
+                len(misfield_target_attributes) == 2
+                and misfield_src_attributes[i + 1] in misfield_target_attributes
+            ):
+                mapping[src] = misfield_src_attributes[i + 1]
+                misfield_target_attributes.remove(misfield_src_attributes[i + 1])
+                mapping[misfield_src_attributes[i + 1]] = (
+                    misfield_target_attributes.pop()
+                )
+                break
+            target = random.choice(list(misfield_target_attributes - {src}))
+            misfield_target_attributes.remove(target)
+            mapping[src] = target
+        kvs = original_kvs.copy()
+        for src, target in mapping.items():
+            kvs[target] = original_kvs[src]
+        return kvs
+
     def embed_values_avg_freq(self, avg_freq: float, random_order: bool) -> str:
         n_attr = len(self.keys())
-        p_move = avg_freq / n_attr
+        p_move = avg_freq * n_attr
         return self.embed_values_p(p_move, random_order)
 
     def to_ditto_str(self) -> str:
@@ -249,3 +316,17 @@ class OrderedEntity(OrderedDict):
         """
         col_vals = (f"COL {key} VAL {self[key].lower()}" for (key, val) in self.items())
         return " ".join(col_vals)
+
+
+def ffm_wrangle_string(kvs: OrderedDict, random_order: bool = False) -> str:
+    """
+    Get a string representation of the values according to paper
+    "Can Foundation Models Wrangle Your Data?".
+
+    Returns:
+        str: String representation of values in the format attr1 : val1 . . . attr𝑚 : val𝑚
+    """
+    its = list(kvs.items())
+    if random_order:
+        random.shuffle(its)
+    return " ".join(f"{name}:{value}" for name, value in kvs.items())

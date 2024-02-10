@@ -75,10 +75,19 @@ CONFIGURATIONS = {
         "to_str": lambda e: e.embed_values_k(k=1, random_order=False),
         "seed": 123,
     },
+    "with-attr-names-misfield-half": {
+        "save_to": Path(PROMPT_DATA_FOLDER_PATH) / "wattr_names_misfield_half",
+        "dataset_paths": [
+            DATASET_FOLDER_PATH / dataset
+            for dataset in filter(lambda x: "dbpedia" not in x, DATASET_NAMES)
+        ],
+        "to_str": lambda e: e.misfield_str_freq(freq=0.5, random_order=False),
+        "seed": 123,
+    },
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["with-attr-names-embed-05"]
+    cfg = CONFIGURATIONS["with-attr-names-misfield-half"]
     datasets, save_to, to_str = cfg["dataset_paths"], cfg["save_to"], cfg["to_str"]
     save_to.mkdir(parents=True, exist_ok=True)
     if "seed" in cfg:
