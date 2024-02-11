@@ -254,8 +254,7 @@ class OrderedEntity(OrderedDict):
         """
         n_attr = len(self.keys())
         k = int(round(freq * n_attr))
-        misfielded = self.misfield(k)
-        return ffm_wrangle_string(misfielded, random_order)
+        return self.misfield_str(k, random_order)
 
     def misfield_str(self, k: int, random_order: bool) -> str:
         """
