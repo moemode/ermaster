@@ -185,6 +185,39 @@ CONFIGURATIONS = {
         "postfix": "",
         "save_to": PROMPTS_FOLDER_PATH / "wattr_names_embed_one_ppair",
     },
+    "base-wattr-names-embed-half": {
+        "datasets": [
+            Path(PROMPT_DATA_FOLDER_PATH / "wattr_names_embed_half" / f"{dataset}.json")
+            for dataset in filter(lambda x: "dbpedia" not in x, SAMPLED_DATASET_NAMES)
+        ],
+        "prompt_type": "general_complex_force",
+        "postfix": "",
+        "save_to": PROMPTS_FOLDER_PATH / "wattr_names_embed_half",
+    },
+    "with-attr-names-misfield-half": {
+        "datasets": [
+            Path(
+                PROMPT_DATA_FOLDER_PATH
+                / "wattr_names_misfield_half"
+                / f"{dataset}.json"
+            )
+            for dataset in filter(lambda x: "dbpedia" not in x, SAMPLED_DATASET_NAMES)
+        ],
+        "prompt_type": "general_complex_force",
+        "postfix": "",
+        "save_to": PROMPTS_FOLDER_PATH / "wattr_names_misfield_half",
+    },
+    "with-attr-names-misfield-all": {
+        "datasets": [
+            Path(
+                PROMPT_DATA_FOLDER_PATH / "wattr_names_misfield_all" / f"{dataset}.json"
+            )
+            for dataset in filter(lambda x: "dbpedia" not in x, SAMPLED_DATASET_NAMES)
+        ],
+        "prompt_type": "general_complex_force",
+        "postfix": "",
+        "save_to": PROMPTS_FOLDER_PATH / "wattr_names_misfield_all",
+    },
     "hash": {
         "datasets": [
             Path(PROMPT_DATA_FOLDER_PATH / f"{dataset}.json")
@@ -197,9 +230,22 @@ CONFIGURATIONS = {
 }
 
 if __name__ == "__main__":
-    cfg = CONFIGURATIONS["base-wattr-names-embed-one-ppair"]
+    # go over all cfgs run if save_to folder does not exist
+    for cfg_name, cfg in CONFIGURATIONS.items():
+        if not cfg["save_to"].exists():
+            print("Creating prompts for ", cfg_name)
+            cfg["save_to"].mkdir(parents=True, exist_ok=True)
+            for dataset in cfg["datasets"]:
+                prompt_data_to_prompt_dict(
+                    dataset,
+                    cfg["prompt_type"],
+                    postfix=cfg["postfix"],
+                    save_to=cfg["save_to"],
+                )
+    """
     cfg["save_to"].mkdir(parents=True, exist_ok=True)
     for dataset in cfg["datasets"]:
         prompt_data_to_prompt_dict(
             dataset, cfg["prompt_type"], postfix=cfg["postfix"], save_to=cfg["save_to"]
         )
+    """
