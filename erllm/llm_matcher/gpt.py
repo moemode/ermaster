@@ -186,6 +186,40 @@ def run_test(
         write_json_iter(completion_function(prompts, model_params), f, len(prompts))
 
 
+def run_multiple_tests(
+    prompt_folders: Iterable[Path],
+    model_params: Dict,
+    save_to_folder: Path,
+    completion_function: Callable[
+        [list[Prompt], Dict], Iterable[Dict]
+    ] = get_completions_batch,
+):
+    """
+    Run multiple tests using prompts from files and save the results.
+
+    This function reads prompts from files, processes them using the specified model
+    parameters, and saves the results to numbered files in the specified folder.
+
+    Parameters:
+    prompt_files (Iterable[Path]): An iterable of paths to files containing prompts in JSON format.
+    model_params (Dict): Model parameters to be passed to `get_completions_batch`.
+    description (Optional[str]): A description to include in the saved file name.
+    save_to_folder (Path): Folder path to save the results.
+    """
+    for prompt_file_folder in prompt_folders:
+        # get name of last folder in path
+        description = prompt_file_folder.parts[-1]
+        save_to = save_to_folder / description
+        for prompt_file in prompt_file_folder.iterdir():
+            run_test(
+                prompt_file,
+                model_params,
+                description,
+                save_to,
+                completion_function,
+            )
+
+
 CONFIGURATIONS = {
     "gpt35-on-base": {
         "completions_function": get_completions_batch,
@@ -319,6 +353,8 @@ CONFIGURATIONS = {
 
 
 if __name__ == "__main__":
+    """
+    # run individual configs
     cfg = CONFIGURATIONS["gpt35-on-base-wattr-names-embed-one-ppair"]
     for p in cfg["prompt_paths"]:
         run_test(
@@ -328,3 +364,21 @@ if __name__ == "__main__":
             cfg["save_to_folder"],
             cfg["completions_function"],
         )
+    """
+    # got tired of adding configs and added a function to run test based on prompt folder name
+    prompt_names = [
+        "wattr_names_misfield_half",
+        "wattr_names_misfield_all",
+        "wattr_names_embed_half",
+    ]
+    run_multiple_tests(
+        [PROMPTS_FOLDER_PATH / p for p in prompt_names],
+        dict(
+            model="gpt-3.5-turbo-instruct",
+            max_tokens=1,
+            logprobs=5,
+            temperature=0,
+            seed=0,
+        ),
+        RUNS_FOLDER_PATH / "35_base",
+    )
