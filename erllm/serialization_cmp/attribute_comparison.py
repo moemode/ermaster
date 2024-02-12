@@ -36,9 +36,10 @@ if __name__ == "__main__":
     (EVAL_FOLDER_PATH / "serialization_cmp").mkdir(parents=True, exist_ok=True)
     latex_table = s.to_latex(
         EVAL_FOLDER_PATH / "serialization_cmp" / f"comparison_table.tex",
+        column_format="|l|ccc|ccc|ccc|",
         hrules=True,
         position_float="centering",
-        multicol_align="c",
+        multicol_align="c|",
         caption=f"Comparison of classification performance",
     )
     """
