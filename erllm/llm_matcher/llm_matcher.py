@@ -52,15 +52,17 @@ if __name__ == "__main__":
         "base_wattr_names_rnd_order": "35_base/wattr_names_rnd_order/*force-gpt*.json",
         "base_wattr_names_embed_05": "35_base/wattr_names_embed_05/*force-gpt*.json",
         "base_wattr_names_embed_one_ppair": "35_base/wattr_names_embed_one_ppair/*force-gpt*.json",
+        "base_wattr_names_embed_half": "35_base/wattr_names_embed_half/*force-gpt*.json",
+        "base_wattr_names_misfield_half": "35_base/wattr_names_misfield_half/*force-gpt*.json",
+        "base_wattr_names_misfield_all": "35_base/wattr_names_misfield_all/*force-gpt*.json",
         "hash": "35_hash/*force_hash-gpt*.json",
         # move the files from 35_base and 35_hash into 35_base_hash if you want this
         "base_hash": "35_base_hash/*.json",
         "gpt4-base": "4_base/*force-gpt*.json",
     }
-    for cfg in CONFIGURATIONS.keys():
-        if cfg != "base_wattr_names_embed_one_ppair":
-            continue
-        eval_dir(
-            Path(RUNS_FOLDER_PATH).glob(CONFIGURATIONS[cfg]),
-            save_to=EVAL_FOLDER_PATH / "llm_matcher" / f"{cfg}.csv",
-        )
+    for cfg_name, cfg in CONFIGURATIONS.items():
+        if "misfield" in cfg_name or "embed_half" in cfg_name:
+            eval_dir(
+                Path(RUNS_FOLDER_PATH).glob(cfg),
+                save_to=EVAL_FOLDER_PATH / "llm_matcher" / f"{cfg_name}.csv",
+            )
