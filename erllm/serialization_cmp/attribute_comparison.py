@@ -21,15 +21,15 @@ if __name__ == "__main__":
     df = df[~df["Dataset"].str.lower().str.contains("dbpedia")]
     df = rename_datasets(df, preserve_sampled=False)
     # Reshape the DataFrame
-    reshaped_df = df.pivot_table(
+    all = df.pivot_table(
         values=["Recall", "Precision", "F1"], index="Dataset", columns="Scheme"
     )
-    reshaped_df.columns.names = [None, None]
-    reshaped_df = reshaped_df.reindex(["no-attr", "attr", "attr-rnd"], axis=1, level=1)
-    reshaped_df = reshaped_df.sort_values(by=("F1", "no-attr"), ascending=False)
-    reshaped_df = reshaped_df.reset_index()
+    all.columns.names = [None, None]
+    all = all.reindex(["no-attr", "attr", "attr-rnd"], axis=1, level=1)
+    all = all.sort_values(by=("F1", "no-attr"), ascending=False)
+    all = all.reset_index()
     # make index ordinary column
-    s = reshaped_df.style
+    s = all.style
     # hide index
     s.hide(axis="index")
     s.format(precision=2)
@@ -42,6 +42,50 @@ if __name__ == "__main__":
         multicol_align="c|",
         caption=f"Comparison of classification performance",
     )
+    f1 = df.pivot_table(values=["F1"], index="Dataset", columns="Scheme")
+    f1 = f1.reindex(["no-attr", "attr", "attr-rnd"], axis=1, level=1)
+    f1 = f1.sort_values(by=("F1", "no-attr"), ascending=False)
+    f1 = f1.reset_index()
+    s = f1.style
+    s.hide(axis="index")
+    s.format(precision=2)
+    s.highlight_max(
+        props="font-weight: bold",
+        axis=1,
+        subset=["F1"],
+    )
+    print(f1)
+    latex_table = s.to_latex(
+        EVAL_FOLDER_PATH / "serialization_cmp" / f"f1_comparison_table.tex",
+        column_format="lccc",
+        hrules=True,
+        convert_css=True,
+        position_float="centering",
+        multicol_align="c",
+        caption=f"F1 scores for LLM Matcher (gpt-3.5-turbo-instruct) using base prompt prefix with various serialization schemes (no-attr, attr, and attr-rnd).",
+        label="tab:attr-f1-cmp",
+    )
+    mean_table = df.groupby("Scheme")[["Precision", "Recall", "F1"]].mean().transpose()
+    mean_table = mean_table[["no-attr", "attr", "attr-rnd"]]
+    mean_table = mean_table.reindex(["F1", "Precision", "Recall"])
+    mean_table.columns.name = None
+    s = mean_table.style
+    s.format(precision=2)
+    s.highlight_max(
+        props="font-weight: bold",
+        axis=1,
+    )
+    latex_table = s.to_latex(
+        EVAL_FOLDER_PATH / "serialization_cmp" / f"mean_comparison_table.tex",
+        column_format="lccc",
+        hrules=True,
+        convert_css=True,
+        position_float="centering",
+        caption="Mean Precision, Recall and F1 scores across datasets (except DBpedia) for LLM Matcher (gpt-3.5-turbo-instruct) using base prompt prefix with various serialization schemes (no-attr, attr, and attr-rnd).",
+        label="tab:attr-mean-cmp",
+    )
+    print(mean_table)
+
     """
 
     # Melt the DataFrame
