@@ -45,7 +45,7 @@ if __name__ == "__main__":
         hrules=True,
         convert_css=True,
         position_float="centering",
-        caption="Mean Precision, Recall and F1 scores across datasets for LLM Matcher (gpt-3.5-turbo-instruct) using base prompt prefix with attribute names and data errors.",
+        caption="Mean F1, Precision and Recall across datasets for LLM Matcher (gpt-3.5-turbo-instruct) using base prompt prefix with attribute names and data errors.",
         label="tab:de-mean-cmp",
     )
     print(mean_table)
