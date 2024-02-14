@@ -53,7 +53,6 @@
 
 | Module | Purpose |
 | --- | --- |
-| [add_to_ditto_configs.py](erllm/dataset/ditto/add_to_ditto_configs.py) |  |
 | [to_ditto.py](erllm/dataset/ditto/to_ditto.py) |  |
 | [to_ditto_runner.py](erllm/dataset/ditto/to_ditto_runner.py) |  |
 

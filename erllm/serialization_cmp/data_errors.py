@@ -29,6 +29,7 @@ if __name__ == "__main__":
         ["attr", "embed-1", "embed-50%", "misfield-50%", "misfield-100%"]
     ]
     mean_table = mean_table.reindex(["F1", "Precision", "Recall"])
+
     mean_table.columns.name = None
     s = mean_table.style
     s.format(precision=2)
@@ -49,3 +50,9 @@ if __name__ == "__main__":
         label="tab:de-mean-cmp",
     )
     print(mean_table)
+    mean_diff_table = mean_table.copy()
+    diff_columns = mean_table.columns[1:]
+    for col in diff_columns:
+        new_col_name = f"{col}_diff"
+        mean_diff_table[new_col_name] = mean_table[col] - mean_table["attr"]
+    print(mean_diff_table)

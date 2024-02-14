@@ -5,6 +5,18 @@ from pathlib import Path
 
 
 def sample_df(df: pd.DataFrame, n_pos: int, n_neg: int, seed: int) -> pd.DataFrame:
+    """
+    Sample a specified number of positive and negative rows from a DataFrame based on their labels.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame.
+        n_pos (int): The number of positive rows to sample.
+        n_neg (int): The number of negative rows to sample.
+        seed (int): The random seed for reproducibility.
+
+    Returns:
+        pd.DataFrame: The sampled DataFrame containing the specified number of positive and negative rows.
+    """
     # sample N_train_pos rows with label 1 and N_train_neg rows with label 0
     pos = df[df["label"] == 1].sample(n_pos, random_state=seed)
     # Sample N_train_neg rows with label 0

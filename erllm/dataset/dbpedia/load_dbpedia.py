@@ -1,7 +1,6 @@
 """
-Reads raw data from specified paths and loads it into SQLite tables. 
+Loads data from .txt file and loads it into SQLite tables. 
 The primary tables store DBpedia entities with key-value pairs, and an additional table stores matching pairs.
-Execute directly to populate the database.
 """
 
 """
