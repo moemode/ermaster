@@ -1,3 +1,8 @@
+"""
+Provides functions for token blocking and clean token blocking in entity resolution tasks.
+"""
+
+# Rest of the code...
 from typing import Dict, Set, Iterable
 from erllm.dataset.dbpedia.access_dbpedia import (
     Entity,
