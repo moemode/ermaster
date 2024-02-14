@@ -8,8 +8,8 @@
 | [erllm.dataset.dbpedia](#package-erllmdatasetdbpedia) | Handles DBPedia data including loading raw data into SQLite,  interaction, and generation of labeled datasets using token blocking for benchmarking. |
 | [erllm.dataset.ditto](#package-erllmdatasetditto) | Convert existing datasets to DITTO format. |
 | [erllm.discarder](#package-erllmdiscarder) | Explores the similarity-based discarder in isolation.  Computes and saves set-based and embedding-based similarities for pairs of entities,  Includes functionality to save results and computation time into similarity files, compute various discarder statistics, and generate visualizations. |
-| [erllm.discarding_matcher](#package-erllmdiscarding_matcher) | Simulates and evaluates a similarity-based discarding matcher. Contains generation of performance plots, and analysis of time/performance trade-off. |
-| [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) | Explores the similarity-based discarding matcher.  Simulates a discarding matcher, evaluates its performance on multiple datasets  with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds. |
+| [erllm.discarding_matcher](#package-erllmdiscarding_matcher) | Simulates and evaluates the similarity-based discarding matcher. Contains generation of performance plots, and analysis of time/performance trade-off. |
+| [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) | Implements the discarding selective matcher. It includes functionalities for assessing classification performance, generating comparison tables and creating contour plots. |
 | [erllm.ditto](#package-erllmditto) |  |
 | [erllm.llm_matcher](#package-erllmllm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API. |
 | [erllm.selective_classifier](#package-erllmselective_classifier) | Explores selective classification. |
@@ -79,11 +79,11 @@
 | Module | Purpose |
 | --- | --- |
 | [discarding_selective_matcher.py](erllm/discarding_selective_matcher/discarding_selective_matcher.py) | Implements the discarding selective matcher and includes functions for evaluating its classification performance, cost and duration. |
-| [discarding_selective_matcher_allstats_table.py](erllm/discarding_selective_matcher/discarding_selective_matcher_allstats_table.py) |  |
-| [discarding_selective_matcher_contour.py](erllm/discarding_selective_matcher/discarding_selective_matcher_contour.py) |  |
-| [discarding_selective_matcher_eval.py](erllm/discarding_selective_matcher/discarding_selective_matcher_eval.py) |  |
-| [discarding_selective_matcher_metric_table.py](erllm/discarding_selective_matcher/discarding_selective_matcher_metric_table.py) |  |
-| [discarding_selective_matcher_runner.py](erllm/discarding_selective_matcher/discarding_selective_matcher_runner.py) |  |
+| [discarding_selective_matcher_allstats_table.py](erllm/discarding_selective_matcher/discarding_selective_matcher_allstats_table.py) | Creates a table for comparing different matcher architectures based on their discarding error, cost, time and classification metrics. |
+| [discarding_selective_matcher_contour.py](erllm/discarding_selective_matcher/discarding_selective_matcher_contour.py) | Create contour plots which map the discard and label fractions to the mean F1, precision, recall. |
+| [discarding_selective_matcher_eval.py](erllm/discarding_selective_matcher/discarding_selective_matcher_eval.py) | Calculates the mean values across datasets for specified metrics,  based on the results obtained by running the discarding selective matcher. |
+| [discarding_selective_matcher_metric_table.py](erllm/discarding_selective_matcher/discarding_selective_matcher_metric_table.py) | Create a table which shows one metric like mean F1 across different label and discard fractions. |
+| [discarding_selective_matcher_runner.py](erllm/discarding_selective_matcher/discarding_selective_matcher_runner.py) | Runs and evaluates the discarding selective matcher for various configurations. |
 
 ## Package: erllm.ditto
 
