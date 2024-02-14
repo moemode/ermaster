@@ -78,7 +78,7 @@
 
 | Module | Purpose |
 | --- | --- |
-| [discarding_selective_matcher.py](erllm/discarding_selective_matcher/discarding_selective_matcher.py) |  |
+| [discarding_selective_matcher.py](erllm/discarding_selective_matcher/discarding_selective_matcher.py) | Implements the discarding selective matcher and includes functions for evaluating its classification performance, cost and duration. |
 | [discarding_selective_matcher_allstats_table.py](erllm/discarding_selective_matcher/discarding_selective_matcher_allstats_table.py) |  |
 | [discarding_selective_matcher_contour.py](erllm/discarding_selective_matcher/discarding_selective_matcher_contour.py) |  |
 | [discarding_selective_matcher_eval.py](erllm/discarding_selective_matcher/discarding_selective_matcher_eval.py) |  |

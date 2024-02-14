@@ -1,6 +1,12 @@
+"""
+Creates a table for comparing different matcher architectures based on their discarding error, cost, time
+and classification metrics.
+"""
+
 from pathlib import Path
 from typing import Iterable
 import pandas as pd
+from pandas.io.formats.style import Styler
 from erllm import EVAL_FOLDER_PATH
 
 CONFIGURATIONS = {
@@ -13,8 +19,18 @@ CONFIGURATIONS = {
 }
 
 
-def format_percentages(c, decimals=0):
-    return f"{c*100:.{decimals}f}\%"
+def format_percentages(c: float, decimals: int = 0) -> str:
+    """
+    Formats a given float value as a percentage string.
+
+    Args:
+        c (float): The float value to be formatted as a percentage.
+        decimals (int, optional): The number of decimal places to include in the formatted percentage. Defaults to 0.
+
+    Returns:
+        str: The formatted percentage string.
+    """
+    return f"{c*100:.{decimals}f}%"
 
 
 COLUMN_SHORTHANDS = {
@@ -31,10 +47,21 @@ COLUMN_SHORTHANDS = {
 def prepare_data(
     df: pd.DataFrame, order: Iterable[tuple[float, float]], save_to: Path
 ) -> pd.DataFrame:
+    """
+    Prepare data for analysis by computing changes relative to the LLM matcher and save the result to a CSV file.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing the data.
+        order (Iterable[tuple[float, float]]): The order of the data.
+        save_to (Path): The path to save the result CSV file.
+
+    Returns:
+        pd.DataFrame: The processed DataFrame with changes relative to the LLM matcher (no discard, no label).
+
+    """
     df["Discarding Error"] = df["Discarded FN"] / df["Discarded"]
     df["Duration"] = df["Discarder Duration"] + df["LLM Duration"]
     df["Speedup"] = 1 - df["Duration"] / df["LLM All Duration"]
-    # df = df.groupby(["Label Fraction", "Discard Fraction"])
     result_df = (
         df.groupby(["Discard Fraction", "Label Fraction"])
         .agg(
@@ -76,7 +103,18 @@ def prepare_data(
     return result_df
 
 
-def build_table(df: pd.DataFrame, save_to: Path):
+def build_table(df: pd.DataFrame, save_to: Path) -> None:
+    """
+    Create a table for comparing different matcher architectures based on their discarding error, cost, time
+    and classification metrics. The table is styled and saved as a LaTeX table.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the data.
+        save_to (Path): The path where the table should be saved.
+
+    Returns:
+        None
+    """
     table_df = df[
         [
             "Discard Fraction",
@@ -125,56 +163,20 @@ def build_table(df: pd.DataFrame, save_to: Path):
         multicol_align="c",
         caption=f"Test",
     )
-    print(table_df)
-    """
-    # Calculate mean for each metric
-    df = df[metric].mean().reset_index()
-    pivot_df = df.pivot(
-        index="Discard Fraction", columns="Label Fraction", values=metric
-    )
-    # Format MultiIndex columns and index as percentages
-    pivot_df.columns = pd.MultiIndex.from_tuples(
-        [(pivot_df.columns.name, c) for c in pivot_df.columns]
-    ).sort_values()
-    pivot_df.index = pd.MultiIndex.from_tuples(
-        [(pivot_df.index.name, c) for c in pivot_df.index]
-    ).sort_values()
-    first_row = pivot_df.index[0]
-    first_col = pivot_df.columns[0]
-    second_row = pivot_df.index[1]
-    second_col = pivot_df.columns[1]
-    idx = pd.IndexSlice
-    slice_ = idx[idx[*first_row],]
-    first_cell = idx[idx[*first_row], idx[*first_col]]
-    first_row = idx[idx[*first_row], idx[second_col[0], second_col[1] :]]
-    first_col = idx[idx[second_row[0], second_row[1] :], idx[*first_col]]
-    slice_rest = idx[
-        idx[second_row[0], second_row[1] :], idx[second_col[0], second_col[1] :]
-    ]
-    s = pivot_df.style
-    s.set_properties(**{"background-color": "lightgreen"}, subset=first_row)
-    s.set_properties(**{"background-color": "lightblue"}, subset=first_cell)
-    s.set_properties(**{"background-color": "lightred"}, subset=first_col)
-    # s.set_properties(**{"background-color": "lightyellow"}, subset=slice_rest)
-    s.format_index(
-        formatter=format_percentages, escape="latex", axis=1, level=1
-    ).format_index(escape="latex", formatter=format_percentages, axis=0, level=1)
-    s.format(precision=2)
-    # Convert styled DataFrame to LaTeX table
-    latex_table = s.to_latex(
-        save_to / f"{metric.lower()}_table.tex",
-        convert_css=True,
-        hrules=True,
-        position_float="centering",
-        multicol_align="c",
-        caption=f"{metric} scores for the discarding selective matcher with different label and discard fractions.",
-    )
-    # Print or save the LaTeX table
-    return latex_table
-    """
 
 
-def highlight_cells(table_df):
+def highlight_cells(table_df) -> Styler:
+    """
+    Highlights specific cells in a DataFrame based on certain conditions.
+    Preparation for converting to latex table.
+
+    Args:
+        table_df (DataFrame): The input DataFrame.
+
+    Returns:
+        Styler: The styled DataFrame.
+
+    """
     cname_label_fraction = COLUMN_SHORTHANDS["Label Fraction"]
     cname_discard_error = COLUMN_SHORTHANDS["Discarding Error"]
     cname_llm_cost = COLUMN_SHORTHANDS["LLM Cost"]
