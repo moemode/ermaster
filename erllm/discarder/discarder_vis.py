@@ -1,3 +1,9 @@
+"""
+Generates plots to visualize evaluation discarder statistitcs. 
+It includes functions to plot specific relations for a given dataset and generate combined plots for multiple datasets, 
+offering insights into various metrics such as false negatives, risk, false negative rate, and coverage. 
+"""
+
 from pathlib import Path
 import pandas as pd
 import seaborn as sns

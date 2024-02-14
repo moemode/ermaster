@@ -1,3 +1,10 @@
+"""
+This module provides functions for computing set-based and embedding-based similarities for pairs of entities within a given dataset. 
+The set-based similarities include Jaccard, Overlap, Monge-Elkan, and Generalized Jaccard, 
+while embedding-based similarities use cosine and Euclidean distance metrics.
+Saves the results and computation time into similarity files which serve as cache for composite matchers including a discarder.
+"""
+
 from pathlib import Path
 import pickle
 from typing import Callable, List
@@ -190,7 +197,7 @@ def dataset_similarities(
     set_sim=SET_SIM_FUNCTIONS,
     compute_emb=True,
     emb_sim=(cosine_sim, euclidean_sim),
-):
+) -> None:
     """
     Compute and save set and embedding similarities for the given dataset.
     Checks if the similarities have already been computed and skips the dataset if they have.

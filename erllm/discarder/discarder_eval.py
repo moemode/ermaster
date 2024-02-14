@@ -1,9 +1,13 @@
+"""
+Computes various functions from similarity files, such as the number of false negatives as function of the number of discarded pairs.
+"""
+
 import pandas as pd
 
 from erllm import EVAL_FOLDER_PATH, SIMILARITIES_FOLDER_PATH
 
 
-def get_stat_functions(similarities: pd.DataFrame, sim_name: str):
+def get_stat_functions(similarities: pd.DataFrame, sim_name: str) -> list[tuple]:
     """Calculate statistics about discarding based on given similarity column.
     Sort the profile pairs in ascending order by the specified similarity column.
     Calculate functions for various statistic like number of false negatives dependent on the number of discarded pairs.

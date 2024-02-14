@@ -6,7 +6,7 @@
 | [erllm.calibration](#package-erllmcalibration) | Calibration analysis on entity matching LLM predictions. |
 | [erllm.dataset](#package-erllmdataset) | Covers entity representation, dataset loading, downsampling.  The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled  datasets of matching and non-matching DBpedia entity pairs for benchmarking. |
 | [erllm.dataset.dbpedia](#package-erllmdatasetdbpedia) | Handles DBPedia data including loading raw data into SQLite,  interaction, and generation of labeled datasets using token blocking for benchmarking. |
-| [erllm.dataset.ditto](#package-erllmdatasetditto) | Module for loading raw DBPedia data into subsampled csv files |
+| [erllm.dataset.ditto](#package-erllmdatasetditto) | Convert existing datasets to DITTO format. |
 | [erllm.discarder](#package-erllmdiscarder) | Explores the similarity-based discarder in isolation.  Computes and saves set-based and embedding-based similarities for pairs of entities,  evaluates the impact of discarding based on various similarity functions, and visualizes the results. |
 | [erllm.discarding_matcher](#package-erllmdiscarding_matcher) | Explores the similarity-based discarding matcher.  Simulates a discarding matcher, evaluates its performance on multiple datasets  with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds. |
 | [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) | Explores the similarity-based discarding matcher.  Simulates a discarding matcher, evaluates its performance on multiple datasets  with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds. |
@@ -59,9 +59,9 @@
 
 | Module | Purpose |
 | --- | --- |
-| [discarder.py](erllm/discarder/discarder.py) |  |
-| [discarder_eval.py](erllm/discarder/discarder_eval.py) |  |
-| [discarder_vis.py](erllm/discarder/discarder_vis.py) |  |
+| [discarder.py](erllm/discarder/discarder.py) | This module provides functions for computing set-based and embedding-based similarities for pairs of entities within a given dataset.  The set-based similarities include Jaccard, Overlap, Monge-Elkan, and Generalized Jaccard,  while embedding-based similarities use cosine and Euclidean distance metrics. Saves the results and computation time into similarity files which serve as cache for composite matchers including a discarder. |
+| [discarder_eval.py](erllm/discarder/discarder_eval.py) | Computes various functions from similarity files, such as the number of false negatives as function of the number of discarded pairs. |
+| [discarder_vis.py](erllm/discarder/discarder_vis.py) | Generates plots to visualize evaluation discarder statistitcs.  It includes functions to plot specific relations for a given dataset and generate combined plots for multiple datasets,  offering insights into various metrics such as false negatives, risk, false negative rate, and coverage. |
 
 ## Package: erllm.discarding_matcher
 
