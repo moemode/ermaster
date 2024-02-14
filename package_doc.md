@@ -8,7 +8,7 @@
 | [erllm.dataset.dbpedia](#package-erllmdatasetdbpedia) | Handles DBPedia data including loading raw data into SQLite,  interaction, and generation of labeled datasets using token blocking for benchmarking. |
 | [erllm.dataset.ditto](#package-erllmdatasetditto) | Convert existing datasets to DITTO format. |
 | [erllm.discarder](#package-erllmdiscarder) | Explores the similarity-based discarder in isolation.  Computes and saves set-based and embedding-based similarities for pairs of entities,  Includes functionality to save results and computation time into similarity files, compute various discarder statistics, and generate visualizations. |
-| [erllm.discarding_matcher](#package-erllmdiscarding_matcher) | Explores the similarity-based discarding matcher.  Simulates a discarding matcher, evaluates its performance on multiple datasets  with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds. |
+| [erllm.discarding_matcher](#package-erllmdiscarding_matcher) | Simulates and evaluates a similarity-based discarding matcher. Contains generation of performance plots, and analysis of time/performance trade-off. |
 | [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) | Explores the similarity-based discarding matcher.  Simulates a discarding matcher, evaluates its performance on multiple datasets  with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds. |
 | [erllm.ditto](#package-erllmditto) |  |
 | [erllm.llm_matcher](#package-erllmllm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API. |
@@ -68,11 +68,11 @@
 
 | Module | Purpose |
 | --- | --- |
-| [discarding_matcher.py](erllm/discarding_matcher/discarding_matcher.py) |  |
-| [discarding_matcher_duration_cmp.py](erllm/discarding_matcher/discarding_matcher_duration_cmp.py) |  |
-| [discarding_matcher_runner.py](erllm/discarding_matcher/discarding_matcher_runner.py) | This script runs the discarding matcher algorithm on multiple datasets with different threshold values. It calculates various performance metrics such as accuracy, precision, recall, F1 score, cost, and duration. The results are stored in a pandas DataFrame and saved as a CSV file. |
-| [discarding_matcher_tradeoff.py](erllm/discarding_matcher/discarding_matcher_tradeoff.py) | Generate and analyze performance trade-off metrics for the discarding matcher based on F1 decrease thresholds. Reads performance metrics from a CSV file, calculates F1 decrease, relative cost, and relative duration for each dataset and threshold. |
-| [discarding_matcher_vis.py](erllm/discarding_matcher/discarding_matcher_vis.py) | This script generates performance comparison plots for the discarding matcher. It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots for each dataset with different configurations, such as all metrics, no cost, and F1 with cost. It also creates plots with showing the performance on all datasets at once. |
+| [discarding_matcher.py](erllm/discarding_matcher/discarding_matcher.py) | This module provides functions for evaluating the performance of a discarding matcher utilizing run and similarity files. It calculates classification, cost and duration metrics. |
+| [discarding_matcher_duration_cmp.py](erllm/discarding_matcher/discarding_matcher_duration_cmp.py) | Calculates speedup factor of discarding matcher over LLM matcher. |
+| [discarding_matcher_runner.py](erllm/discarding_matcher/discarding_matcher_runner.py) | Runs the discarding matcher algorithm on multiple datasets with different threshold values. It calculates various performance metrics such as accuracy, precision, recall, F1 score, cost, and duration. |
+| [discarding_matcher_tradeoff.py](erllm/discarding_matcher/discarding_matcher_tradeoff.py) | Generate and analyze performance/cost trade-off for the discarding matcher based on F1 decrease thresholds. Calculates F1 decrease, relative cost, and relative duration for each dataset and threshold. |
+| [discarding_matcher_vis.py](erllm/discarding_matcher/discarding_matcher_vis.py) | Generates performance comparison plots for the discarding matcher. |
 
 ## Package: erllm.discarding_selective_matcher
 

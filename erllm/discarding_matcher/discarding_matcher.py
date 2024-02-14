@@ -1,3 +1,8 @@
+"""
+This module provides functions for evaluating the performance of a discarding matcher utilizing run and similarity files.
+It calculates classification, cost and duration metrics. 
+"""
+
 from pathlib import Path
 from typing import Iterable, Optional
 from sklearn.metrics import (
@@ -14,22 +19,23 @@ from erllm.llm_matcher.evalrun import read_run_deprecated, read_run_raw
 
 def discarding_matcher(
     threshold: float, runFile: Path, similaritiesFile: Path, sim_function="overlap"
-):
+) -> dict:
     """
-    Evaluate the performance of a discarding matcher based on a given threshold.
+    Evaluate the performance of a discarding matcher based on a given threshold below which pairs are discarded.
 
-    Parameters:
-        threshold (float): The similarity threshold for discarding pairs.
-        runFile (Path): Path to the run JSON file containing completion information.
-        Created by llm_matcher/gpt.py.
-        similaritiesFile (Path): Path to the CSV file containing pair similarities.
-        Created by discarder/discarder.py.
-        sim_function (str, optional): The similarity function to use. Default is "overlap".
+    Args:
+    threshold (float): The similarity threshold for discarding pairs.
+    runFile (Path): Path to the run JSON file containing completion information. Created by llm_matcher/gpt.py.
+    similaritiesFile (Path): Path to the CSV file containing pair similarities. Created by discarder/discarder.py.
+    sim_function (str, optional): The similarity function to use. Default is "overlap".
 
     Returns:
-        tuple: A tuple containing accuracy, precision, recall, F1 score,
+        dict: A dictionary containing e.g. accuracy, precision, recall, F1 score,
                remaining cost, cost reduction percentage, remaining duration,
                and duration reduction percentage.
+
+    Raises:
+        ValueError: If the similarity file is missing values for some pairs.
     """
     dataset_name = runFile.stem.split("-")[0]
     truths, predictions, _, _, pair_ids = read_run_deprecated(runFile)
@@ -92,22 +98,23 @@ def discarding_matcher(
 
 def discarding_matcher_n(
     n_discard: int, runFile: Path, similaritiesFile: Path, sim_function="overlap"
-):
+) -> dict:
     """
-    Evaluate the performance of a discarding matcher based on a given threshold.
+    Evaluate the performance of a discarding matcher when the n_discard pairs of lowest similarity are discarded.
 
-    Parameters:
-        threshold (float): The similarity threshold for discarding pairs.
-        runFile (Path): Path to the run JSON file containing completion information.
-        Created by llm_matcher/gpt.py.
-        similaritiesFile (Path): Path to the CSV file containing pair similarities.
-        Created by discarder/discarder.py.
-        sim_function (str, optional): The similarity function to use. Default is "overlap".
+    Args:
+    n_dicard (int): The number of lowest similarity pairs to discard.
+    runFile (Path): Path to the run JSON file containing completion information. Created by llm_matcher/gpt.py.
+    similaritiesFile (Path): Path to the CSV file containing pair similarities. Created by discarder/discarder.py.
+    sim_function (str, optional): The similarity function to use. Default is "overlap".
 
     Returns:
-        tuple: A tuple containing accuracy, precision, recall, F1 score,
+        dict: A dictionary containing e.g. accuracy, precision, recall, F1 score,
                remaining cost, cost reduction percentage, remaining duration,
                and duration reduction percentage.
+
+    Raises:
+        ValueError: If the similarity file is missing values for some pairs.
     """
     dataset_name = runFile.stem.split("-")[0]
     truths, predictions, _, _, pair_ids = read_run_deprecated(runFile)
@@ -183,22 +190,23 @@ def discarding_matcher_n(
 
 def discarding_matcher_cov(
     coverage: float, runFile: Path, similaritiesFile: Path, sim_function="overlap"
-):
+) -> dict:
     """
-    Evaluate the performance of a discarding matcher based on a given threshold.
+    Evaluate the performance of a discarding matcher based on a given coverage.
 
-    Parameters:
-        threshold (float): The similarity threshold for discarding pairs.
-        runFile (Path): Path to the run JSON file containing completion information.
-        Created by llm_matcher/gpt.py.
-        similaritiesFile (Path): Path to the CSV file containing pair similarities.
-        Created by discarder/discarder.py.
-        sim_function (str, optional): The similarity function to use. Default is "overlap".
+    Args:
+    coverage (int): The fraction of lowest similarity pairs to discard.
+    runFile (Path): Path to the run JSON file containing completion information. Created by llm_matcher/gpt.py.
+    similaritiesFile (Path): Path to the CSV file containing pair similarities. Created by discarder/discarder.py.
+    sim_function (str, optional): The similarity function to use. Default is "overlap".
 
     Returns:
-        tuple: A tuple containing accuracy, precision, recall, F1 score,
+        dict: A dictionary containing e.g. accuracy, precision, recall, F1 score,
                remaining cost, cost reduction percentage, remaining duration,
                and duration reduction percentage.
+
+    Raises:
+        ValueError: If the similarity file is missing values for some pairs.
     """
     completions = read_run_raw(runFile)
     n_discard = int(coverage * len(completions))

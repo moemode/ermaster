@@ -1,7 +1,6 @@
 """
-This script runs the discarding matcher algorithm on multiple datasets with different threshold values.
+Runs the discarding matcher algorithm on multiple datasets with different threshold values.
 It calculates various performance metrics such as accuracy, precision, recall, F1 score, cost, and duration.
-The results are stored in a pandas DataFrame and saved as a CSV file.
 """
 
 from pathlib import Path

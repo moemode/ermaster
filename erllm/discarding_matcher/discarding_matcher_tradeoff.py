@@ -1,7 +1,8 @@
 """
-Generate and analyze performance trade-off metrics for the discarding matcher based on F1 decrease thresholds.
-Reads performance metrics from a CSV file, calculates F1 decrease, relative cost, and relative duration for each dataset and threshold.
+Generate and analyze performance/cost trade-off for the discarding matcher based on F1 decrease thresholds.
+Calculates F1 decrease, relative cost, and relative duration for each dataset and threshold.
 """
+
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH, EVAL_WRITEUP_FOLDER_PATH
 
