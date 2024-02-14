@@ -1,7 +1,10 @@
+"""
+Provides functions for converting labeled pairs of entities to Ditto format and split them into train, validation, and test sets.
+"""
+
 from pathlib import Path
 from typing import Iterable
-import pandas as pd
-from typing import Iterable, Tuple, Set
+from typing import List, Iterable, Tuple, Set
 from pathlib import Path
 import random
 from erllm.dataset.entity import Entity, OrderedEntity
@@ -14,8 +17,23 @@ LabeledPairsSet = Set[Tuple[int | bool, Entity | OrderedEntity, Entity | Ordered
 
 
 def to_ditto_task(
-    train: LabeledPairs, valid: LabeledPairs, test: LabeledPairs, task_folder: Path
+    train: List[LabeledPairs],
+    valid: List[LabeledPairs],
+    test: List[LabeledPairs],
+    task_folder: Path,
 ) -> None:
+    """
+    Convert labeled pairs to Ditto format and save them as text files.
+
+    Args:
+        train (List[LabeledPairs]): List of labeled pairs for training.
+        valid (List[LabeledPairs]): List of labeled pairs for validation.
+        test (List[LabeledPairs]): List of labeled pairs for testing.
+        task_folder (Path): Path to the folder where the Ditto files will be saved.
+
+    Returns:
+        None
+    """
     task_folder.mkdir(parents=True, exist_ok=True)
     for labeled_pairs, stem in zip((train, valid, test), ("train", "valid", "test")):
         ditto_file = task_folder / f"{stem}.txt"
@@ -47,6 +65,18 @@ def ditto_split(
     valid_fraction: float,
     seed: int,
 ) -> Tuple[LabeledPairs, LabeledPairs, LabeledPairs]:
+    """
+    Split the labeled pairs into train, validation, and remaining pairs.
+
+    Args:
+        labeled_pairs (LabeledPairs): The set of labeled pairs.
+        train_fraction (float): The fraction of pairs to be used for training.
+        valid_fraction (float): The fraction of pairs to be used for validation.
+        seed (int): The seed value for randomization.
+
+    Returns:
+        Tuple[LabeledPairs, LabeledPairs, LabeledPairs]: A tuple containing the train, validation, and remaining pairs.
+    """
     labeled_pairs = set(labeled_pairs)
     N = len(labeled_pairs)
     pos_ratio = sum(label for label, _, _ in labeled_pairs) / len(labeled_pairs)
@@ -67,6 +97,18 @@ def ditto_split(
 def sample(
     labeled_pairs: LabeledPairsSet, pos_ratio: float, N: int, seed: int
 ) -> LabeledPairsSet:
+    """
+    Randomly samples a subset of labeled pairs from the given set, with a specified positive ratio.
+
+    Args:
+        labeled_pairs (LabeledPairsSet): The set of labeled pairs.
+        pos_ratio (float): The desired ratio of positive pairs in the sampled subset.
+        N (int): The total number of pairs to sample.
+        seed (int): The seed value for the random number generator.
+
+    Returns:
+        LabeledPairsSet: The sampled subset of labeled pairs.
+    """
     random.seed(seed)
     N_pos = int(round(N * pos_ratio))
     N_neg = N - N_pos
@@ -81,12 +123,3 @@ def sample(
     )
     neg_sample = set(random.sample(neg, N_neg))
     return pos_sample.union(neg_sample)
-
-
-def sample_df(df: pd.DataFrame, n_pos: int, n_neg: int, seed: int) -> pd.DataFrame:
-    # sample N_train_pos rows with label 1 and N_train_neg rows with label 0
-    pos = df[df["label"] == 1].sample(n_pos, random_state=seed)
-    # Sample N_train_neg rows with label 0
-    neg = df[df["label"] == 0].sample(n_neg, random_state=seed)
-    # Concatenate the positive and negative samples to create the final training set
-    return pd.concat([pos, neg])
