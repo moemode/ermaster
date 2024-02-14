@@ -1,3 +1,8 @@
+"""
+Implements the discarding selective matcher and includes functions for evaluating its
+classification performance, cost and duration.
+"""
+
 from pathlib import Path
 from typing import Any, Dict, Set, Tuple
 import pandas as pd
