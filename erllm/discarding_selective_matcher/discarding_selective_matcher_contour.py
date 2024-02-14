@@ -1,3 +1,7 @@
+"""
+Create contour plots which map the discard and label fractions to the mean F1, precision, recall. 
+"""
+
 from pathlib import Path
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
@@ -20,18 +24,35 @@ CONFIGURATIONS = {
 }
 
 
-def format_percentages(c):
-    return f"{c*100:.0f}\%"
-
-
 def get_mean_df(df: pd.DataFrame, metric: str) -> pd.DataFrame:
+    """
+    Calculate the mean value of a given metric for each combination of "Label Fraction" and "Discard Fraction" in the DataFrame.
+
+    Parameters:
+        df (pd.DataFrame): The input DataFrame.
+        metric (str): The name of the metric column.
+
+    Returns:
+        pd.DataFrame: A DataFrame with the mean values of the metric, indexed by "Discard Fraction" and with columns representing "Label Fraction".
+    """
     df = df.groupby(["Label Fraction", "Discard Fraction"])
     # Calculate mean for each metric
     df = df[metric].mean().reset_index()
     return df.pivot(index="Discard Fraction", columns="Label Fraction", values=metric)
 
 
-def make_contour_2d(df: pd.DataFrame, metric: str, save_to: Path) -> str:
+def make_contour_2d(df: pd.DataFrame, metric: str, save_to: Path) -> None:
+    """
+    Create a 2D contour plot based on the given DataFrame and metric.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the data.
+        metric (str): The metric to be plotted.
+        save_to (Path): The path to save the contour plot.
+
+    Returns:
+        None
+    """
     pivot_df = get_mean_df(df, metric)
     x = pivot_df.columns.to_numpy()
     y = pivot_df.index.to_numpy()
@@ -50,7 +71,18 @@ def make_contour_2d(df: pd.DataFrame, metric: str, save_to: Path) -> str:
     plt.savefig(file_path)
 
 
-def make_contour_2d_im(df: pd.DataFrame, metric: str, save_to: Path) -> str:
+def make_contour_2d_im(df: pd.DataFrame, metric: str, save_to: Path) -> None:
+    """
+    Create a 2D contour plot from a DataFrame using plt.imshow.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame.
+        metric (str): The metric to be plotted.
+        save_to (Path): The path to save the plot.
+
+    Returns:
+        None
+    """
     pivot_df = get_mean_df(df, metric)
     x = pivot_df.columns.to_numpy()
     y = pivot_df.index.to_numpy()
@@ -64,7 +96,18 @@ def make_contour_2d_im(df: pd.DataFrame, metric: str, save_to: Path) -> str:
     plt.show()
 
 
-def make_contour_3d(df: pd.DataFrame, metric: str, save_to: Path) -> str:
+def make_contour_3d(df: pd.DataFrame, metric: str, save_to: Path) -> None:
+    """
+    Creates a 3D contour plot based on the given DataFrame and metric.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the data.
+        metric (str): The metric to be plotted on the z-axis.
+        save_to (Path): The path to save the plot.
+
+    Returns:
+        None
+    """
     pivot_df = get_mean_df(df, metric)
     print(pivot_df)
     x = pivot_df.columns.to_numpy()

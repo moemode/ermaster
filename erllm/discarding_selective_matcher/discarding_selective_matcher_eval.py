@@ -1,3 +1,8 @@
+"""
+Calculates the mean values across datasets for specified metrics, 
+based on the results obtained by running the discarding selective matcher.
+"""
+
 from typing import Iterable
 import pandas as pd
 from pathlib import Path
@@ -16,7 +21,19 @@ CONFIGURATIONS = {
 }
 
 
-def eval(result_folder: Path, mean_metrics: Iterable[str]):
+def eval(result_folder: Path, mean_metrics: Iterable[str]) -> None:
+    """
+    For each matcher configuration calculate the mean across datasets for the given metric.
+
+    Args:
+        result_folder (Path): The path to the folder containing the result file.
+        The result file contains results for every dataset and dsm configuration.
+        It was produced by discarding_selective_matcher_runner.py
+        mean_metrics (Iterable[str]): The list of metrics for which the mean will be calculated.
+
+    Returns:
+        None
+    """
     result_file = result_folder / "result.csv"
     result = pd.read_csv(result_file)
     # Group by Label Fraction, Discard Fraction, and Method
