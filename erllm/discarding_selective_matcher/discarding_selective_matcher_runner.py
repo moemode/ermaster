@@ -1,3 +1,7 @@
+"""
+Runs and evaluates the discarding selective matcher for various configurations.
+"""
+
 from pathlib import Path
 from typing import Iterable, Optional
 from tqdm import tqdm
@@ -40,7 +44,19 @@ def discarding_selective_matcher_runner(
     similarity_files: Iterable[Path],
     params: Iterable[tuple[float, float]],
     outfile: Optional[Path] = None,
-):
+) -> pd.DataFrame:
+    """
+    Run the discarding selective matcher for multiple configurations and return detailed results.
+
+    Args:
+        runfiles (Iterable[Path]): Iterable of paths to runfiles.
+        similarity_files (Iterable[Path]): Iterable of paths to similarity files.
+        params (Iterable[tuple[float, float]]): Iterable of tuples specifying discard_fraction and label_fraction.
+        outfile (Optional[Path]): Optional path to save the results as a CSV file.
+
+    Returns:
+        pd.DataFrame: DataFrame containing detailed results of the discarding selective matcher.
+    """
     results = []
     for path in runfiles:
         for param_num, (discard_fraction, label_fraction) in tqdm(enumerate(params)):

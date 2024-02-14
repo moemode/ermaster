@@ -1,3 +1,7 @@
+"""
+Create a table which shows one metric like mean F1 across different label and discard fractions.
+"""
+
 from pathlib import Path
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
@@ -17,11 +21,34 @@ CONFIGURATIONS = {
 }
 
 
-def format_percentages(c):
+def format_percentages(c: float) -> str:
+    """
+    Formats a given float value as a percentage string.
+
+    Args:
+        c (float): The float value to be formatted as a percentage.
+
+    Returns:
+        str: The formatted percentage string.
+    """
     return f"{c*100:.0f}\%"
 
 
 def build_table(df: pd.DataFrame, metric: str, save_to: Path) -> str:
+    """
+    Create a styled and formatted LaTeX table from a DataFrame containing evaluation results.
+    The DataFrame should have "Label Fraction", "Discard Fraction", and the specified metric as columns.
+    The function generates a styled LaTeX table and saves it as a .tex file in the specified directory.
+    Styling highlights cells to improve readability: lightgreen for the first row, lightblue for the top-left cell, and lightred for the first column.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing evaluation results, including columns "Label Fraction", "Discard Fraction", and the specified metric.
+        metric (str): The metric for which the table will display mean values across label and discard fractions.
+        save_to (Path): The directory where the LaTeX table file will be saved.
+
+    Returns:
+        str: The LaTeX code representing the styled table.
+    """
     df = df.groupby(["Label Fraction", "Discard Fraction"])
     # Calculate mean for each metric
     df = df[metric].mean().reset_index()
