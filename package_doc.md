@@ -7,9 +7,10 @@
 | [erllm.dataset](#package-erllmdataset) | Covers entity representation, dataset loading, downsampling.  The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled  datasets of matching and non-matching DBpedia entity pairs for benchmarking. |
 | [erllm.dataset.dbpedia](#package-erllmdatasetdbpedia) | Handles DBPedia data including loading raw data into SQLite,  interaction, and generation of labeled datasets using token blocking for benchmarking. |
 | [erllm.dataset.ditto](#package-erllmdatasetditto) | Convert existing datasets to DITTO format. |
-| [erllm.discarder](#package-erllmdiscarder) | Explores the similarity-based discarder in isolation.  Computes and saves set-based and embedding-based similarities for pairs of entities,  evaluates the impact of discarding based on various similarity functions, and visualizes the results. |
+| [erllm.discarder](#package-erllmdiscarder) | Explores the similarity-based discarder in isolation.  Computes and saves set-based and embedding-based similarities for pairs of entities,  Includes functionality to save results and computation time into similarity files, compute various discarder statistics, and generate visualizations. |
 | [erllm.discarding_matcher](#package-erllmdiscarding_matcher) | Explores the similarity-based discarding matcher.  Simulates a discarding matcher, evaluates its performance on multiple datasets  with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds. |
 | [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) | Explores the similarity-based discarding matcher.  Simulates a discarding matcher, evaluates its performance on multiple datasets  with different threshold values, generates performance plots, and analyzes trade-off metrics based on F1 decrease thresholds. |
+| [erllm.ditto](#package-erllmditto) |  |
 | [erllm.llm_matcher](#package-erllmllm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API. |
 | [erllm.selective_classifier](#package-erllmselective_classifier) | Explores selective classification. |
 | [erllm.selective_matcher](#package-erllmselective_matcher) | Explores selective classification. |
@@ -83,6 +84,14 @@
 | [discarding_selective_matcher_eval.py](erllm/discarding_selective_matcher/discarding_selective_matcher_eval.py) |  |
 | [discarding_selective_matcher_metric_table.py](erllm/discarding_selective_matcher/discarding_selective_matcher_metric_table.py) |  |
 | [discarding_selective_matcher_runner.py](erllm/discarding_selective_matcher/discarding_selective_matcher_runner.py) |  |
+
+## Package: erllm.ditto
+
+| Module | Purpose |
+| --- | --- |
+| [add_to_ditto_configs.py](erllm/ditto/add_to_ditto_configs.py) |  |
+| [ditto_combine_predictions.py](erllm/ditto/ditto_combine_predictions.py) | Based on the stats of train and valid set and the results of running ditto, calculate the precision, recall, and F1 score for the total dataset. |
+| [sm_ditto_comparison.py](erllm/ditto/sm_ditto_comparison.py) |  |
 
 ## Package: erllm.llm_matcher
 
