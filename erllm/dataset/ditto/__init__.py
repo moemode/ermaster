@@ -1,3 +1,3 @@
 """
-Module for loading raw DBPedia data into subsampled csv files
+Convert existing datasets to DITTO format.
 """

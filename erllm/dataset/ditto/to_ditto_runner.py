@@ -1,3 +1,7 @@
+"""
+Generates Ditto datasets from existing datasets.
+"""
+
 import pandas as pd
 from pathlib import Path
 from erllm import DATASET_FOLDER_PATH, SAMPLED_DATASET_NAMES

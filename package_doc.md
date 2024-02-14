@@ -52,8 +52,8 @@
 
 | Module | Purpose |
 | --- | --- |
-| [to_ditto.py](erllm/dataset/ditto/to_ditto.py) |  |
-| [to_ditto_runner.py](erllm/dataset/ditto/to_ditto_runner.py) |  |
+| [to_ditto.py](erllm/dataset/ditto/to_ditto.py) | Provides functions for converting labeled pairs of entities to Ditto format and split them into train, validation, and test sets. |
+| [to_ditto_runner.py](erllm/dataset/ditto/to_ditto_runner.py) | Generates Ditto datasets from existing datasets. |
 
 ## Package: erllm.discarder
 
