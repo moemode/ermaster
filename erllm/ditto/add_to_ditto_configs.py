@@ -1,3 +1,8 @@
+"""
+Copy the datasets in DITTO format to the ditto folder into the subfolder data/erllm.
+Add the new datasets to the configs.json file in the ditto folder.
+"""
+
 import json
 from erllm import DATA_FOLDER_PATH
 import sys
@@ -7,7 +12,6 @@ import shutil
 DITTO_FOLDER = DATA_FOLDER_PATH / "benchmark_datasets" / "ditto"
 
 if __name__ == "__main__":
-    # Check if the correct number of command-line arguments is provided
     if len(sys.argv) != 2:
         print("Usage: python script.py <ditto_folder>")
         sys.exit(1)

@@ -1,3 +1,7 @@
+"""
+Creates a table containing F1 scores for DITTO and SM across all datasets.
+"""
+
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
 from erllm.utils import rename_datasets

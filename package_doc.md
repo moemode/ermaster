@@ -10,7 +10,7 @@
 | [erllm.discarder](#package-erllmdiscarder) | Explores the similarity-based discarder in isolation.  Computes and saves set-based and embedding-based similarities for pairs of entities,  Includes functionality to save results and computation time into similarity files, compute various discarder statistics, and generate visualizations. |
 | [erllm.discarding_matcher](#package-erllmdiscarding_matcher) | Simulates and evaluates the similarity-based discarding matcher. Contains generation of performance plots, and analysis of time/performance trade-off. |
 | [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) | Implements the discarding selective matcher. It includes functionalities for assessing classification performance, generating comparison tables and creating contour plots. |
-| [erllm.ditto](#package-erllmditto) |  |
+| [erllm.ditto](#package-erllmditto) | Support for configuring DITTO to run on the DITTO datasets and subsequent evaluation and comparison to selective matcher. |
 | [erllm.llm_matcher](#package-erllmllm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API. |
 | [erllm.selective_classifier](#package-erllmselective_classifier) | Explores selective classification. |
 | [erllm.selective_matcher](#package-erllmselective_matcher) | Explores selective classification. |
@@ -89,9 +89,9 @@
 
 | Module | Purpose |
 | --- | --- |
-| [add_to_ditto_configs.py](erllm/ditto/add_to_ditto_configs.py) |  |
+| [add_to_ditto_configs.py](erllm/ditto/add_to_ditto_configs.py) | Copy the datasets in DITTO format to the ditto folder into the subfolder data/erllm. Add the new datasets to the configs.json file in the ditto folder. |
 | [ditto_combine_predictions.py](erllm/ditto/ditto_combine_predictions.py) | Based on the stats of train and valid set and the results of running ditto, calculate the precision, recall, and F1 score for the total dataset. |
-| [sm_ditto_comparison.py](erllm/ditto/sm_ditto_comparison.py) |  |
+| [sm_ditto_comparison.py](erllm/ditto/sm_ditto_comparison.py) | Creates a table containing F1 scores for DITTO and SM across all datasets. |
 
 ## Package: erllm.llm_matcher
 
