@@ -8,7 +8,27 @@ conda activate erllm
 (erllm) python erllm_setup.py
 ```
 
-The datasets are under `data/benchmark_datasets/existingDatasets`.
+# From Dataset to Prompt to run file
+
+[prompt_data.py](erllm/llm_matcher/prompt_data.py) serializes the entities in a dataset to a string using a serialization function which determines how the entities are represented in the prompts. The output is a JSON file.
+
+[prompts.py](erllm/llm_matcher/prompts.py) takes this file as input and adds a prompt pre- and postfix.
+An example prefix is "Do the two entity descriptions refer to the same real-world entity? Answer with 'Yes' if they do and 'No' if they do not." The output is another JSON file.
+
+[gpt.py](erllm/llm_matcher/gpt.py) reads this file and constructs the full prompt from pre- and postfix and the serialized profile pair.
+It then sends the prompt to the OpenAI API and retrieves the response which contains token probabilities and more.
+gpt.py saves each prompt together with the response into a JSON *run file*.
+
+# The Role of run files and similarity files
+
+All composite matchers use these *run files* with the cached API response and do not query the API live.
+This saves cost and time.
+For the discarder, [discarder.py](erllm/discarder/discarder.py) precomputes the examined similarity functions between all profile pairs in all datasets.
+We save the similarity value and computation duration for all pairs of a dataset into one *similarity file* per dataset.
+All composite matchers containing a discarder use this similarity file with the precomputed results.
+
+The run files and similarity files are the only basic data relevant for the simulation of all matcher architectures and data analysis (e.g. generating confidence histograms).
+This means that all the other scripts in erllm operate on these data or derived information.
 
 # Package Overview
 
