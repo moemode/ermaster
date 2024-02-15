@@ -1,6 +1,9 @@
+"""
+Run and evaluate selective classification.
+"""
+
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
-
 from erllm import RUNS_FOLDER_PATH
 from erllm.llm_matcher.evalrun import CompletedPrompt, read_run_raw
 from erllm.utils import classification_metrics
@@ -106,7 +109,6 @@ def selective_classifier_cov(
 
 
 if __name__ == "__main__":
-    # example run for debugging
     CONFIGURATIONS = {
         "base": {
             "runfiles": RUNS_FOLDER_PATH / "35_base",

@@ -12,7 +12,7 @@
 | [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) | Implements the discarding selective matcher. It includes functionalities for assessing classification performance, generating comparison tables and creating contour plots. |
 | [erllm.ditto](#package-erllmditto) | Support for configuring DITTO to run on the DITTO datasets and subsequent evaluation and comparison to selective matcher. |
 | [erllm.llm_matcher](#package-erllmllm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API. These are saved into run files which serve as cache for all composite matchers. Also contains code to run and evaluate the LLM matcher. |
-| [erllm.selective_classifier](#package-erllmselective_classifier) | Explores selective classification. |
+| [erllm.selective_classifier](#package-erllmselective_classifier) | Supports running selective classification on various datasets, evaluating the performance over ranges of threshold/coverage parameters, and generating tables and plots to visualize the classification performance. |
 | [erllm.selective_matcher](#package-erllmselective_matcher) | Explores selective classification. |
 
 ## Package: erllm
@@ -109,10 +109,10 @@
 
 | Module | Purpose |
 | --- | --- |
-| [selective_classifier.py](erllm/selective_classifier/selective_classifier.py) |  |
-| [selective_classifier_runner.py](erllm/selective_classifier/selective_classifier_runner.py) | This script runs the discarding matcher algorithm on multiple datasets with different threshold values. It calculates various performance metrics such as accuracy, precision, recall, F1 score, cost, and duration. The results are stored in a pandas DataFrame and saved as a CSV file. |
-| [selective_classifier_tab.py](erllm/selective_classifier/selective_classifier_tab.py) | This script generates performance comparison plots for the discarding matcher. It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots for each dataset with different configurations, such as all metrics, no cost, and F1 with cost. It also creates plots with showing the performance on all datasets at once. |
-| [selective_classifier_vis.py](erllm/selective_classifier/selective_classifier_vis.py) | This script generates performance comparison plots for the discarding matcher. It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots for each dataset with different configurations, such as all metrics, no cost, and F1 with cost. It also creates plots with showing the performance on all datasets at once. |
+| [selective_classifier.py](erllm/selective_classifier/selective_classifier.py) | Run and evaluate selective classification. |
+| [selective_classifier_runner.py](erllm/selective_classifier/selective_classifier_runner.py) | Runs selective classification over ranges of threshold/coverage parameters on multiple datasets. |
+| [selective_classifier_tab.py](erllm/selective_classifier/selective_classifier_tab.py) | Create table of F1 scores per dataset for different coverages. |
+| [selective_classifier_vis.py](erllm/selective_classifier/selective_classifier_vis.py) | Generates classification performance comparison plots for selective classification. |
 
 ## Package: erllm.selective_matcher
 

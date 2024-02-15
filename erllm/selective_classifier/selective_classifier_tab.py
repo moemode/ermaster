@@ -1,9 +1,7 @@
 """
-This script generates performance comparison plots for the discarding matcher.
-It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots
-for each dataset with different configurations, such as all metrics, no cost, and F1 with cost.
-It also creates plots with showing the performance on all datasets at once.
+Create table of F1 scores per dataset for different coverages.
 """
+
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH, EVAL_WRITEUP_FOLDER_PATH, FIGURE_FOLDER_PATH
 from erllm.utils import rename_datasets

@@ -1,9 +1,7 @@
 """
-This script generates performance comparison plots for the discarding matcher.
-It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots
-for each dataset with different configurations, such as all metrics, no cost, and F1 with cost.
-It also creates plots with showing the performance on all datasets at once.
+Generates classification performance comparison plots for selective classification.
 """
+
 from pathlib import Path
 import seaborn as sns
 import pandas as pd
