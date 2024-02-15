@@ -8,7 +8,7 @@ conda activate erllm
 (erllm) python erllm_setup.py
 ```
 
-# From Dataset to Prompt to run file
+# From Dataset to prompts to run file
 
 [prompt_data.py](erllm/llm_matcher/prompt_data.py) serializes the entities in a dataset to a string using a serialization function which determines how the entities are represented in the prompts. The output is a JSON file.
 
@@ -19,7 +19,7 @@ An example prefix is "Do the two entity descriptions refer to the same real-worl
 It then sends the prompt to the OpenAI API and retrieves the response which contains token probabilities and more.
 gpt.py saves each prompt together with the response into a JSON *run file*.
 
-# The Role of run files and similarity files
+# The role of run files and similarity files
 
 All composite matchers use these *run files* with the cached API response and do not query the API live.
 This saves cost and time.
