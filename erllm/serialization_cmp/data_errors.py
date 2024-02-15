@@ -1,3 +1,7 @@
+"""
+Generate comparison table of LLM matcher's mean F1, precision and recall across datasets in presence of data errors.
+"""
+
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
 from eval_writeup.writeup_utils import rename_datasets

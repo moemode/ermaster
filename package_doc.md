@@ -13,7 +13,8 @@
 | [erllm.ditto](#package-erllmditto) | Support for configuring DITTO to run on the DITTO datasets and subsequent evaluation and comparison to selective matcher. |
 | [erllm.llm_matcher](#package-erllmllm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API. These are saved into run files which serve as cache for all composite matchers. Also contains code to run and evaluate the LLM matcher. |
 | [erllm.selective_classifier](#package-erllmselective_classifier) | Supports running selective classification on various datasets, evaluating the performance over ranges of threshold/coverage parameters, and generating tables and plots to visualize the classification performance. |
-| [erllm.selective_matcher](#package-erllmselective_matcher) | Explores selective classification. |
+| [erllm.selective_matcher](#package-erllmselective_matcher) | Implements and evaluates the selective matcher and random labeling.  Supports running both methods across parameter ranges and datasets and generating comparison tables. |
+| [erllm.serialization_cmp](#package-erllmserialization_cmp) | Compares entity serialization schemes, evaluating their performance with and without attribute names.  Also evaluates the impact of data errors. |
 
 ## Package: erllm
 
@@ -118,8 +119,15 @@
 
 | Module | Purpose |
 | --- | --- |
-| [random_table.py](erllm/selective_matcher/random_table.py) | This script generates performance comparison plots for the discarding matcher. It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots for each dataset with different configurations, such as all metrics, no cost, and F1 with cost. It also creates plots with showing the performance on all datasets at once. |
-| [random_table_with_sd.py](erllm/selective_matcher/random_table_with_sd.py) | This script generates performance comparison plots for the discarding matcher. It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots for each dataset with different configurations, such as all metrics, no cost, and F1 with cost. It also creates plots with showing the performance on all datasets at once. |
-| [selective_matcher.py](erllm/selective_matcher/selective_matcher.py) | Defines functions to manually label predictions by selecting the k most uncertain,  k most uncertain negative, and k random predictions from a given set. It applies these labeling strategies to predictions on different datasets,  calculates various classification metrics, and saves the results for comparison. |
-| [selective_matcher_runner.py](erllm/selective_matcher/selective_matcher_runner.py) | This script runs the discarding matcher algorithm on multiple datasets with different threshold values. It calculates various performance metrics such as accuracy, precision, recall, F1 score, cost, and duration. The results are stored in a pandas DataFrame and saved as a CSV file. |
-| [selective_matcher_vs_base_table.py](erllm/selective_matcher/selective_matcher_vs_base_table.py) | This script generates performance comparison plots for the discarding matcher. It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots for each dataset with different configurations, such as all metrics, no cost, and F1 with cost. It also creates plots with showing the performance on all datasets at once. |
+| [random_table.py](erllm/selective_matcher/random_table.py) | Create a latex comparison table of F1 scores between LLM matcher and random labeling at different label fractions. |
+| [random_table_with_sd.py](erllm/selective_matcher/random_table_with_sd.py) | Creates a latex table displaying std. dev. of F1 scores for different fractions of random labeling. |
+| [selective_matcher.py](erllm/selective_matcher/selective_matcher.py) | Implements the selective matcher and the labeling of randomly chosen predictions. It applies these to predictions on different datasets and calculates various classification metrics. |
+| [selective_matcher_runner.py](erllm/selective_matcher/selective_matcher_runner.py) | This script runs and evaluates the selective matcher across parameter ranges and datasets. |
+| [selective_matcher_vs_base_table.py](erllm/selective_matcher/selective_matcher_vs_base_table.py) | Create a latex comparison table of F1 scores between LLM matcher and selective matcher at different label fractions. |
+
+## Package: erllm.serialization_cmp
+
+| Module | Purpose |
+| --- | --- |
+| [attribute_comparison.py](erllm/serialization_cmp/attribute_comparison.py) | Creates per dataset and mean comparison tables for comparing entitiy serialization schemes with and without attributes names. |
+| [data_errors.py](erllm/serialization_cmp/data_errors.py) | Generate comparison table of LLM matcher's mean F1, precision and recall across datasets in presence of data errors. |

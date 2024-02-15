@@ -1,7 +1,5 @@
 """
-This script runs the discarding matcher algorithm on multiple datasets with different threshold values.
-It calculates various performance metrics such as accuracy, precision, recall, F1 score, cost, and duration.
-The results are stored in a pandas DataFrame and saved as a CSV file.
+This script runs and evaluates the selective matcher across parameter ranges and datasets.
 """
 
 from pathlib import Path
@@ -45,6 +43,17 @@ def selective_matcher_runner(
     label_fractions: Iterable[float],
     outfile: Optional[Path] = None,
 ) -> pd.DataFrame:
+    """
+    Runs the selective matcher on multiple datasets for multiple label fractions.
+
+    Args:
+        runfiles (Iterable[Path]): A collection of paths to the runfiles.
+        label_fractions (Iterable[float]): A collection of label fractions.
+        outfile (Optional[Path], optional): The output file path to save the results. Defaults to None.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the results of the selective matcher algorithm.
+    """
     results = []
     for path in runfiles:
         for label_fraction in label_fractions:

@@ -1,3 +1,7 @@
+"""
+Creates per dataset and mean comparison tables for comparing entitiy serialization schemes with and without attributes names.
+"""
+
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
 from erllm.utils import rename_datasets

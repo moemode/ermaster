@@ -1,9 +1,7 @@
 """
-This script generates performance comparison plots for the discarding matcher.
-It reads performance metrics from a CSV file, filters the data based on selected metrics, and creates line plots
-for each dataset with different configurations, such as all metrics, no cost, and F1 with cost.
-It also creates plots with showing the performance on all datasets at once.
+Creates a latex table displaying std. dev. of F1 scores for different fractions of random labeling.
 """
+
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH, EVAL_WRITEUP_FOLDER_PATH
 from erllm.utils import rename_datasets
@@ -76,23 +74,3 @@ if __name__ == "__main__":
     df["F1 SD"] = df["F1 SD"].apply(lambda x: f"{x:.4f}")
     # only keep rows with fraction 0.0 and 0.15
     df.to_latex(cfg["save_to"], escape=True, index=False)
-    """
-    # keep only Dataset, coverage, f1
-    df = df[["Dataset", "coverage", "f1"]]
-    print(df)
-    # Pivot the DataFrame to create separate columns for each coverage
-    df_pivot = df.pivot(index="Dataset", columns="coverage", values="f1").reset_index()
-    # reorder columns from largest to smallest
-    df_pivot = df_pivot[["Dataset", *fractions]]
-    # Sort descendingly of values in colum 1.0
-    df_pivot.sort_values(by=1.0, ascending=False, inplace=True)
-    print(df_pivot)
-    # convert all column names to string
-    df_pivot.columns = df_pivot.columns.astype(str)
-    df_pivot.to_latex(
-        cfg["save_to"],
-        index=False,
-        escape=True,
-        float_format="%.3f",
-    )
-    """

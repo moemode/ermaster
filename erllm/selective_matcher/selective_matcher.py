@@ -1,9 +1,8 @@
 """
-Defines functions to manually label predictions by selecting the k most uncertain, 
-k most uncertain negative, and k random predictions from a given set.
-It applies these labeling strategies to predictions on different datasets, 
-calculates various classification metrics, and saves the results for comparison.
+Implements the selective matcher and the labeling of randomly chosen predictions.
+It applies these to predictions on different datasets and calculates various classification metrics.
 """
+
 from typing import Tuple
 from sklearn.metrics import confusion_matrix
 import numpy as np
@@ -71,6 +70,18 @@ def eval_corrected_prediction(
     predictions: np.ndarray,
     corrected_predictions: np.ndarray,
 ) -> Tuple[float, float, float, float, int, int, int, int, int]:
+    """
+    Evaluate the correctness of corrected predictions compared to ground truth.
+
+    Args:
+        truths (np.ndarray): Ground truth labels.
+        predictions (np.ndarray): Original predictions.
+        corrected_predictions (np.ndarray): Corrected predictions.
+
+    Returns:
+        Tuple[float, float, float, float, int, int, int, int, int]: A tuple containing the precision, recall, F1 score,
+        accuracy, number of corrected predictions, true negatives, false positives, false negatives, and true positives.
+    """
     n_corrected = np.sum(predictions != corrected_predictions)
     prec, rec, f1, acc = classification_metrics(truths, corrected_predictions)
     # confusion matrix
@@ -91,9 +102,47 @@ eval_corrected_prediction.ret_dict_keys = (
 )
 
 
+def eval_selective_matcher(
+    truths: np.ndarray, predictions: np.ndarray, probabilities: np.ndarray, k: int
+) -> dict:
+    """
+    Evaluate the performance of the selective matcher.
+
+    Args:
+        truths (np.ndarray): Ground truth labels.
+        predictions (np.ndarray): Predicted labels.
+        probabilities (np.ndarray): Prediction probabilities.
+        k (int): Number of most uncertain predictions to label.
+
+    Returns:
+        dict: Dictionary containing evaluation metrics.
+    """
+    corrected_predictions = selective_matcher(truths, predictions, probabilities, k)
+    return dict(
+        zip(
+            eval_corrected_prediction.ret_dict_keys,
+            eval_corrected_prediction(truths, predictions, corrected_predictions),
+        )
+    )
+
+
 def eval_label_k_random(
     truths: np.ndarray, predictions: np.ndarray, k: int, tries: int
 ) -> dict:
+    """
+    Evaluate the performance of the label_k_random function by comparing the corrected predictions
+    with the ground truth labels.
+
+    Args:
+        truths (np.ndarray): Ground truth labels.
+        predictions (np.ndarray): Predicted labels.
+        k (int): Number of labels to randomly select for correction.
+        tries (int): Number of times to repeat the evaluation.
+
+    Returns:
+        dict: A dictionary containing the evaluation metrics, including the mean and standard deviation
+        of each metric.
+    """
     metrics = []
     for _ in range(tries):
         corrected_predictions = label_k_random(truths, predictions, k)
@@ -104,70 +153,3 @@ def eval_label_k_random(
     sds = zip(sd_ret_dict_keys, np.std(metrics, axis=0))
     means = zip(eval_corrected_prediction.ret_dict_keys, np.mean(metrics, axis=0))
     return dict(list(sds) + list(means))
-
-
-def eval_selective_matcher(
-    truths: np.ndarray, predictions: np.ndarray, probabilities: np.ndarray, k: int
-) -> dict:
-    corrected_predictions = selective_matcher(truths, predictions, probabilities, k)
-    return dict(
-        zip(
-            eval_corrected_prediction.ret_dict_keys,
-            eval_corrected_prediction(truths, predictions, corrected_predictions),
-        )
-    )
-
-
-def blah():
-    """
-    truths = truths_orig.copy()
-    predictions = predictions_orig.copy()
-    precisions, recalls, f1s, accuracies = [], [], [], []
-    for i in range(tries):
-        random_indices = np.random.choice(len(predictions), k, replace=False)
-        predictions[random_indices] = truths[random_indices]
-        prec, rec, f1, acc = classification_metrics(truths, predictions)
-        precisions.append(prec)
-        recalls.append(rec)
-        f1s.append(f1)
-        accuracies.append(acc)
-
-    return {
-        "Precision_Random": np.mean(precisions),
-        "Recall_Random": np.mean(recalls),
-        "F1_Random": np.mean(f1s),
-        "Accuracy_Random": np.mean(accuracies),
-        "Precision_Random_std": np.std(precisions),
-        "Recall_Random_std": np.std(recalls),
-        "N_corrected_Random": np.sum(predictions != predictions_orig),
-        "F1_Random_std": np.std(f1s),
-        "Accuracy_Random_std": np.std(accuracies),
-    }
-    """
-    pass
-
-
-# def label_k_most_uncertain_negative(
-#     truths: np.ndarray, predictions: np.ndarray, probabilities: np.ndarray, k: int
-# ) -> Tuple[float, float, float, float]:
-#     """
-#     Label the k most uncertain negative predictions and calculate classification metrics.
-
-#     Parameters:
-#         truths (np.ndarray): Ground truth labels.
-#         predictions (np.ndarray): Model predictions.
-#         probabilities (np.ndarray): Prediction probabilities.
-#         k (int): Number of most uncertain negative predictions to label.
-
-#     Returns:
-#         Tuple[float, float, float, float]: Precision, Recall, F1-score, and Accuracy.
-#     """
-#     truths = truths.copy()
-#     predictions = predictions.copy()
-#     probabilities = probabilities.copy()
-#     # Get the indices of false predictions with the smallest probabilities
-#     false_indices = np.where(predictions == False)[0]
-#     sorted_false_indices = false_indices[np.argsort(probabilities[false_indices])]
-#     # Set the first k entries of predictions to the negative of truths
-#     predictions[sorted_false_indices[:k]] = truths[sorted_false_indices[:k]]
-#     return classification_metrics(truths, predictions)
