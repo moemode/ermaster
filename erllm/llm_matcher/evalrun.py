@@ -1,6 +1,7 @@
 """
-Methods for reading run files, deriving classification decisions, and calculating classification and calibration metrics 
+Methods for reading run files, deriving classification decisions, and calculating classification and calibration metrics.
 """
+
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
@@ -105,6 +106,18 @@ class CompletedPrompt:
 
     @classmethod
     def from_json(cls, sample: Dict[str, Any]) -> "CompletedPrompt":
+        """
+        Create a CompletedPrompt instance from a JSON sample.
+        The expected structure of the JSON sample includes fields like prompt_string, truth, completion,
+        and relevant probabilities for the Yes and No predictions. The method supports both the new chat API
+        and the old completions API, handling differences in structure accordingly.
+
+        Args:
+            sample (Dict[str, Any]): The JSON sample containing information about the completed prompt.
+
+        Returns:
+            CompletedPrompt: An instance of CompletedPrompt.
+        """
         prompt_string, truth, completion = sample["p"], sample["t"], sample["c"]
         # new api: chat, old api: completions, chat api has different structure
         is_chat_api = "content" in completion["logprobs"]
@@ -132,18 +145,22 @@ class CompletedPrompt:
         )
 
 
-def calibration_data(truths, predictions, probabilities):
+def calibration_data(
+    truths: np.ndarray, predictions: np.ndarray, probabilities: np.ndarray
+) -> dict:
     """
     Calculate calibration metrics given ground truth, predictions, and predicted probabilities.
-    These are returned by read_run.
+    They are returned by read_run.
 
     Parameters:
-        truths (array-like): Ground truth labels.
-        predictions (array-like): Predicted binary labels.
-        probabilities (array-like): Predicted probabilities.
+        truths (np.ndarray): Ground truth labels.
+        predictions (np.ndarray): Predicted binary labels.
+        probabilities (np.ndarray): Predicted probabilities.
 
     Returns:
-        dict: Calibration metrics including Brier Score, Expected Calibration Error (ECE), and confusion matrix components.
+        dict: Calibration metrics including Brier Score, Expected Calibration Error (ECE),
+        and additional metrics derived from the estimated confusion matrix (EST_TN, EST_FP, EST_FN, EST_TP,
+        EST_Accuracy, EST_Precision, EST_Recall, EST_F1).
     """
     probabilities_brier = probabilities.copy()
     pred0 = 0 == predictions
@@ -285,7 +302,7 @@ def read_run_deprecated(
     )
 
 
-def eval(run: Path, save_to: Path):
+def eval(run: Path, save_to: Path) -> dict:
     """
     Evaluate LLM matcher performance based on a run file and save the results.
 

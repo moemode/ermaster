@@ -1,3 +1,7 @@
+"""
+Module for obtaining completions from the newer OpenAI Chat Completions API.
+"""
+
 from typing import Dict, Iterable
 import openai
 import os
@@ -18,6 +22,23 @@ def get_chat_completion(
     logprobs=None,  # whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message..
     top_logprobs=None,
 ) -> openai.ChatCompletion:
+    """
+    Generates a chat completion using the newer OpenAI Chat Completions API, the older version of which is the Completions API.
+
+    Args:
+        messages (list[dict[str, str]]): A list of messages in the conversation.
+        model (str, optional): The model to use for chat completion. Defaults to "gpt-4".
+        max_tokens (int, optional): The maximum number of tokens in the generated completion. Defaults to 500.
+        temperature (float, optional): The temperature to control the randomness of the output. Defaults to 0.
+        stop (str, optional): The stop sequence to end the generated completion. Defaults to None.
+        seed (int, optional): The random seed for reproducibility. Defaults to 123.
+        tools (str, optional): Additional tools to use for chat completion. Defaults to None.
+        logprobs (bool, optional): Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message. Defaults to None.
+        top_logprobs (int, optional): The number of top log probabilities to return. Defaults to None.
+
+    Returns:
+        openai.ChatCompletion: The generated chat completion.
+    """
     params = {
         "model": model,
         "messages": messages,

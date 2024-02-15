@@ -1,3 +1,7 @@
+"""
+Handles serialization of labeled entity pairs and saves result into JSON.
+"""
+
 from typing import Callable
 import json
 import random

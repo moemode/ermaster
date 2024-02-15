@@ -1,3 +1,8 @@
+"""
+Provides cost calculations for language models based on specified configurations, 
+including input and output costs.
+"""
+
 from collections import namedtuple
 from pathlib import Path
 from typing import Dict, List

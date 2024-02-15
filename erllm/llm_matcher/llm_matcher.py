@@ -1,7 +1,6 @@
 """
-Provides functions to evaluate the performance of the LLM Mathcer on a set of run files produced by the OpenAI GPT API. 
+Provides functions to evaluate the performance of the LLM matcher on a set of run files obtained from OpenAI's API. 
 It calculates various classification metrics, entropies, and calibration results. 
-The evaluation results are saved as JSON files for individual runs and aggregated into a CSV file for further analysis.
 """
 
 from pathlib import Path

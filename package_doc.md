@@ -11,7 +11,7 @@
 | [erllm.discarding_matcher](#package-erllmdiscarding_matcher) | Simulates and evaluates the similarity-based discarding matcher. Contains generation of performance plots, and analysis of time/performance trade-off. |
 | [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) | Implements the discarding selective matcher. It includes functionalities for assessing classification performance, generating comparison tables and creating contour plots. |
 | [erllm.ditto](#package-erllmditto) | Support for configuring DITTO to run on the DITTO datasets and subsequent evaluation and comparison to selective matcher. |
-| [erllm.llm_matcher](#package-erllmllm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API. |
+| [erllm.llm_matcher](#package-erllmllm_matcher) | Contains code to create prompts from datasets and get responses via OpenAI's API. These are saved into run files which serve as cache for all composite matchers. Also contains code to run and evaluate the LLM matcher. |
 | [erllm.selective_classifier](#package-erllmselective_classifier) | Explores selective classification. |
 | [erllm.selective_matcher](#package-erllmselective_matcher) | Explores selective classification. |
 
@@ -97,13 +97,13 @@
 
 | Module | Purpose |
 | --- | --- |
-| [cost.py](erllm/llm_matcher/cost.py) |  |
-| [evalrun.py](erllm/llm_matcher/evalrun.py) | Methods for reading run files, deriving classification decisions, and calculating classification and calibration metrics |
-| [gpt.py](erllm/llm_matcher/gpt.py) |  |
-| [gpt_chat.py](erllm/llm_matcher/gpt_chat.py) |  |
-| [llm_matcher.py](erllm/llm_matcher/llm_matcher.py) | Provides functions to evaluate the performance of the LLM Mathcer on a set of run files produced by the OpenAI GPT API.  It calculates various classification metrics, entropies, and calibration results.  The evaluation results are saved as JSON files for individual runs and aggregated into a CSV file for further analysis. |
-| [prompt_data.py](erllm/llm_matcher/prompt_data.py) |  |
-| [prompts.py](erllm/llm_matcher/prompts.py) |  |
+| [cost.py](erllm/llm_matcher/cost.py) | Provides cost calculations for language models based on specified configurations,  including input and output costs. |
+| [evalrun.py](erllm/llm_matcher/evalrun.py) | Methods for reading run files, deriving classification decisions, and calculating classification and calibration metrics. |
+| [gpt.py](erllm/llm_matcher/gpt.py) | Module for obtaining completions from the older OpenAI Completions API. |
+| [gpt_chat.py](erllm/llm_matcher/gpt_chat.py) | Module for obtaining completions from the newer OpenAI Chat Completions API. |
+| [llm_matcher.py](erllm/llm_matcher/llm_matcher.py) | Provides functions to evaluate the performance of the LLM matcher on a set of run files obtained from OpenAI's API.  It calculates various classification metrics, entropies, and calibration results. |
+| [prompt_data.py](erllm/llm_matcher/prompt_data.py) | Handles serialization of labeled entity pairs and saves result into JSON. |
+| [prompts.py](erllm/llm_matcher/prompts.py) | Combines serialized entities from JSON file with prompt prefix/postfix to create full prompts passed to OpenAI's API. |
 
 ## Package: erllm.selective_classifier
 

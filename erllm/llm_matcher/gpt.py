@@ -1,3 +1,7 @@
+"""
+Module for obtaining completions from the older OpenAI Completions API.
+"""
+
 import json
 import os
 from pathlib import Path

@@ -1,3 +1,7 @@
+"""
+Combines serialized entities from JSON file with prompt prefix/postfix to create full prompts passed to OpenAI's API.
+"""
+
 import json
 from dataclasses import dataclass
 from pathlib import Path
