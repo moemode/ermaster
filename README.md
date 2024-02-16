@@ -32,6 +32,9 @@ This means that all the other scripts in erllm operate on these data or derived 
 
 # Package Overview
 
+We recommend [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) over [erllm.discarding_matcher](#package-erllmdiscarding_matcher) and [erllm.selective_matcher](#package-erllmselective_matcher).
+The latter were coded first and a are subsumed by [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher).
+
 | Module | Purpose |
 | --- | --- |
 | [erllm](#package-erllm) | Root package. Contains installation, documentation generation and helper code. |
