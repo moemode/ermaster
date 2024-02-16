@@ -4,7 +4,7 @@
 | --- | --- |
 | [erllm](#package-erllm) | Root package. Contains installation, documentation generation and helper code. |
 | [erllm.calibration](#package-erllmcalibration) | Calibration analysis on entity matching LLM predictions. |
-| [erllm.dataset](#package-erllmdataset) | Covers entity representation, dataset loading, downsampling.  The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled  datasets of matching and non-matching DBpedia entity pairs for benchmarking. |
+| [erllm.dataset](#package-erllmdataset) | Covers entity representation, dataset loading and downsampling. |
 | [erllm.dataset.dbpedia](#package-erllmdatasetdbpedia) | Handles DBPedia data including loading raw data into SQLite,  interaction, and generation of labeled datasets using token blocking for benchmarking. |
 | [erllm.dataset.ditto](#package-erllmdatasetditto) | Convert existing datasets to DITTO format. |
 | [erllm.discarder](#package-erllmdiscarder) | Explores the similarity-based discarder in isolation.  Computes and saves set-based and embedding-based similarities for pairs of entities,  Includes functionality to save results and computation time into similarity files, compute various discarder statistics, and generate visualizations. |
