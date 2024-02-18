@@ -22,8 +22,14 @@ The *LLM* is unduly sensitive to the attribute order, as a randomized attribute 
 
 #### Mixed Attributes and Data Errors
 
-- **Embed-k:** The random selection results in different attributes for entities in a pair. At the same time, it preserves all the information in the attribute values that may be crucial for the matching decision.
+- **embed-k:** The random selection results in different attributes for entities in a pair. At the same time, it preserves all the information in the attribute values that may be crucial for the matching decision.
 
-- *misfield-k:* Generates misfielded values by assigning attribute values to a wrong attribute name. The inclusion of data errors leads to a deterioration of all metrics in all cases except precision for embed-1. The simulated data errors have a greater negative impact on recall than precision. The classification performance, as measured by F1, deteriorates for entity pairs with differing attributes and misfielded values (embed-1, embed-50%).
+- **misfield-k:** Generates misfielded values by assigning attribute values to a wrong attribute name.
+
+The inclusion of data errors leads to a deterioration of all metrics in all cases except precision for embed-1. 
+
+The simulated data errors have a greater negative impact on recall than precision. 
+
+The classification performance, as measured by F1, deteriorates for entity pairs with differing attributes and misfielded values (embed-1, embed-50%).
 
 In conclusion, misfielded values and a mixed schema with embedded values are a considerable challenge for the *LLM* (*gpt-3.5-turbo-instruct*).
