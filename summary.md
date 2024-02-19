@@ -33,3 +33,25 @@ The simulated data errors have a greater negative impact on recall than precisio
 The classification performance, as measured by F1, deteriorates for entity pairs with differing attributes and misfielded values (embed-1, embed-50%).
 
 In conclusion, misfielded values and a mixed schema with embedded values are a considerable challenge for the *LLM* (*gpt-3.5-turbo-instruct*).
+
+
+## 5.3 Discarding Matcher
+
+### 5.3.1 Evaluation of Discarder
+Desc:
+The discarding matcher comprises a discarder placed in front of a Large Language Model (LLM) matcher. The discarder calculates the similarity between two profiles using Jaccard and overlap set-based similarity measures, and cosine similarity from static GloVe word-embeddings. Only profile pairs with similarity above a certain threshold are forwarded to the LLM for classification.
+
+Datasets exhibit two patterns in the RR-PC trade-off: an "upside-down hockey stick" pattern signaling high potential for recall with substantial pair reduction, and a concave curve indicating a steeper PC decrease with RR increase, which is less desirable.
+
+Findings:
+Overall, set-based similarities outperform cosine similarity on embedding vectors. The overlap-based discarder shows the best overall performance.
+
+It is possible to discard a substantial amount (>50\%) of pairs while maintaining a PC and thus potential recall of the subsequent matching step 
+above 80\%. For the majority of datasets this trade-off is even much better.
+
+### 5.3.2 Evaluation of Discarding Matcher
+
+#### Time required by Discarder
+This shows that the run time of the discarder is negligible compared to the run time of the \gls{llm}.
+
+The discarder enables a large net time saving by being fast itself and avoiding the LLM computation on the discarded pairs.
