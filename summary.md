@@ -96,10 +96,13 @@ On some datasets, reducing coverage (labeling fewer predictions) improves the F1
 Selective classification can be used for extracting near-certain matches which could serve as ground-truth to train other models, for manual inspection, or enhancing the LLM's responses.
 
 #### 5.4.4 Selective Matcher
-
 In it, the LLM abstains from
-predictions below a certain confidence threshold and a human labels the abstained on
-pairs correctly in the final step
+predictions below a certain confidence threshold and a human labels the abstained on pairs correctly in the final step
 
-- The selective matcher abstains on pairs it is least confident about, allowing a user to manually label those pairs. Manual labeling of these low-confidence pairs is compared against randomly labeling an equivalent number of pairs.
-- The selective matcher, when complemented with manual labeling of low-confidence pairs (up to 15%), generally provided significant improvements in F1 scores across various datasets compared to both the standalone LLM Matcher and random labeling strategies.
+the selective matcher enables large improvements in classification performance as measured by F1 over the basic LLM Matcher across datasets.
+
+Manual labeling of these low-confidence pairs is compared against randomly labeling an equivalent number of pairs.
+
+the selective matcher is much more effective in improving classification performance than random labeling.
+
+Indeed, low confidences are a good indicator for where to focus the manual labeling effort and the selective matcher is an effective way to integrate a \gls{llm} for high quality entity matching
