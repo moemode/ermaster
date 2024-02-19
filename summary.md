@@ -66,3 +66,40 @@ Even on datasets where discarding works worse / less favorable RR-PC trade-offs 
 considerable  cost reductions are possible.
 For these two datasets, cost reductions of about 78\% and 46\% are possible  when allowing for an F1 reduction of 10\%.
 The discarding matcher is an efficient way to integrate an \gls{llm} for entity matching
+
+### 5.4 Selective Matcher
+
+
+For the confidence estimator we use the normalized maximum softmax probability
+
+#### 5.4.1 Confidence Estimator Calibration
+
+The Expected Calibration Error (ECE) is employed to measure the calibration quality, with lower ECE values indicating better calibration. Across various datasets, the ECE values ranged from 2.38\% to 4.35\%, suggesting a generally good calibration.
+
+#### 5.4.2 Estimating Performance
+
+We create a soft confusion matrix by leveraging the confidence values for estimating different performance metrics (accuracy, precision, recall, and F1 score).
+the accuracy estimates were close to actual values, with a maximum error of 4.27\%. 
+However, the precision, recall, and F1 estimates had large relative errors making them useless for performance estimation
+
+#### 5.4.3 Selective Classification
+
+Whereas the LLM makes a binary decision for all profile pairs in the LLM
+matcher, the selective LLM matcher abstains from a decision when it is unconfident.
+The abstained on profile pairs remain unlabeled, and we evaluate performance based
+on labeled pairs only.
+
+
+Datasets showed mixed results when applying selective classification. 
+On some datasets, reducing coverage (labeling fewer predictions) improves the F1 score on some datasets but has the exact opposite effect on others.
+
+Selective classification can be used for extracting near-certain matches which could serve as ground-truth to train other models, for manual inspection, or enhancing the LLM's responses.
+
+#### 5.4.4 Selective Matcher
+
+In it, the LLM abstains from
+predictions below a certain confidence threshold and a human labels the abstained on
+pairs correctly in the final step
+
+- The selective matcher abstains on pairs it is least confident about, allowing a user to manually label those pairs. Manual labeling of these low-confidence pairs is compared against randomly labeling an equivalent number of pairs.
+- The selective matcher, when complemented with manual labeling of low-confidence pairs (up to 15%), generally provided significant improvements in F1 scores across various datasets compared to both the standalone LLM Matcher and random labeling strategies.
