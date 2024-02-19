@@ -106,3 +106,7 @@ Manual labeling of these low-confidence pairs is compared against randomly label
 the selective matcher is much more effective in improving classification performance than random labeling.
 
 Indeed, low confidences are a good indicator for where to focus the manual labeling effort and the selective matcher is an effective way to integrate a \gls{llm} for high quality entity matching
+
+Ditto Comparison:
+
+When compared to DITTO, a state-of-the-art matching system, at 15% label fraction, the selective matcher outperforms DITTO on all evaluated datasets with a mucher higher mean F1 (0.89 vs 0.66) across datasets.
