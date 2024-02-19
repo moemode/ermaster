@@ -1,4 +1,4 @@
-# Summary
+# Summary of Evaluation Chapter
 
 ## 5.2 Entity Matching using LLM Matcher
 
@@ -89,7 +89,6 @@ matcher, the selective LLM matcher abstains from a decision when it is unconfide
 The abstained on profile pairs remain unlabeled, and we evaluate performance based
 on labeled pairs only.
 
-
 Datasets showed mixed results when applying selective classification. 
 On some datasets, reducing coverage (labeling fewer predictions) improves the F1 score on some datasets but has the exact opposite effect on others.
 
@@ -101,12 +100,38 @@ predictions below a certain confidence threshold and a human labels the abstaine
 
 the selective matcher enables large improvements in classification performance as measured by F1 over the basic LLM Matcher across datasets.
 
-Manual labeling of these low-confidence pairs is compared against randomly labeling an equivalent number of pairs.
+Manual labeling of these low-confidence pairs (selective matcher) is compared against randomly labeling an equivalent number of pairs.
 
 the selective matcher is much more effective in improving classification performance than random labeling.
 
 Indeed, low confidences are a good indicator for where to focus the manual labeling effort and the selective matcher is an effective way to integrate a \gls{llm} for high quality entity matching
 
-Ditto Comparison:
+##### Ditto Comparison:
 
 When compared to DITTO, a state-of-the-art matching system, at 15% label fraction, the selective matcher outperforms DITTO on all evaluated datasets with a mucher higher mean F1 (0.89 vs 0.66) across datasets.
+ 
+ The selective matcher's ability to outperform DITTO under restricted labeling conditions highlights its potential utility in scenarios with limited labeled data. This suggests a promising approach for leveraging large language models in entity resolution tasks, where manual labeling efforts are strategically focused on the most uncertain predictions to maximize performance gains.
+
+ #### 5.4.5 Discarding Selective Matcher
+For a given label fraction, the precision remains quite consistent across discard fractions.
+
+For a given label fraction, the recall remains quite consistent across discard fractions.
+
+We have seen that increasing the discard fraction increases precision and decreases recall while increasing the label fraction increases both measures.
+This is reflected in the F1 scores shown in \Cref{tab:dsm-f1}.
+When increasing the discard fraction at a given label fraction the F1 score decreases only slightly because the changes in precision and recall almost cancel each other out.
+In contrast, increasing the label fraction increases the F1 score strongly because of the increase in both precision and recall.
+
+The F1 score slightly decreases with increased discard fractions due to the recall drop balancing out precision gains. Conversely, an increase in label fractions boosts F1 scores noticeably due to concurrent improvements in both precision and recall.
+The highest F1 score (0.90) is attained at a label fraction of 15\% and a discard fraction of 50\%.
+This discard fraction is so conservative as to not negatively affect recall while slightly increasing precision.
+Consequently it leads to the highest F1 score.
+
+These results highlight a nuanced interplay between label and discard fractions in optimizing the DSM's performance: increasing label fractions generally benefits both precision and recall, leading to higher F1 scores, while adjusting discard fractions requires careful consideration to balance precision gains against potential recall losses. The optimal configuration for maximizing the F1 score involves a conservative discard fraction (50\%) coupled with a relatively modest label fraction (15\%).
+
+#### 5.4.6 Attractive Composite Matchers
+The LLM Matcher serves as the baseline, indicating no discard or labeling efforts while incurring the full cost and time. Fast & Cheap prioritizes cost efficiency by discarding 80% of the pairs, resulting in a slight decrease in recall but increased precision and a lower F1 score compared to the baseline. However, this comes with a significant reduction in cost and time.
+
+High Quality 1 & 2 involve manual labeling and potentially conservative discarding, aiming for substantially higher precision and recall than the baseline or the Fast & Cheap configuration. This, however, comes at the expense of higher financial and temporal investment. The demand for manual labeling makes the High-Quality configurations less feasible for larger datasets due to the associated costs and time requirements.
+
+In summary, these configurations offer a range of options for integrating LLMs into classification tasks, allowing a balance between cost, efficiency, and data quality.
