@@ -55,3 +55,14 @@ above 80\%. For the majority of datasets this trade-off is even much better.
 This shows that the run time of the discarder is negligible compared to the run time of the \gls{llm}.
 
 The discarder enables a large net time saving by being fast itself and avoiding the LLM computation on the discarded pairs.
+
+#### Trade-off between Cost or Time and Classification Performance
+
+the discarding matcher works best on the semi-structured DBPedia dataset and provides large cost and time savings on all datasets.
+
+In total, six datasets have a cost reduction of over 80\% when allowing for a F1 reduction of 2.5\%.
+
+Even on datasets where discarding works worse / less favorable RR-PC trade-offs (Abt-Buy and Walmart-Amazon), 
+considerable  cost reductions are possible.
+For these two datasets, cost reductions of about 78\% and 46\% are possible  when allowing for an F1 reduction of 10\%.
+The discarding matcher is an efficient way to integrate an \gls{llm} for entity matching
