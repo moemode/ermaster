@@ -1,3 +1,9 @@
+# Objectives
+* present way to integrate LLM for entity matching, measure efficiency and cost
+* derive confidences from token probabilities for matching decisions
+* go beyond tidy relational data by evaluating on Semi-structured dbpedia and simulating data errors.
+* identify composite matchers offering an attractive balance betwenn efficiency and effectiveness
+
 # Summary of Evaluation Chapter
 
 ## 5.2 Entity Matching using LLM Matcher
@@ -22,7 +28,7 @@ The *LLM* is unduly sensitive to the attribute order, as a randomized attribute 
 
 #### Mixed Attributes and Data Errors
 
-- **embed-k:** The random selection results in different attributes for entities in a pair. At the same time, it preserves all the information in the attribute values that may be crucial for the matching decision.
+- **embed-k:** The random selection results in different attributes for entities in a pair which is characteristic of semi-structured datasets like DBpedia. At the same time, it preserves all the information in the attribute values that may be crucial for the matching decision.
 
 - **misfield-k:** Generates misfielded values by assigning attribute values to a wrong attribute name.
 
