@@ -11,8 +11,8 @@ from writeup_utils import rename_datasets
 
 def make_table(
     path,
-    sort_by,
     column_order,
+    sort_by=None,
     reverse_color_columns: Iterable = [],
     color_columns: Iterable = [],
     rename=False,
@@ -26,7 +26,8 @@ def make_table(
         df = rename_datasets(df, preserve_sampled=False)
 
     # Sort DataFrame by F1 column in descending order
-    df = df.sort_values(by=sort_by, ascending=sort_ascending)
+    if sort_by:
+        df = df.sort_values(by=sort_by, ascending=sort_ascending)
 
     # Reorder columns
     df = df[["Dataset"] + column_order]
@@ -39,11 +40,15 @@ def make_table(
         r = (value - min_val) / (max_val - min_val)
         scaled_value = 2 * (r - 0.5)
         color = high_color if scaled_value > 0 else low_color
-        prefix = (
-            f"\\cellcolor{{{color}!{abs(int(scaled_value*50))}}}" if do_color else ""
-        )
-        # return f"{prefix}{value:.{decimals}}"
-        return f"{prefix}{round(value, decimals)}"
+        color_intensity = abs(int(scaled_value * 50))
+
+        prefix = f"\\cellcolor{{{color}!{color_intensity}}}" if do_color else ""
+
+        # Ensure at least 'decimals' decimal places with trailing zero padding
+        formatted_value = f"{value:.{decimals}f}"
+        return f"{prefix}{formatted_value}"
+        # return f"{prefix}{value:.{decimals}f}"
+        # return f"{prefix}{round(value, decimals)}"
 
     # Apply color coding to each cell in the DataFrame
     df_colored = df.copy()
@@ -61,7 +66,11 @@ def make_table(
 
     # Convert DataFrame to LaTeX table
     latex_table = tabulate(
-        df_colored, headers="keys", tablefmt="latex_raw", showindex=False
+        df_colored,
+        headers="keys",
+        tablefmt="latex_raw",
+        showindex=False,
+        disable_numparse=True,
     )
 
     # Print the LaTeX table
@@ -100,7 +109,11 @@ CONFIGURATIONS = {
         "color_columns": ["F1", "Precision", "Recall"],
     },
     "base_hash": {
-        "column_order": ["F1_Diff", "Precision_Diff", "Recall_Diff"],
+        "column_order": [
+            "F1_Diff",
+            "Precision_Diff",
+            "Recall_Diff",
+        ],
         "color_columns": ["F1_Diff", "Precision_Diff", "Recall_Diff"],
         "sort_by": "F1_Diff",
         "path": Path("eval_writeup/base_vs_hash.csv"),
@@ -132,6 +145,7 @@ CONFIGURATIONS = {
 if __name__ == "__main__":
     cfg_name = "discarding_matcher_tradeoff_time"
     cfg_name = "base_attr_embed_one_ppair"
+    cfg_name = "base_hash"
     make_table(**CONFIGURATIONS[cfg_name])
 
 """
