@@ -125,7 +125,7 @@ CONFIGURATIONS = {
             lambda d: (d, PROMPTS_FOLDER_PATH / f"{d}-general_complex_force.json"),
             SAMPLED_DATASET_NAMES,
         ),
-        "outtokens_per_prompt": 10,
+        "outtokens_per_prompt": 1,
     },
     "hash": {
         "models": ["gpt-3.5-turbo", "gpt-3.5-turbo-instruct", "gpt-4-1106-preview"],
