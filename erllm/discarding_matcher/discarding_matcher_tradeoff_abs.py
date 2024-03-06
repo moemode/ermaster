@@ -1,6 +1,5 @@
 """
-Generate and analyze performance/cost trade-off for the discarding matcher based on F1 decrease thresholds.
-Calculates F1 decrease, relative cost, and relative duration for each dataset and threshold.
+Create tables of absolute cost and time required to run the LLM matcher and the discarding matcher at various F1 decrease thresholds.
 """
 
 from erllm import (
@@ -24,11 +23,26 @@ CONFIGURATIONS = {
 }
 
 
-def get_cost_time_abs(df: pd.DataFrame) -> None:
+def get_cost_time_abs(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Save the DataFrame to a LaTeX table.
+    Calculate the absolute cost and duration values based on the given DataFrame.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing the necessary columns.
+
+    Returns:
+        tuple: A tuple containing two DataFrames:
+            - time_abs: A DataFrame with the absolute duration values per dataset and F1 decrease threshold.
+            - cost_abs: A DataFrame with the absolute cost values per dataset and F1 decrease threshold.
     """
     df = rename_datasets(df, preserve_sampled=False)
+    # get dataset ordered descendingly for Cost Decrease at F1_Decrease_Threshold = -0.025
+    filtered_df = df[df["F1_Decrease_Threshold"] == -0.025]
+    # Sort the filtered DataFrame by "Cost Decrease" in descending order
+    sorted_df = filtered_df.sort_values(by="Cost Decrease", ascending=False)
+    cost_ordered_datasets = sorted_df["Dataset"].tolist()
+    time_sorted_df = filtered_df.sort_values(by="Time Decrease", ascending=False)
+    time_ordered_datasets = time_sorted_df["Dataset"].tolist()
     df["Cost"] = df["Relative_Cost"] * df["LLM Matcher Cost"]
     df["Duration"] = df["Relative_Duration"] * df["LLM Matcher Duration"]
     df["F1_Decrease_Threshold"] = (df["F1_Decrease_Threshold"] * 100).round(2).abs()
@@ -46,7 +60,6 @@ def get_cost_time_abs(df: pd.DataFrame) -> None:
         ["LLM_Matcher_Duration"]
         + [col for col in time_abs if col != "LLM_Matcher_Duration"]
     ]
-
     # add extra column to time_abs for the LLM Matcher Duration per dataset
     cost_abs = df.pivot_table(
         index="Dataset", columns="F1_Decrease_Threshold", values="Cost"
@@ -56,11 +69,31 @@ def get_cost_time_abs(df: pd.DataFrame) -> None:
     cost_abs = cost_abs[
         ["LLM_Matcher_Cost"] + [col for col in cost_abs if col != "LLM_Matcher_Cost"]
     ]
-    # order cost_abs decreasing by
+    # order cost_abs, time abs decreasing by column 2.5
+    cost_abs = cost_abs.reindex(
+        cost_abs.mean().sort_values(ascending=False).index, axis=1
+    )
+    # order datasets in time_abs and cost_abs by the order of ordered_datasets
+    time_abs = time_abs.reindex(time_ordered_datasets)
+    cost_abs = cost_abs.reindex(cost_ordered_datasets)
     return time_abs, cost_abs
 
 
 def to_latex_table(df: pd.DataFrame, caption: str, label: str, fname: str):
+    """
+    Converts a pandas DataFrame to a LaTeX table and saves it to a file.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to convert to a LaTeX table.
+        caption (str): The caption for the LaTeX table.
+        label (str): The label for the LaTeX table.
+        fname (str): The filename to save the LaTeX table to.
+
+    Returns:
+        None
+    """
+    # convert all column names of df to string
+    df.columns = df.columns.astype(str)
     s = df.style
     s.format(precision=2)
     latex_table = s.to_latex(
