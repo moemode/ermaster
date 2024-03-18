@@ -117,12 +117,18 @@ CONFIGURATIONS = {
         "to_str": lambda e: e.misfield_str_freq(freq=1, random_order=False),
         "seed": 123,
     },
+    "full-dbpedia": {
+        "save_to": Path(PROMPT_DATA_FOLDER_PATH) / "full_dbpedia",
+        "dataset_paths": [DATASET_FOLDER_PATH / "dbpedia10k"],
+        "to_str": lambda e: e.value_string(),
+        "seed": 123,
+    },
 }
 
 if __name__ == "__main__":
     # cfg = CONFIGURATIONS["with-attr-names-misfield-half"]
     for cfg_name, cfg in CONFIGURATIONS.items():
-        if "embed-half" not in cfg_name:
+        if "full-dbpedia" not in cfg_name:
             continue
         datasets, save_to, to_str = cfg["dataset_paths"], cfg["save_to"], cfg["to_str"]
         save_to.mkdir(parents=True, exist_ok=True)

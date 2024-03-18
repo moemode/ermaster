@@ -231,11 +231,21 @@ CONFIGURATIONS = {
         "postfix": "####",
         "save_to": PROMPTS_FOLDER_PATH,
     },
+    "dbpedia-full": {
+        "datasets": [
+            Path(PROMPT_DATA_FOLDER_PATH / "full_dbpedia" / "dbpedia10k.json")
+        ],
+        "prompt_type": "general_complex_force",
+        "postfix": "",
+        "save_to": PROMPTS_FOLDER_PATH / "full-dbpedia",
+    },
 }
 
 if __name__ == "__main__":
     # go over all cfgs run if save_to folder does not exist
     for cfg_name, cfg in CONFIGURATIONS.items():
+        if cfg_name != "dbpedia-full":
+            continue
         if not cfg["save_to"].exists():
             print("Creating prompts for ", cfg_name)
             cfg["save_to"].mkdir(parents=True, exist_ok=True)
