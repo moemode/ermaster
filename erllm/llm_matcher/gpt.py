@@ -353,13 +353,30 @@ CONFIGURATIONS = {
         "description": "1max_token",
         "save_to_folder": RUNS_FOLDER_PATH / "4_base",
     },
+    "gpt35-full-dbpedia": {
+        "completions_function": get_completions_batch,
+        "model": "gpt-3.5-turbo-instruct",
+        "prompt_paths": [
+            PROMPTS_FOLDER_PATH
+            / "full-dbpedia"
+            / "dbpedia10k-general_complex_force.json",
+        ],
+        "model_params": dict(
+            model="gpt-3.5-turbo-instruct",
+            max_tokens=1,
+            logprobs=5,
+            temperature=0,
+            seed=0,
+        ),
+        "description": "1max_token",
+        "save_to_folder": RUNS_FOLDER_PATH / "35_base" / "full_dbpedia",
+    },
 }
 
 
 if __name__ == "__main__":
-    """
     # run individual configs
-    cfg = CONFIGURATIONS["gpt35-on-base-wattr-names-embed-one-ppair"]
+    cfg = CONFIGURATIONS["gpt35-full-dbpedia"]
     for p in cfg["prompt_paths"]:
         run_test(
             p,
@@ -386,3 +403,4 @@ if __name__ == "__main__":
         ),
         RUNS_FOLDER_PATH / "35_base",
     )
+    """
