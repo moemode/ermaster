@@ -1,8 +1,12 @@
+"""
+Ccombines and compares the results on full dataset and ampled version using different configurations of a discarding selective matcher (DSM) algorithm. 
+It generates a comparison table of the classification performance for each configuration.
+"""
+
 from typing import List
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
 from erllm.utils import rename_datasets
-
 
 CONFIGURATIONS = {
     "dbpedia": {
@@ -18,6 +22,16 @@ CONFIGURATIONS = {
 def combine_results(
     full_df: pd.DataFrame, sample_df: pd.DataFrame, dsm_configs: List[tuple[int, int]]
 ) -> pd.DataFrame:
+    """
+    Combines the results from the full datasets and sampled datasets into a single DataFrame.
+
+    Args:
+        full_df (pd.DataFrame): DataFrame containing results for the full datasets.
+        sample_df (pd.DataFrame): DataFrame containing results for the sampled datasets.
+        dsm_configs (List[tuple[int, int]]): List of tuples representing the discard fraction and label fraction configurations.
+    Returns:
+        pd.DataFrame: Combined DataFrame containing results from both datasets.
+    """
     # get all datasets in full_df
     full_datasets = list(full_df["Dataset"].unique())
     sampled_datasets = list(sample_df["Dataset"].unique())
@@ -61,7 +75,17 @@ def combine_results(
     return result
 
 
-def comparison_table(combined_df: pd.DataFrame, dsm_configs: List[tuple[int, int]]):
+def comparison_table(
+    combined_df: pd.DataFrame, dsm_configs: List[tuple[int, int]]
+) -> None:
+    """
+    Generate a table of classification performance for various DSM configurations, comparing
+    performance on the full dataset vs sampled.
+
+    Args:
+        combined_df (pd.DataFrame): Dataframe containing the classification results.
+        dsm_configs (List[tuple[int, int]]): A list of DSM configurations.
+    """
     p = combined_df.pivot_table(
         index=["Full Dataset", "Discard Fraction", "Label Fraction"],
         columns="Type",
@@ -110,9 +134,9 @@ def comparison_table(combined_df: pd.DataFrame, dsm_configs: List[tuple[int, int
     s.format(precision=2, subset=["F1", "Precision", "Recall"])
     s.hide()
     s.hide(axis=1, subset="Cfg Number")
-    latex_table = s.to_latex(
+    s.to_latex(
         cfg["full_folder"] / "full_sampled_table.tex",
-        # column_format="lccc",
+        column_format="llrrcccccc",
         hrules=True,
         convert_css=True,
         position_float="centering",
