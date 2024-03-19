@@ -61,22 +61,55 @@ def combine_results(
     return result
 
 
-def comparison_table(combined_df: pd.DataFrame):
+def comparison_table(combined_df: pd.DataFrame, dsm_configs: List[tuple[int, int]]):
     p = combined_df.pivot_table(
         index=["Full Dataset", "Discard Fraction", "Label Fraction"],
         columns="Type",
         values=["Recall", "Precision", "F1"],
     )
     p.reset_index(inplace=True)
-    p.rename(columns={"Full Dataset": "Dataset"}, inplace=True)
+    # reindex so that "Recall", "Precision", "F1" are in that order
+    p = p.reindex(
+        [
+            "Full Dataset",
+            "Discard Fraction",
+            "Label Fraction",
+            "Recall",
+            "Precision",
+            "F1",
+        ],
+        axis=1,
+        level=0,
+    )
+    p = p.reindex(["Sampled", "Full", ""], axis=1, level=1)
+    p.rename(
+        columns={
+            "Full Dataset": "Dataset",
+            "Discard Fraction": "Discard",
+            "Label Fraction": "Label",
+        },
+        inplace=True,
+    )
+    p["Cfg Number"] = p[["Discard", "Label"]].apply(
+        lambda row: dsm_configs.index(tuple(row)), axis=1
+    )
+    p = p.sort_values(by=["Dataset", "Cfg Number"])
     p.insert(0, "Configuration", "Example")
     # add column Configuration to very left
     # apply rename_dataset function to column Dataset
     p = rename_datasets(p)
     s = p.style
-    s.format({("Discard Fraction", ""): "{:.2%}\%", ("Label Fraction", ""): "{:.2%}"})
-    s.format(precision=3)
+    s.format(
+        lambda s: "{:.0f}\%".format(s * 100),
+        subset=p.columns.get_loc_level("Discard", level=0)[0],
+    )
+    s.format(
+        lambda s: "{:.0f}\%".format(s * 100),
+        subset=p.columns.get_loc_level("Label", level=0)[0],
+    )
+    s.format(precision=2, subset=["F1", "Precision", "Recall"])
     s.hide()
+    s.hide(axis=1, subset="Cfg Number")
     latex_table = s.to_latex(
         cfg["full_folder"] / "full_sampled_table.tex",
         # column_format="lccc",
@@ -94,4 +127,4 @@ if __name__ == "__main__":
     full_df = pd.read_csv(cfg["full_folder"] / "result.csv")
     sample_df = pd.read_csv(cfg["sampled_folder"] / "result.csv")
     r = combine_results(full_df, sample_df, cfg["dsm_configs"])
-    comparison_table(r)
+    comparison_table(r, cfg["dsm_configs"])
