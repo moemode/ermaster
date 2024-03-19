@@ -36,6 +36,13 @@ CONFIGURATIONS = {
         "params": [(0.0, 0.0), (0.8, 0.0), (0.0, 0.15), (0.8, 0.15), (0.5, 0.15)],
         "outfolder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "recommended",
     },
+    "dbpedia-full": {
+        "runfiles": RUNS_FOLDER_PATH / "35_base" / "full_dbpedia",
+        "similarities": SIMILARITIES_FOLDER_PATH,
+        "label_fractions": [0, 0.05, 0.1, 0.15, 0.2],
+        "discard_fractions": [0, 0.5, 0.7, 0.8],
+        "outfolder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "dbpedia_full",
+    },
 }
 
 
@@ -81,7 +88,7 @@ def discarding_selective_matcher_runner(
 
 
 if __name__ == "__main__":
-    cfg_name = "recommended"
+    cfg_name = "dbpedia-full"
     cfg = CONFIGURATIONS[cfg_name]
     cfg["outfolder"].mkdir(parents=True, exist_ok=True)
     params = cfg.get("params")

@@ -18,6 +18,13 @@ CONFIGURATIONS = {
         "result_folder": EVAL_FOLDER_PATH / "discarding_selective_matcher" / "grid",
         "means": ["F1", "Precision", "Recall", "Accuracy"],
     },
+    "dbpedia-full": {
+        "result_folder": EVAL_FOLDER_PATH
+        / "discarding_selective_matcher"
+        / "dbpedia_full",
+        "label_fractions": [0, 0.05, 0.1, 0.15],
+        "mean_metrics": ["F1", "Precision", "Recall", "Accuracy"],
+    },
 }
 
 
@@ -97,7 +104,7 @@ def build_table(df: pd.DataFrame, metric: str, save_to: Path) -> str:
 
 
 if __name__ == "__main__":
-    cfg_name = "basic-cmp"
+    cfg_name = "dbpedia-full"
     cfg = CONFIGURATIONS[cfg_name]
     df = pd.read_csv(cfg["result_folder"] / "result.csv")
     df = df[df["Label Fraction"].isin(cfg["label_fractions"])]
