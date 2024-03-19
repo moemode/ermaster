@@ -65,4 +65,10 @@ if __name__ == "__main__":
     full_df = pd.read_csv(cfg["full_folder"] / "result.csv")
     sample_df = pd.read_csv(cfg["sampled_folder"] / "result.csv")
     r = combine_results(full_df, sample_df, cfg["dsm_configs"])
-    print(r)
+    p = r.pivot_table(
+        index=["Full Dataset", "Discard Fraction", "Label Fraction"],
+        columns="Is Full",
+        values=["Recall", "Precision", "F1"],
+    )
+    p.reset_index(inplace=True)
+    print(p)
