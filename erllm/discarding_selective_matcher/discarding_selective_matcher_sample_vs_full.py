@@ -1,6 +1,7 @@
 from typing import List
 import pandas as pd
 from erllm import EVAL_FOLDER_PATH
+from erllm.utils import rename_datasets
 
 
 CONFIGURATIONS = {
@@ -47,11 +48,11 @@ def combine_results(
     full_result = full_df[
         ["Dataset", "Discard Fraction", "Label Fraction", "Recall", "Precision", "F1"]
     ]
-    full_result["Is Full"] = True
+    full_result["Type"] = "Full"
     sample_result = sample_df[
         ["Dataset", "Discard Fraction", "Label Fraction", "Recall", "Precision", "F1"]
     ]
-    sample_result["Is Full"] = False
+    sample_result["Type"] = "Sampled"
     # combine the two df into one
     result = pd.concat([full_result, sample_result])
     # add column "Full Dataset"
@@ -60,15 +61,37 @@ def combine_results(
     return result
 
 
+def comparison_table(combined_df: pd.DataFrame):
+    p = combined_df.pivot_table(
+        index=["Full Dataset", "Discard Fraction", "Label Fraction"],
+        columns="Type",
+        values=["Recall", "Precision", "F1"],
+    )
+    p.reset_index(inplace=True)
+    p.rename(columns={"Full Dataset": "Dataset"}, inplace=True)
+    p.insert(0, "Configuration", "Example")
+    # add column Configuration to very left
+    # apply rename_dataset function to column Dataset
+    p = rename_datasets(p)
+    s = p.style
+    s.format({("Discard Fraction", ""): "{:.2%}\%", ("Label Fraction", ""): "{:.2%}"})
+    s.format(precision=3)
+    s.hide()
+    latex_table = s.to_latex(
+        cfg["full_folder"] / "full_sampled_table.tex",
+        # column_format="lccc",
+        hrules=True,
+        convert_css=True,
+        position_float="centering",
+        multicol_align="c",
+        caption="Classification performance of various DSM configurations on the DBpedia dataset",
+        label="tab:dbpedia-full-sampled",
+    )
+
+
 if __name__ == "__main__":
     cfg = CONFIGURATIONS["dbpedia"]
     full_df = pd.read_csv(cfg["full_folder"] / "result.csv")
     sample_df = pd.read_csv(cfg["sampled_folder"] / "result.csv")
     r = combine_results(full_df, sample_df, cfg["dsm_configs"])
-    p = r.pivot_table(
-        index=["Full Dataset", "Discard Fraction", "Label Fraction"],
-        columns="Is Full",
-        values=["Recall", "Precision", "F1"],
-    )
-    p.reset_index(inplace=True)
-    print(p)
+    comparison_table(r)
