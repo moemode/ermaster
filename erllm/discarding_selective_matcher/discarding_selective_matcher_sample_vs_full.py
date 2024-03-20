@@ -133,10 +133,10 @@ def comparison_table(
     )
     s.format(precision=2, subset=["F1", "Precision", "Recall"])
     s.hide()
-    s.hide(axis=1, subset="Cfg Number")
+    s.hide(axis=1, subset=["Cfg Number", "Dataset"])
     s.to_latex(
         cfg["full_folder"] / "full_sampled_table.tex",
-        column_format="llrrcccccc",
+        column_format="lrrcccccc",
         hrules=True,
         convert_css=True,
         position_float="centering",
