@@ -8,38 +8,18 @@ conda activate erllm
 (erllm) python erllm_setup.py
 ```
 
-# From Dataset to prompts to run file
-
-[prompt_data.py](erllm/llm_matcher/prompt_data.py) serializes the entities in a dataset to a string using a serialization function which determines how the entities are represented in the prompts. The output is a JSON file.
-
-[prompts.py](erllm/llm_matcher/prompts.py) takes this file as input and adds a prompt pre- and postfix.
-An example prefix is "Do the two entity descriptions refer to the same real-world entity? Answer with 'Yes' if they do and 'No' if they do not." The output is another JSON file.
-
-[gpt.py](erllm/llm_matcher/gpt.py) reads this file and constructs the full prompt from pre- and postfix and the serialized profile pair.
-It then sends the prompt to the OpenAI API and retrieves the response which contains token probabilities and more.
-gpt.py saves each prompt together with the response into a JSON *run file*.
-
-# The role of run files and similarity files
-
-All composite matchers use these *run files* with the cached API response and do not query the API live.
-This saves cost and time.
-For the discarder, [discarder.py](erllm/discarder/discarder.py) precomputes the examined similarity functions between all profile pairs in all datasets.
-We save the similarity value and computation duration for all pairs of a dataset into one *similarity file* per dataset.
-All composite matchers containing a discarder use this similarity file with the precomputed results.
-
-The run files and similarity files are the only basic data relevant for the simulation of all matcher architectures and data analysis (e.g. generating confidence histograms).
-This means that all the other scripts in erllm operate on these data or derived information.
-
 # Package Overview
 
 We recommend [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher) over [erllm.discarding_matcher](#package-erllmdiscarding_matcher) and [erllm.selective_matcher](#package-erllmselective_matcher).
 The latter were coded first and a are subsumed by [erllm.discarding_selective_matcher](#package-erllmdiscarding_selective_matcher).
 
+# Package Overview
+
 | Module | Purpose |
 | --- | --- |
 | [erllm](#package-erllm) | Root package. Contains installation, documentation generation and helper code. |
 | [erllm.calibration](#package-erllmcalibration) | Calibration analysis on entity matching LLM predictions. |
-| [erllm.dataset](#package-erllmdataset) | Covers entity representation, dataset loading, downsampling.  The "DBpedia" submodule handles loading raw DBpedia data into subsampled CSV files, reading the raw data into SQLite database, interacting with it and generating labeled  datasets of matching and non-matching DBpedia entity pairs for benchmarking. |
+| [erllm.dataset](#package-erllmdataset) | Covers entity representation, dataset loading and downsampling. |
 | [erllm.dataset.dbpedia](#package-erllmdatasetdbpedia) | Handles DBPedia data including loading raw data into SQLite,  interaction, and generation of labeled datasets using token blocking for benchmarking. |
 | [erllm.dataset.ditto](#package-erllmdatasetditto) | Convert existing datasets to DITTO format. |
 | [erllm.discarder](#package-erllmdiscarder) | Explores the similarity-based discarder in isolation.  Computes and saves set-based and embedding-based similarities for pairs of entities,  Includes functionality to save results and computation time into similarity files, compute various discarder statistics, and generate visualizations. |
@@ -108,6 +88,7 @@ The latter were coded first and a are subsumed by [erllm.discarding_selective_ma
 | [discarding_matcher_duration_cmp.py](erllm/discarding_matcher/discarding_matcher_duration_cmp.py) | Calculates speedup factor of discarding matcher over LLM matcher. |
 | [discarding_matcher_runner.py](erllm/discarding_matcher/discarding_matcher_runner.py) | Runs the discarding matcher algorithm on multiple datasets with different threshold values. It calculates various performance metrics such as accuracy, precision, recall, F1 score, cost, and duration. |
 | [discarding_matcher_tradeoff.py](erllm/discarding_matcher/discarding_matcher_tradeoff.py) | Generate and analyze performance/cost trade-off for the discarding matcher based on F1 decrease thresholds. Calculates F1 decrease, relative cost, and relative duration for each dataset and threshold. |
+| [discarding_matcher_tradeoff_abs.py](erllm/discarding_matcher/discarding_matcher_tradeoff_abs.py) | Create tables of absolute cost and time required to run the LLM matcher and the discarding matcher at various F1 decrease thresholds. |
 | [discarding_matcher_vis.py](erllm/discarding_matcher/discarding_matcher_vis.py) | Generates performance comparison plots for the discarding matcher. |
 
 ## Package: erllm.discarding_selective_matcher
@@ -120,6 +101,7 @@ The latter were coded first and a are subsumed by [erllm.discarding_selective_ma
 | [discarding_selective_matcher_eval.py](erllm/discarding_selective_matcher/discarding_selective_matcher_eval.py) | Calculates the mean values across datasets for specified metrics,  based on the results obtained by running the discarding selective matcher. |
 | [discarding_selective_matcher_metric_table.py](erllm/discarding_selective_matcher/discarding_selective_matcher_metric_table.py) | Create a table which shows one metric like mean F1 across different label and discard fractions. |
 | [discarding_selective_matcher_runner.py](erllm/discarding_selective_matcher/discarding_selective_matcher_runner.py) | Runs and evaluates the discarding selective matcher for various configurations. |
+| [discarding_selective_matcher_sample_vs_full.py](erllm/discarding_selective_matcher/discarding_selective_matcher_sample_vs_full.py) | Ccombines and compares the results on full dataset and ampled version using different configurations of a discarding selective matcher (DSM) algorithm.  It generates a comparison table of the classification performance for each configuration. |
 
 ## Package: erllm.ditto
 
@@ -167,42 +149,12 @@ The latter were coded first and a are subsumed by [erllm.discarding_selective_ma
 | [attribute_comparison.py](erllm/serialization_cmp/attribute_comparison.py) | Creates per dataset and mean comparison tables for comparing entitiy serialization schemes with and without attributes names. |
 | [data_errors.py](erllm/serialization_cmp/data_errors.py) | Generate comparison table of LLM matcher's mean F1, precision and recall across datasets in presence of data errors. |
 
-# Datasets and their Format
-The datasets are available in the repo but we describe how they can be downloaded and put in the right place for completeness.
+# Datasets
 
-## Dataset Format
+## Obtain Datasets (except DBPedia)
 
-Each dataset consists of five CSV files: `tableA.csv`, `tableB.csv`, `test.csv`, `train.csv`, and `valid.csv`.
-
-### Example for Beer Dataset
-
-`tableA.csv` and `tableB.csv` contain the entity descriptions in full. For example, the beer dataset is formatted as follows:
-
-```csv
-id,Beer_Name,Brew_Factory_Name,Style,ABV
-12,Lagunitas Lucky 13 Mondo Large Red Ale,Lagunitas Brewing Company,American Amber / Red Ale,8.65%
-13,Ruedrich's Red Seal Ale,North Coast Brewing Co.,American Amber / Red Ale,5.40%
-14,Boont Amber Ale,Anderson Valley Brewing Company,American Amber / Red Ale,5.80%
-15,American Amber Ale,Rogue Ales,American Amber / Red Ale,5.30%
-``````
-
-`test.csv`, `train.csv`, and `valid.csv` contain labeled pairs and repeat the entity descriptions. For example:
-
-```csv
-_id,label,table1.id,table2.id,table1.Beer_Name,table2.Beer_Name,table1.Brew_Factory_Name,table2.Brew_Factory_Name,table1.Style,table2.Style,table1.ABV,table2.ABV
-0,0,1219,2470,Bulleit Bourbon Barrel Aged G'Knight,Figure Eight Bourbon Barrel Aged Jumbo Love,Oskar Blues Grill & Brew,Figure Eight Brewing,American Amber / Red Ale,Barley Wine,8.70%,-
-1,0,492,1635,Double Dragon Imperial Red Ale,Scuttlebutt Mateo Loco Imperial Red Ale,Phillips Brewing Company,Scuttlebutt Brewing Co.,American Amber / Red Ale,American Strong Ale,8.20%,7.10%
-2,1,3917,2224,Honey Basil Amber,Rude Hippo Honey Basil Amber,Rude Hippo Brewing Company,18th Street Brewery,American Amber / Red Ale,Amber Ale,7.40%,7.40%
-```
-
-We use unsupervised approaches and thus combine the pairs in `test.csv`, `train.csv`, and `valid.csv`.
-
-## Download Datasets
 The datasets are already prepared under `data/benchmark_datasets/existingDatasets`.  
 For completeness we outline how to download the datasets (all except DBPedia) published by by Papadakis, George, Nishadi Kirielle, Peter Christen, and Themis Palpanas.  
-If you want to work with the full DBPedia dataset directly follow the instructions under [DBPedia](#raw-dbpedia)
-
-### Datasets except Raw DBPedia
 
 1. **Download the Archive:**
    Download the `magellanExistingDatasets.tar.gz` file from https://zenodo.org/records/8164151.
@@ -228,9 +180,33 @@ If you want to work with the full DBPedia dataset directly follow the instructio
     │   └── benchmark_datasets
     │       └── existingDatasets
     │           ├── ... (contents of the existingDatasets directory)
-    ```
 
-### Raw DBPedia
+Each dataset consists of five CSV files: `tableA.csv`, `tableB.csv`, `test.csv`, `train.csv`, and `valid.csv`.  
+
+### Example for Beer Dataset
+
+`tableA.csv` and `tableB.csv` contain the entity descriptions in full. For example, the beer dataset is formatted as follows:
+
+```csv
+id,Beer_Name,Brew_Factory_Name,Style,ABV
+12,Lagunitas Lucky 13 Mondo Large Red Ale,Lagunitas Brewing Company,American Amber / Red Ale,8.65%
+13,Ruedrich's Red Seal Ale,North Coast Brewing Co.,American Amber / Red Ale,5.40%
+14,Boont Amber Ale,Anderson Valley Brewing Company,American Amber / Red Ale,5.80%
+15,American Amber Ale,Rogue Ales,American Amber / Red Ale,5.30%
+``````
+
+`test.csv`, `train.csv`, and `valid.csv` contain labeled pairs and repeat the entity descriptions. For example:
+
+```csv
+_id,label,table1.id,table2.id,table1.Beer_Name,table2.Beer_Name,table1.Brew_Factory_Name,table2.Brew_Factory_Name,table1.Style,table2.Style,table1.ABV,table2.ABV
+0,0,1219,2470,Bulleit Bourbon Barrel Aged G'Knight,Figure Eight Bourbon Barrel Aged Jumbo Love,Oskar Blues Grill & Brew,Figure Eight Brewing,American Amber / Red Ale,Barley Wine,8.70%,-
+1,0,492,1635,Double Dragon Imperial Red Ale,Scuttlebutt Mateo Loco Imperial Red Ale,Phillips Brewing Company,Scuttlebutt Brewing Co.,American Amber / Red Ale,American Strong Ale,8.20%,7.10%
+2,1,3917,2224,Honey Basil Amber,Rude Hippo Honey Basil Amber,Rude Hippo Brewing Company,18th Street Brewery,American Amber / Red Ale,Amber Ale,7.40%,7.40%
+```
+
+## Full DBPedia
+The subsampled DBpedia versions used in the thesis are already contained in the repo.
+If you want to work with the full DBPedia dataset directly, follow these instructions. 
 
 1. **Download the Archive:**
    Download the archive `dbpediaText.tar.gz` from https://zenodo.org/records/10059096.
@@ -247,14 +223,9 @@ If you want to work with the full DBPedia dataset directly follow the instructio
     │       └── newDBPediaMatchesout
     ```
 
-The python file in erllm/dataset/dbpedia are used to create the sample DBPedia dataset used in the work.
+The python file in erllm/dataset/dbpedia are used to create the sampled DBPedia dataset used in the work.
 
-## Datasets except DBPedia
-We evaluate on a wide range of datasets.
-With the exception of DBpedia, we use them in the format published by
-Papadakis, George, Nishadi Kirielle, Peter Christen, and Themis Palpanas. “A Critical Re-Evaluation of Benchmark Datasets for (Deep) Learning-Based Matching Algorithms.” arXiv, July 3, 2023. https://doi.org/10.48550/arXiv.2307.01231.
-
-## DBPedia Raw Description
+### Full DBpedia Description
 The [JedAIToolkit](https://github.com/scify/JedAIToolkit) contains the original copy of the DBPedia dataset in .jso format, which is a serialized Java object.  
 To make this dataset easier to use, we submitted a [pull request](https://github.com/scify/JedAIToolkit/pull/66) to convert it to .txt files.  
 We shared these with the authors of [JedAIToolkit](https://github.com/scify/JedAIToolkit) who uploaded it to https://zenodo.org/records/10059096.  
@@ -271,3 +242,34 @@ This must be accounted for when reading the data.
 The file `newDBPediaMatchesout` contains matching profile pairs.
 Each line has the format:  
 `numerical_id_0 , numerical_id_1`
+
+# Sampling
+
+Except for DBpedia, use [sample_ds.py](erllm/dataset/sample_ds.py) to generate subsampled versions.
+Our subsampled versions are already present under data/existingDatasets, each stored in a directory with the _1250 suffix.
+We use unsupervised approaches and thus combine the pairs sampled from the original `test.csv`, `train.csv`, and `valid.csv` in a single `test.csv`.
+
+If you want to generate new DBpedia samples you first need to obtain the full DBpedia dataset as outlined in [Full DBPedia](#full-dbpedia).
+
+
+# From Dataset to prompts to run file
+
+[prompt_data.py](erllm/llm_matcher/prompt_data.py) serializes the entities in a dataset to a string using a serialization function which determines how the entities are represented in the prompts. The output is a JSON file.
+
+[prompts.py](erllm/llm_matcher/prompts.py) takes this file as input and adds a prompt pre- and postfix.
+An example prefix is "Do the two entity descriptions refer to the same real-world entity? Answer with 'Yes' if they do and 'No' if they do not." The output is another JSON file.
+
+[gpt.py](erllm/llm_matcher/gpt.py) reads this file and constructs the full prompt from pre- and postfix and the serialized profile pair.
+It then sends the prompt to the OpenAI API and retrieves the response which contains token probabilities and more.
+gpt.py saves each prompt together with the response into a JSON *run file*.
+
+# The role of run files and similarity files
+
+All composite matchers use these *run files* with the cached API response and do not query the API live.
+This saves cost and time.
+For the discarder, [discarder.py](erllm/discarder/discarder.py) precomputes the examined similarity functions between all profile pairs in all datasets.
+We save the similarity value and computation duration for all pairs of a dataset into one *similarity file* per dataset.
+All composite matchers containing a discarder use this similarity file with the precomputed results.
+
+The run files and similarity files are the only basic data relevant for the simulation of all matcher architectures and data analysis (e.g. generating confidence histograms).
+This means that all the other scripts in erllm operate on these data or derived information.

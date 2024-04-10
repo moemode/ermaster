@@ -73,6 +73,7 @@
 | [discarding_matcher_duration_cmp.py](erllm/discarding_matcher/discarding_matcher_duration_cmp.py) | Calculates speedup factor of discarding matcher over LLM matcher. |
 | [discarding_matcher_runner.py](erllm/discarding_matcher/discarding_matcher_runner.py) | Runs the discarding matcher algorithm on multiple datasets with different threshold values. It calculates various performance metrics such as accuracy, precision, recall, F1 score, cost, and duration. |
 | [discarding_matcher_tradeoff.py](erllm/discarding_matcher/discarding_matcher_tradeoff.py) | Generate and analyze performance/cost trade-off for the discarding matcher based on F1 decrease thresholds. Calculates F1 decrease, relative cost, and relative duration for each dataset and threshold. |
+| [discarding_matcher_tradeoff_abs.py](erllm/discarding_matcher/discarding_matcher_tradeoff_abs.py) | Create tables of absolute cost and time required to run the LLM matcher and the discarding matcher at various F1 decrease thresholds. |
 | [discarding_matcher_vis.py](erllm/discarding_matcher/discarding_matcher_vis.py) | Generates performance comparison plots for the discarding matcher. |
 
 ## Package: erllm.discarding_selective_matcher
@@ -85,6 +86,7 @@
 | [discarding_selective_matcher_eval.py](erllm/discarding_selective_matcher/discarding_selective_matcher_eval.py) | Calculates the mean values across datasets for specified metrics,  based on the results obtained by running the discarding selective matcher. |
 | [discarding_selective_matcher_metric_table.py](erllm/discarding_selective_matcher/discarding_selective_matcher_metric_table.py) | Create a table which shows one metric like mean F1 across different label and discard fractions. |
 | [discarding_selective_matcher_runner.py](erllm/discarding_selective_matcher/discarding_selective_matcher_runner.py) | Runs and evaluates the discarding selective matcher for various configurations. |
+| [discarding_selective_matcher_sample_vs_full.py](erllm/discarding_selective_matcher/discarding_selective_matcher_sample_vs_full.py) | Ccombines and compares the results on full dataset and ampled version using different configurations of a discarding selective matcher (DSM) algorithm.  It generates a comparison table of the classification performance for each configuration. |
 
 ## Package: erllm.ditto
 
